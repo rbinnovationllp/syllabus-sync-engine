@@ -374,6 +374,57 @@ export type Database = {
           },
         ]
       }
+      leads: {
+        Row: {
+          assigned_to: string | null
+          board: string | null
+          country: string | null
+          created_at: string
+          email: string
+          id: string
+          message: string | null
+          name: string
+          notes: string | null
+          phone: string | null
+          school_name: string | null
+          source: string | null
+          stage: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          board?: string | null
+          country?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          message?: string | null
+          name: string
+          notes?: string | null
+          phone?: string | null
+          school_name?: string | null
+          source?: string | null
+          stage?: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string | null
+          board?: string | null
+          country?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          message?: string | null
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          school_name?: string | null
+          source?: string | null
+          stage?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       org_members: {
         Row: {
           created_at: string
