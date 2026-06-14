@@ -85,6 +85,21 @@ function ResultsPage() {
     queryKey: ["year-artifacts", yearId],
     queryFn: () => fetchArtifacts({ data: { year_id: yearId } }),
   });
+  const fetchRuns = useServerFn(listAiRunsForYear);
+  const runs = useQuery({
+    queryKey: ["year-ai-runs", yearId],
+    queryFn: () => fetchRuns({ data: { year_id: yearId } }),
+  });
+  const fetchBalance = useServerFn(getAiCreditBalance);
+  const balance = useQuery({
+    queryKey: ["ai-credit-balance"],
+    queryFn: () => fetchBalance(),
+  });
+  const invalidateRunBits = () => {
+    qc.invalidateQueries({ queryKey: ["year-artifacts", yearId] });
+    qc.invalidateQueries({ queryKey: ["year-ai-runs", yearId] });
+    qc.invalidateQueries({ queryKey: ["ai-credit-balance"] });
+  };
 
   const genCalFn = useServerFn(generateAnnualCalendar);
   const genSubFn = useServerFn(generateSubjectCurriculum);
