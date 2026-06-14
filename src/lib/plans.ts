@@ -10,12 +10,31 @@ export type TierId =
   | "enterprise_global_access";
 
 export type Currency = "usd" | "inr";
+export type BillingInterval = "monthly" | "annual";
 
 export interface PlanPrice {
   priceId: string;
   amount: number;
   currency: Currency;
   display: string;
+  interval?: BillingInterval;
+}
+
+/**
+ * Annual rebate eligibility — pay for 10 months, get 12.
+ *
+ * Rule (per product spec): the rebate aligns with the country's academic
+ * session. India's session runs April → March, so the 2-months-free offer
+ * applies ONLY when the subscriber starts on or before April. Subscribers
+ * who join from May onward pay full annual (12×) — no rebate.
+ *
+ * For non-India / USD customers we treat any month as eligible (global
+ * sessions vary; honoring annual rebate year-round keeps the offer simple).
+ */
+export function annualRebateEligible(currency: Currency, now: Date = new Date()): boolean {
+  if (currency !== "inr") return true;
+  // JS months are 0-indexed: Jan=0 ... Apr=3.
+  return now.getMonth() <= 3;
 }
 
 /** Hard per-plan limits enforced server-side. */
@@ -109,8 +128,10 @@ export const PLANS: Plan[] = [
       support: "Email (48–72 hrs)",
     },
     prices: [
-      { priceId: "retail_single_monthly_usd", amount: 900, currency: "usd", display: "$9/mo" },
-      { priceId: "retail_single_monthly_inr", amount: 49900, currency: "inr", display: "₹499/mo" },
+      { priceId: "retail_single_monthly_usd", amount: 900, currency: "usd", display: "$9/mo", interval: "monthly" },
+      { priceId: "retail_single_monthly_inr", amount: 49900, currency: "inr", display: "₹499/mo", interval: "monthly" },
+      { priceId: "retail_single_annual_usd", amount: 9000, currency: "usd", display: "$90/yr", interval: "annual" },
+      { priceId: "retail_single_annual_inr", amount: 499000, currency: "inr", display: "₹4,990/yr", interval: "annual" },
     ],
   },
   {
@@ -147,8 +168,10 @@ export const PLANS: Plan[] = [
       support: "Email (24–48 hrs)",
     },
     prices: [
-      { priceId: "bundle_primary_monthly_usd", amount: 4900, currency: "usd", display: "$49/mo" },
-      { priceId: "bundle_primary_monthly_inr", amount: 199900, currency: "inr", display: "₹1,999/mo" },
+      { priceId: "bundle_primary_monthly_usd", amount: 4900, currency: "usd", display: "$49/mo", interval: "monthly" },
+      { priceId: "bundle_primary_monthly_inr", amount: 199900, currency: "inr", display: "₹1,999/mo", interval: "monthly" },
+      { priceId: "bundle_primary_annual_usd", amount: 49000, currency: "usd", display: "$490/yr", interval: "annual" },
+      { priceId: "bundle_primary_annual_inr", amount: 1999000, currency: "inr", display: "₹19,990/yr", interval: "annual" },
     ],
   },
   {
@@ -185,8 +208,10 @@ export const PLANS: Plan[] = [
       support: "Priority email",
     },
     prices: [
-      { priceId: "bundle_middle_monthly_usd", amount: 9900, currency: "usd", display: "$99/mo" },
-      { priceId: "bundle_middle_monthly_inr", amount: 299900, currency: "inr", display: "₹2,999/mo" },
+      { priceId: "bundle_middle_monthly_usd", amount: 9900, currency: "usd", display: "$99/mo", interval: "monthly" },
+      { priceId: "bundle_middle_monthly_inr", amount: 299900, currency: "inr", display: "₹2,999/mo", interval: "monthly" },
+      { priceId: "bundle_middle_annual_usd", amount: 99000, currency: "usd", display: "$990/yr", interval: "annual" },
+      { priceId: "bundle_middle_annual_inr", amount: 2999000, currency: "inr", display: "₹29,990/yr", interval: "annual" },
     ],
   },
   {
@@ -223,8 +248,10 @@ export const PLANS: Plan[] = [
       support: "Phone (working hours)",
     },
     prices: [
-      { priceId: "bundle_high_monthly_usd", amount: 14900, currency: "usd", display: "$149/mo" },
-      { priceId: "bundle_high_monthly_inr", amount: 499900, currency: "inr", display: "₹4,999/mo" },
+      { priceId: "bundle_high_monthly_usd", amount: 14900, currency: "usd", display: "$149/mo", interval: "monthly" },
+      { priceId: "bundle_high_monthly_inr", amount: 499900, currency: "inr", display: "₹4,999/mo", interval: "monthly" },
+      { priceId: "bundle_high_annual_usd", amount: 149000, currency: "usd", display: "$1,490/yr", interval: "annual" },
+      { priceId: "bundle_high_annual_inr", amount: 4999000, currency: "inr", display: "₹49,990/yr", interval: "annual" },
     ],
   },
   {
@@ -268,8 +295,10 @@ export const PLANS: Plan[] = [
       support: "Dedicated + monthly review",
     },
     prices: [
-      { priceId: "enterprise_global_monthly_usd", amount: 49900, currency: "usd", display: "$499/mo" },
-      { priceId: "enterprise_global_monthly_inr", amount: 1499900, currency: "inr", display: "₹14,999/mo" },
+      { priceId: "enterprise_global_monthly_usd", amount: 49900, currency: "usd", display: "$499/mo", interval: "monthly" },
+      { priceId: "enterprise_global_monthly_inr", amount: 1499900, currency: "inr", display: "₹14,999/mo", interval: "monthly" },
+      { priceId: "enterprise_global_annual_usd", amount: 499000, currency: "usd", display: "$4,990/yr", interval: "annual" },
+      { priceId: "enterprise_global_annual_inr", amount: 14999000, currency: "inr", display: "₹1,49,990/yr", interval: "annual" },
     ],
   },
 ];

@@ -5,15 +5,20 @@ import { AppShell } from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Check, Loader2, ExternalLink, X, Sparkles, Info } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Check, Loader2, ExternalLink, X, Sparkles, Info, AlertTriangle, CalendarClock } from "lucide-react";
 import { toast } from "sonner";
 import {
   PLANS,
   ADD_ONS,
   AI_ACTION_COSTS,
   PAID_SERVICES,
+  annualRebateEligible,
   type Currency,
+  type BillingInterval,
+  type Plan,
 } from "@/lib/plans";
 import { useSubscription } from "@/hooks/useSubscription";
 import { StripeEmbeddedCheckout } from "@/components/StripeEmbeddedCheckout";
@@ -33,12 +38,27 @@ const ACTION_LABELS: Record<keyof typeof AI_ACTION_COSTS, string> = {
   generate_teacher_training: "Teacher training roadmap",
 };
 
+interface PendingCheckout {
+  plan: Plan;
+  priceId: string;
+  priceDisplay: string;
+  interval: BillingInterval;
+}
+
 function PricingPage() {
   const [currency, setCurrency] = useState<Currency>("usd");
+  const [interval, setInterval] = useState<BillingInterval>("monthly");
+  const [pending, setPending] = useState<PendingCheckout | null>(null);
+  const [acknowledged, setAcknowledged] = useState(false);
   const [checkoutPriceId, setCheckoutPriceId] = useState<string | null>(null);
   const [portalLoading, setPortalLoading] = useState(false);
   const { subscription, plan: currentPlan, isActive } = useSubscription();
   const portalFn = useServerFn(createPortalSession);
+
+  const annualEligible = useMemo(() => annualRebateEligible(currency), [currency]);
+  // If user toggled annual then switched to INR mid-May+, force back to monthly.
+  const effectiveInterval: BillingInterval =
+    interval === "annual" && !annualEligible ? "monthly" : interval;
 
   const returnUrl = useMemo(
     () => (typeof window === "undefined" ? "" : `${window.location.origin}/pricing?checkout=success`),
@@ -58,6 +78,24 @@ function PricingPage() {
     }
   }
 
+  function startCheckout(plan: Plan) {
+    const price = plan.prices.find(
+      (p) => p.currency === currency && (p.interval ?? "monthly") === effectiveInterval,
+    );
+    if (!price) {
+      toast.error("Price unavailable for this selection");
+      return;
+    }
+    setAcknowledged(false);
+    setPending({ plan, priceId: price.priceId, priceDisplay: price.display, interval: effectiveInterval });
+  }
+
+  function confirmCheckout() {
+    if (!pending || !acknowledged) return;
+    setCheckoutPriceId(pending.priceId);
+    setPending(null);
+  }
+
   return (
     <AppShell title="Plans & billing">
       <PaymentTestModeBanner />
@@ -67,20 +105,61 @@ function PricingPage() {
           <p className="text-sm text-muted-foreground mt-2">
             Tiered by grade band. Upgrade, downgrade, or cancel anytime from the billing portal.
           </p>
-          <div className="inline-flex mt-6 rounded-md border p-1 bg-muted">
-            <button
-              onClick={() => setCurrency("usd")}
-              className={`px-4 py-1.5 text-sm rounded ${currency === "usd" ? "bg-background shadow" : "text-muted-foreground"}`}
-            >
-              Global (USD)
-            </button>
-            <button
-              onClick={() => setCurrency("inr")}
-              className={`px-4 py-1.5 text-sm rounded ${currency === "inr" ? "bg-background shadow" : "text-muted-foreground"}`}
-            >
-              India (INR)
-            </button>
+
+          <div className="flex flex-wrap items-center justify-center gap-3 mt-6">
+            <div className="inline-flex rounded-md border p-1 bg-muted">
+              <button
+                onClick={() => setCurrency("usd")}
+                className={`px-4 py-1.5 text-sm rounded ${currency === "usd" ? "bg-background shadow" : "text-muted-foreground"}`}
+              >
+                Global (USD)
+              </button>
+              <button
+                onClick={() => setCurrency("inr")}
+                className={`px-4 py-1.5 text-sm rounded ${currency === "inr" ? "bg-background shadow" : "text-muted-foreground"}`}
+              >
+                India (INR)
+              </button>
+            </div>
+
+            <div className="inline-flex rounded-md border p-1 bg-muted">
+              <button
+                onClick={() => setInterval("monthly")}
+                className={`px-4 py-1.5 text-sm rounded ${effectiveInterval === "monthly" ? "bg-background shadow" : "text-muted-foreground"}`}
+              >
+                Monthly
+              </button>
+              <button
+                onClick={() => annualEligible && setInterval("annual")}
+                disabled={!annualEligible}
+                className={`px-4 py-1.5 text-sm rounded flex items-center gap-1.5 ${
+                  effectiveInterval === "annual" ? "bg-background shadow" : "text-muted-foreground"
+                } ${!annualEligible ? "opacity-50 cursor-not-allowed" : ""}`}
+              >
+                Annual
+                <Badge variant="secondary" className="text-[10px] px-1.5 py-0">2 mo free</Badge>
+              </button>
+            </div>
           </div>
+
+          {currency === "inr" && !annualEligible && (
+            <Alert className="mt-4 text-left max-w-2xl mx-auto">
+              <CalendarClock className="h-4 w-4" />
+              <AlertTitle>Annual rebate unavailable right now</AlertTitle>
+              <AlertDescription>
+                India's academic session runs <strong>April – March</strong>. The
+                &ldquo;pay-for-10, get-12&rdquo; annual rebate is only offered to
+                subscribers who join <strong>on or before April</strong>. You can
+                subscribe monthly today and switch to the annual plan in April when
+                the next session begins.
+              </AlertDescription>
+            </Alert>
+          )}
+          {effectiveInterval === "annual" && (
+            <p className="text-xs text-muted-foreground mt-3">
+              Annual plans are billed as <strong>10 × monthly price</strong> once a year — 2 months free.
+            </p>
+          )}
         </div>
 
         {isActive && currentPlan && (
@@ -104,7 +183,9 @@ function PricingPage() {
         {/* Plans grid */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
           {PLANS.map((p) => {
-            const price = p.prices.find((x) => x.currency === currency)!;
+            const monthly = p.prices.find((x) => x.currency === currency && (x.interval ?? "monthly") === "monthly")!;
+            const price =
+              p.prices.find((x) => x.currency === currency && (x.interval ?? "monthly") === effectiveInterval) ?? monthly;
             const isCurrent = currentPlan?.id === p.id && isActive;
             const isUpgrade = currentPlan && currentPlan.rank < p.rank;
             const isDowngrade = currentPlan && currentPlan.rank > p.rank;
@@ -115,6 +196,11 @@ function PricingPage() {
                   <CardTitle className="text-base">{p.name}</CardTitle>
                   <CardDescription className="text-xs">{p.tagline}</CardDescription>
                   <div className="text-2xl font-bold pt-2">{price.display}</div>
+                  {effectiveInterval === "annual" && (
+                    <p className="text-[11px] text-muted-foreground">
+                      vs {monthly.display} × 12 — saves 2 months
+                    </p>
+                  )}
                 </CardHeader>
                 <CardContent className="flex-1 flex flex-col gap-4">
                   <ul className="space-y-1.5 text-xs">
@@ -147,8 +233,8 @@ function PricingPage() {
                         {isUpgrade ? "Upgrade" : isDowngrade ? "Downgrade" : "Switch"} via portal
                       </Button>
                     ) : (
-                      <Button className="w-full" onClick={() => setCheckoutPriceId(price.priceId)}>
-                        Subscribe
+                      <Button className="w-full" onClick={() => startCheckout(p)}>
+                        Review &amp; subscribe
                       </Button>
                     )}
                   </div>
@@ -249,10 +335,100 @@ function PricingPage() {
                 Consulting, teacher training, board audits, custom reports, and on-site visits are
                 billed separately from any subscription.
               </p>
+              <p className="text-muted-foreground">
+                <strong>Annual rebate:</strong> Annual plans are billed at 10× the monthly price
+                (2 months free). In India, the academic session runs April–March; the rebate is
+                only available to subscribers who join on or before April. Subscribers starting
+                May or later pay full annual or remain monthly.
+              </p>
             </div>
           </div>
         </section>
       </div>
+
+      {/* Pre-checkout: limitations acknowledgement */}
+      <Dialog open={!!pending} onOpenChange={(o) => !o && setPending(null)}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-amber-500" />
+              Before you subscribe — please review the limits
+            </DialogTitle>
+            <DialogDescription>
+              {pending?.plan.name} · <strong>{pending?.priceDisplay}</strong>
+              {pending?.interval === "annual" && " · billed yearly (2 months free)"}
+            </DialogDescription>
+          </DialogHeader>
+
+          {pending && (
+            <div className="space-y-4">
+              <div>
+                <h4 className="text-sm font-semibold mb-2">What's included &amp; restricted</h4>
+                <ul className="space-y-1.5 text-sm">
+                  {pending.plan.restrictions.map((r) => {
+                    const negative = /^no\b/i.test(r);
+                    return (
+                      <li key={r} className="flex items-start gap-2">
+                        {negative ? (
+                          <X className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                        ) : (
+                          <Check className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                        )}
+                        <span className={negative ? "text-muted-foreground" : ""}>{r}</span>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+
+              <div className="rounded-md border bg-muted/40 p-3 text-xs space-y-1.5 text-muted-foreground">
+                <p>
+                  <strong className="text-foreground">AI credits</strong> are consumed by action
+                  (e.g. annual calendar = 50, curriculum plan = 25, lesson plan = 5). Exceeding your
+                  monthly quota requires a top-up add-on.
+                </p>
+                <p>
+                  <strong className="text-foreground">Exports, seats, storage and campuses</strong>{" "}
+                  are hard-capped — additional capacity requires upgrading or buying an add-on.
+                </p>
+                <p>
+                  <strong className="text-foreground">Consulting, training, audits, custom
+                  development and on-site visits</strong> are NOT included and billed separately.
+                </p>
+                {pending.interval === "annual" && (
+                  <p>
+                    <strong className="text-foreground">Annual billing</strong> is non-refundable
+                    after the cooling-off period. You may cancel renewal anytime from the billing
+                    portal; access continues until the period end.
+                  </p>
+                )}
+              </div>
+
+              <label className="flex items-start gap-2 cursor-pointer select-none rounded-md border p-3 hover:bg-muted/40">
+                <Checkbox
+                  checked={acknowledged}
+                  onCheckedChange={(v) => setAcknowledged(v === true)}
+                  className="mt-0.5"
+                />
+                <span className="text-sm">
+                  I have read and understood the plan limits, the AI credit policy, and that
+                  consulting / training / custom work are billed separately. I will not raise a
+                  refund claim citing lack of disclosure of these limitations.
+                </span>
+              </label>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPending(null)}>
+              Cancel
+            </Button>
+            <Button onClick={confirmCheckout} disabled={!acknowledged}>
+              Agree &amp; continue to payment
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={!!checkoutPriceId} onOpenChange={(o) => !o && setCheckoutPriceId(null)}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-0">
