@@ -8,6 +8,8 @@ import {
   generateSubjectCurriculum,
   recalculateSchedule,
   getYearArtifacts,
+  listAiRunsForYear,
+  getAiCreditBalance,
 } from "@/lib/ai-generation.functions";
 import { exportYearPdf, exportYearDocx } from "@/lib/exports.functions";
 import { AppShell } from "@/components/AppShell";
@@ -83,6 +85,21 @@ function ResultsPage() {
     queryKey: ["year-artifacts", yearId],
     queryFn: () => fetchArtifacts({ data: { year_id: yearId } }),
   });
+  const fetchRuns = useServerFn(listAiRunsForYear);
+  const runs = useQuery({
+    queryKey: ["year-ai-runs", yearId],
+    queryFn: () => fetchRuns({ data: { year_id: yearId } }),
+  });
+  const fetchBalance = useServerFn(getAiCreditBalance);
+  const balance = useQuery({
+    queryKey: ["ai-credit-balance"],
+    queryFn: () => fetchBalance(),
+  });
+  const invalidateRunBits = () => {
+    qc.invalidateQueries({ queryKey: ["year-artifacts", yearId] });
+    qc.invalidateQueries({ queryKey: ["year-ai-runs", yearId] });
+    qc.invalidateQueries({ queryKey: ["ai-credit-balance"] });
+  };
 
   const genCalFn = useServerFn(generateAnnualCalendar);
   const genSubFn = useServerFn(generateSubjectCurriculum);
@@ -95,7 +112,7 @@ function ResultsPage() {
     onSuccess: (r) => {
       if (handleAiError(r)) return;
       toast.success("Annual calendar generated");
-      qc.invalidateQueries({ queryKey: ["year-artifacts", yearId] });
+      invalidateRunBits();
     },
     onError: (e: any) => toast.error(e?.message ?? "Failed"),
   });
@@ -106,7 +123,7 @@ function ResultsPage() {
     onSuccess: (r) => {
       if (handleAiError(r)) return;
       toast.success("Curriculum generated");
-      qc.invalidateQueries({ queryKey: ["year-artifacts", yearId] });
+      invalidateRunBits();
     },
     onError: (e: any) => toast.error(e?.message ?? "Failed"),
   });
@@ -120,7 +137,7 @@ function ResultsPage() {
       toast.success("Schedule recalibrated");
       setRecalcOpen(false);
       setDisruption("");
-      qc.invalidateQueries({ queryKey: ["year-artifacts", yearId] });
+      invalidateRunBits();
     },
     onError: (e: any) => toast.error(e?.message ?? "Failed"),
   });
@@ -233,6 +250,28 @@ function ResultsPage() {
       </div>
 
       <Card className="mb-6">
+        <CardHeader className="pb-2 flex flex-row items-center justify-between gap-2">
+          <div>
+            <CardTitle className="text-base">AI credit balance</CardTitle>
+            <CardDescription>Credits are reserved when you click Generate and refunded automatically if the AI run fails.</CardDescription>
+          </div>
+          <Button size="sm" variant="outline" asChild><Link to="/pricing">Top up</Link></Button>
+        </CardHeader>
+        <CardContent>
+          {balance.isLoading || !balance.data ? (
+            <div className="text-sm text-muted-foreground">Loading balance…</div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
+              <div><div className="text-2xl font-bold">{balance.data.total_remaining}</div><div className="text-xs text-muted-foreground">Total remaining</div></div>
+              <div><div className="text-2xl font-bold">{balance.data.monthly_remaining}</div><div className="text-xs text-muted-foreground">Plan quota left</div></div>
+              <div><div className="text-2xl font-bold">{balance.data.grant_remaining}</div><div className="text-xs text-muted-foreground">Top-up credits</div></div>
+              <div><div className="text-2xl font-bold">{balance.data.monthly_used}</div><div className="text-xs text-muted-foreground">Used this month</div></div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card className="mb-6">
         <CardHeader><CardTitle>Capacity breakdown</CardTitle>
           <CardDescription>How {capacity.c_total} calendar days split across the year.</CardDescription></CardHeader>
         <CardContent>
@@ -342,6 +381,50 @@ function ResultsPage() {
           ))}
         </div>
       )}
+
+      <Card className="mt-6">
+        <CardHeader>
+          <CardTitle className="text-base">AI generation history</CardTitle>
+          <CardDescription>Every annual calendar, subject curriculum and recalculation run for this year — with status, credits, and any errors returned by the model.</CardDescription>
+        </CardHeader>
+        <CardContent className="overflow-x-auto">
+          {runs.isLoading ? (
+            <div className="text-sm text-muted-foreground">Loading…</div>
+          ) : (runs.data ?? []).length === 0 ? (
+            <div className="text-sm text-muted-foreground">No AI runs yet. Generate a calendar or curriculum to see history here.</div>
+          ) : (
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b text-left text-muted-foreground">
+                  <th className="py-2 pr-3">When</th>
+                  <th className="py-2 pr-3">Action</th>
+                  <th className="py-2 pr-3">Status</th>
+                  <th className="py-2 pr-3 text-right">Credits</th>
+                  <th className="py-2 pr-3">Details</th>
+                </tr>
+              </thead>
+              <tbody>
+                {(runs.data ?? []).map((r: any) => (
+                  <tr key={r.id} className="border-b align-top">
+                    <td className="py-2 pr-3 text-xs text-muted-foreground whitespace-nowrap">{new Date(r.created_at).toLocaleString()}</td>
+                    <td className="py-2 pr-3 text-xs">{String(r.action).replaceAll("_", " ")}</td>
+                    <td className="py-2 pr-3">
+                      <Badge variant={r.status === "success" ? "default" : "destructive"} className="text-[10px]">{r.status}</Badge>
+                    </td>
+                    <td className="py-2 pr-3 text-right">{r.credits_spent}</td>
+                    <td className="py-2 pr-3 text-xs text-muted-foreground">
+                      {r.error ? <span className="text-destructive">{r.error}</span>
+                        : r.details && Object.keys(r.details).length > 0
+                          ? Object.entries(r.details).map(([k, v]) => `${k}: ${v}`).join(" · ")
+                          : r.lovable_run_id ? <span className="font-mono">{String(r.lovable_run_id).slice(0, 12)}…</span> : "—"}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </CardContent>
+      </Card>
 
       <div className="mt-6 flex gap-2">
         <Button variant="outline" asChild><Link to="/dashboard">Back to dashboard</Link></Button>

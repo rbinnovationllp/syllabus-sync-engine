@@ -142,6 +142,15 @@ async function logRun(
   });
 }
 
+async function refundCredits(supabaseAdmin: any, userId: string, amount: number) {
+  if (!amount || amount <= 0) return;
+  await supabaseAdmin.rpc("refund_ai_credits", {
+    _user_id: userId,
+    _amount: amount,
+    _check_env: "live",
+  });
+}
+
 // ---------- Server fns ----------
 const yearInput = z.object({ year_id: z.string().uuid() });
 
@@ -170,6 +179,7 @@ export const generateAnnualCalendar = createServerFn({ method: "POST" })
       ctx = await loadContext(supabaseAdmin, userId, data.year_id);
     } catch (e: any) {
       await logRun(supabaseAdmin, { userId, yearId: data.year_id, action: "generate_annual_calendar", creditsSpent: cost, status: "error", error: e.message });
+      await refundCredits(supabaseAdmin, userId, cost);
       return { error: "LOAD_FAILED" as const, message: e.message };
     }
 
@@ -198,6 +208,7 @@ Build a 12-month plan covering ${ctx.year.start_date} → ${ctx.year.end_date}.`
       runId = r.runId;
     } catch (e: any) {
       await logRun(supabaseAdmin, { userId, yearId: data.year_id, action: "generate_annual_calendar", creditsSpent: cost, status: "error", error: e.message, runId });
+      await refundCredits(supabaseAdmin, userId, cost);
       return { error: "AI_FAILED" as const, message: e.message };
     }
 
@@ -239,6 +250,7 @@ export const generateSubjectCurriculum = createServerFn({ method: "POST" })
       ctx = await loadContext(supabaseAdmin, userId, data.year_id);
     } catch (e: any) {
       await logRun(supabaseAdmin, { userId, yearId: data.year_id, action: "generate_subject_curriculum", creditsSpent: cost, status: "error", error: e.message });
+      await refundCredits(supabaseAdmin, userId, cost);
       return { error: "LOAD_FAILED" as const, message: e.message };
     }
     const gs = ctx.gradeSubjects.find((g: any) => String(g.grade) === data.grade && g.subject.toLowerCase() === data.subject.toLowerCase());
@@ -266,6 +278,7 @@ Year window: ${ctx.year.start_date} → ${ctx.year.end_date}.`;
       output = r.output; runId = r.runId;
     } catch (e: any) {
       await logRun(supabaseAdmin, { userId, yearId: data.year_id, action: "generate_subject_curriculum", creditsSpent: cost, status: "error", error: e.message, runId });
+      await refundCredits(supabaseAdmin, userId, cost);
       return { error: "AI_FAILED" as const, message: e.message };
     }
 
@@ -323,6 +336,7 @@ Output a revised month-by-month plan covering ${ctx.year.start_date} → ${ctx.y
       output = r.output; runId = r.runId;
     } catch (e: any) {
       await logRun(supabaseAdmin, { userId, yearId: data.year_id, action: "recalculate_schedule", creditsSpent: cost, status: "error", error: e.message, runId });
+      await refundCredits(supabaseAdmin, userId, cost);
       return { error: "AI_FAILED" as const, message: e.message };
     }
 
@@ -350,5 +364,41 @@ export const getYearArtifacts = createServerFn({ method: "POST" })
       calendar: calendar.data ?? null,
       curricula: curricula.data ?? [],
       hasSubscription: (await requireActiveSubscription(supabase, userId)).ok,
+    };
+  });
+
+export const listAiRunsForYear = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) => yearInput.parse(i))
+  .handler(async ({ data, context }) => {
+    const { supabase } = context;
+    const { data: rows, error } = await supabase
+      .from("ai_runs")
+      .select("id, action, status, credits_spent, error, lovable_run_id, details, created_at")
+      .eq("year_id", data.year_id)
+      .order("created_at", { ascending: false })
+      .limit(50);
+    if (error) throw new Error(error.message);
+    return rows ?? [];
+  });
+
+export const getAiCreditBalance = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { userId } = context;
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const quota = await getMonthlyQuota(supabaseAdmin, userId);
+    const { data, error } = await supabaseAdmin.rpc("get_ai_credit_balance", {
+      _user_id: userId,
+      _monthly_quota: quota,
+      _check_env: "live",
+    });
+    if (error) throw new Error(error.message);
+    return data as {
+      monthly_quota: number;
+      monthly_used: number;
+      monthly_remaining: number;
+      grant_remaining: number;
+      total_remaining: number;
     };
   });
