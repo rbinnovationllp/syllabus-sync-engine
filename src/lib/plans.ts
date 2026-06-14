@@ -10,12 +10,31 @@ export type TierId =
   | "enterprise_global_access";
 
 export type Currency = "usd" | "inr";
+export type BillingInterval = "monthly" | "annual";
 
 export interface PlanPrice {
   priceId: string;
   amount: number;
   currency: Currency;
   display: string;
+  interval?: BillingInterval;
+}
+
+/**
+ * Annual rebate eligibility — pay for 10 months, get 12.
+ *
+ * Rule (per product spec): the rebate aligns with the country's academic
+ * session. India's session runs April → March, so the 2-months-free offer
+ * applies ONLY when the subscriber starts on or before April. Subscribers
+ * who join from May onward pay full annual (12×) — no rebate.
+ *
+ * For non-India / USD customers we treat any month as eligible (global
+ * sessions vary; honoring annual rebate year-round keeps the offer simple).
+ */
+export function annualRebateEligible(currency: Currency, now: Date = new Date()): boolean {
+  if (currency !== "inr") return true;
+  // JS months are 0-indexed: Jan=0 ... Apr=3.
+  return now.getMonth() <= 3;
 }
 
 /** Hard per-plan limits enforced server-side. */
