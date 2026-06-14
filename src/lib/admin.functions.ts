@@ -44,6 +44,23 @@ async function assertAdmin(context: { supabase: any; userId: string }) {
   return { roles, isSuperAdmin: roles.includes("super_admin") };
 }
 
+async function logAdminAction(
+  supabaseAdmin: any,
+  actor: { id: string; email?: string | null },
+  action: string,
+  target: { type?: string; id?: string } = {},
+  details: Record<string, unknown> = {},
+) {
+  await supabaseAdmin.from("admin_audit_log").insert({
+    actor_id: actor.id,
+    actor_email: actor.email ?? null,
+    action,
+    target_type: target.type ?? null,
+    target_id: target.id ?? null,
+    details,
+  });
+}
+
 export const getAdminOverview = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
@@ -97,6 +114,13 @@ export const updateLeadStage = createServerFn({ method: "POST" })
     if (data.notes !== undefined) update.notes = data.notes;
     const { error } = await supabaseAdmin.from("leads").update(update as any).eq("id", data.id);
     if (error) throw new Error(error.message);
+    await logAdminAction(
+      supabaseAdmin,
+      { id: context.userId, email: (context.claims as any)?.email },
+      "lead.stage_changed",
+      { type: "lead", id: data.id },
+      { stage: data.stage },
+    );
     return { ok: true };
   });
 
@@ -135,6 +159,13 @@ export const promoteToAdmin = createServerFn({ method: "POST" })
       .select();
     if (insErr && !insErr.message.includes("duplicate")) throw new Error(insErr.message);
 
+    await logAdminAction(
+      supabaseAdmin,
+      { id: context.userId, email: (context.claims as any)?.email },
+      "admin.promoted",
+      { type: "user", id: target.id },
+      { email: data.email, role: data.role },
+    );
     return { ok: true, user_id: target.id };
   });
 
@@ -155,7 +186,28 @@ export const revokeAdmin = createServerFn({ method: "POST" })
       .eq("user_id", data.user_id)
       .eq("role", "admin");
     if (error) throw new Error(error.message);
+    await logAdminAction(
+      supabaseAdmin,
+      { id: context.userId, email: (context.claims as any)?.email },
+      "admin.revoked",
+      { type: "user", id: data.user_id },
+    );
     return { ok: true };
+  });
+
+export const listAuditLog = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { isSuperAdmin } = await assertAdmin(context);
+    if (!isSuperAdmin) throw new Error("Forbidden");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data, error } = await supabaseAdmin
+      .from("admin_audit_log")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(200);
+    if (error) throw new Error(error.message);
+    return data ?? [];
   });
 
 export const listAdmins = createServerFn({ method: "GET" })

@@ -80,6 +80,39 @@ export type Database = {
           },
         ]
       }
+      admin_audit_log: {
+        Row: {
+          action: string
+          actor_email: string | null
+          actor_id: string | null
+          created_at: string
+          details: Json
+          id: string
+          target_id: string | null
+          target_type: string | null
+        }
+        Insert: {
+          action: string
+          actor_email?: string | null
+          actor_id?: string | null
+          created_at?: string
+          details?: Json
+          id?: string
+          target_id?: string | null
+          target_type?: string | null
+        }
+        Update: {
+          action?: string
+          actor_email?: string | null
+          actor_id?: string | null
+          created_at?: string
+          details?: Json
+          id?: string
+          target_id?: string | null
+          target_type?: string | null
+        }
+        Relationships: []
+      }
       ai_credit_grants: {
         Row: {
           created_at: string
@@ -115,6 +148,91 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      ai_runs: {
+        Row: {
+          action: string
+          created_at: string
+          credits_spent: number
+          details: Json
+          error: string | null
+          id: string
+          lovable_run_id: string | null
+          status: string
+          user_id: string
+          year_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          credits_spent?: number
+          details?: Json
+          error?: string | null
+          id?: string
+          lovable_run_id?: string | null
+          status?: string
+          user_id: string
+          year_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          credits_spent?: number
+          details?: Json
+          error?: string | null
+          id?: string
+          lovable_run_id?: string | null
+          status?: string
+          user_id?: string
+          year_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_runs_year_id_fkey"
+            columns: ["year_id"]
+            isOneToOne: false
+            referencedRelation: "academic_years"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      annual_calendars: {
+        Row: {
+          created_at: string
+          id: string
+          meta: Json
+          plan: Json
+          updated_at: string
+          user_id: string
+          year_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          meta?: Json
+          plan?: Json
+          updated_at?: string
+          user_id: string
+          year_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          meta?: Json
+          plan?: Json
+          updated_at?: string
+          user_id?: string
+          year_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "annual_calendars_year_id_fkey"
+            columns: ["year_id"]
+            isOneToOne: true
+            referencedRelation: "academic_years"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       capacity_results: {
         Row: {
@@ -640,6 +758,50 @@ export type Database = {
             columns: ["org_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subject_curricula: {
+        Row: {
+          chapters: Json
+          created_at: string
+          grade: string
+          id: string
+          meta: Json
+          subject: string
+          updated_at: string
+          user_id: string
+          year_id: string
+        }
+        Insert: {
+          chapters?: Json
+          created_at?: string
+          grade: string
+          id?: string
+          meta?: Json
+          subject: string
+          updated_at?: string
+          user_id: string
+          year_id: string
+        }
+        Update: {
+          chapters?: Json
+          created_at?: string
+          grade?: string
+          id?: string
+          meta?: Json
+          subject?: string
+          updated_at?: string
+          user_id?: string
+          year_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subject_curricula_year_id_fkey"
+            columns: ["year_id"]
+            isOneToOne: false
+            referencedRelation: "academic_years"
             referencedColumns: ["id"]
           },
         ]
