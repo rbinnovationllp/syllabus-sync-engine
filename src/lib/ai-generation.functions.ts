@@ -352,3 +352,39 @@ export const getYearArtifacts = createServerFn({ method: "POST" })
       hasSubscription: (await requireActiveSubscription(supabase, userId)).ok,
     };
   });
+
+export const listAiRunsForYear = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) => yearInput.parse(i))
+  .handler(async ({ data, context }) => {
+    const { supabase } = context;
+    const { data: rows, error } = await supabase
+      .from("ai_runs")
+      .select("id, action, status, credits_spent, error, lovable_run_id, details, created_at")
+      .eq("year_id", data.year_id)
+      .order("created_at", { ascending: false })
+      .limit(50);
+    if (error) throw new Error(error.message);
+    return rows ?? [];
+  });
+
+export const getAiCreditBalance = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { userId } = context;
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const quota = await getMonthlyQuota(supabaseAdmin, userId);
+    const { data, error } = await supabaseAdmin.rpc("get_ai_credit_balance", {
+      _user_id: userId,
+      _monthly_quota: quota,
+      _check_env: "live",
+    });
+    if (error) throw new Error(error.message);
+    return data as {
+      monthly_quota: number;
+      monthly_used: number;
+      monthly_remaining: number;
+      grant_remaining: number;
+      total_remaining: number;
+    };
+  });
