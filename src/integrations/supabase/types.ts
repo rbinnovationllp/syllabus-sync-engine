@@ -1030,6 +1030,10 @@ export type Database = {
         }
         Returns: number
       }
+      get_ai_credit_balance: {
+        Args: { _check_env?: string; _monthly_quota: number; _user_id: string }
+        Returns: Json
+      }
       has_active_subscription: {
         Args: { check_env?: string; user_uuid: string }
         Returns: boolean
@@ -1043,6 +1047,10 @@ export type Database = {
       }
       is_org_member: { Args: { _org_id: string }; Returns: boolean }
       record_export: { Args: { _user_id: string }; Returns: number }
+      refund_ai_credits: {
+        Args: { _amount: number; _check_env?: string; _user_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "admin" | "teacher" | "super_admin" | "coordinator" | "viewer"
