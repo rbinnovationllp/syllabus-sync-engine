@@ -1,82 +1,86 @@
-# Plan — Anti-abuse + New Pricing + Seats
+# Build plan: AI core + exports + admin audit
 
-## 1. Pricing rewrite (`src/lib/plans.ts`)
+## 1. Database (one migration)
 
-Update all 5 tiers + add-ons. Keep USD and INR side-by-side.
+New tables — all RLS-scoped to owner; `service_role` full access.
 
-| Plan | INR/mo | USD/mo | Users | AI credits | Storage |
-|---|---|---|---|---|---|
-| Retail Single | ₹499 | $9 | 1 | 500 | 1 GB |
-| Primary | ₹1,999 | $29 | 6 | 2,000 | 10 GB |
-| Middle | ₹2,999 | $39 | 10 | 3,000 | 20 GB |
-| High School | ₹4,999 | $59 | 18 | 5,000 | 50 GB |
-| Enterprise | ₹14,999 | $179 | 60 | 20,000 | 200 GB |
+- `annual_calendars` — `year_id`, `user_id`, `plan` (jsonb: months → topics/assessments/events), `meta` (jsonb), generated/updated_at.
+- `subject_curricula` — `year_id`, `user_id`, `grade`, `subject`, `chapters` (jsonb: ordered list with week_no, periods, difficulty, notes), `meta` (jsonb).
+- `ai_runs` — `user_id`, `action` (enum: `generate_annual_calendar` | `generate_subject_curriculum` | `recalculate_schedule`), `year_id`, `credits_spent`, `status`, `error`, `lovable_run_id`, `created_at`. For analytics + debugging.
+- `admin_audit_log` — `actor_id`, `actor_email`, `action` (text), `target_type`, `target_id`, `details` (jsonb), `created_at`. Visible to `super_admin` only.
 
-Annual prices = 10× monthly (2 months free per existing `annualRebateEligible` rule).
+Helper trigger: `audit_admin_action()` not used — we'll log explicitly from `admin.functions.ts` (keeps it simple, no SQL side-effects on RLS-blocked rows).
 
-**Add-ons**
-- `extra_user` — ₹199/mo (~$2.50/mo) — recurring, seat-based quantity (1–500)
-- `extra_campus` — update from ₹5,000 → ₹4,999/mo (~$59/mo)
-- AI credit top-ups unchanged
+## 2. AI gateway helper
 
-**Support tiers** added to each plan: Email / Email 48h / Priority Email / Phone+Email / Dedicated AM.
-**Enterprise capped at 1 campus** (was 2).
+`src/lib/ai-gateway.server.ts` — paste the canonical `createLovableAiGatewayProvider` helper from Lovable AI knowledge. Server-only.
 
-## 2. Stripe products
+## 3. AI generation server functions
 
-Create new `extra_user` product with monthly INR + USD prices (qty 1–500).
-Update existing `extra_campus_monthly_inr` price (₹5,000 → ₹4,999) and other changed prices. Note: Stripe prices are immutable — we create new `price_id`s (e.g. `bundle_high_monthly_inr_v2`) and switch the catalog over. Old subscribers keep their original price until renewal.
+New file `src/lib/ai-generation.functions.ts` — three `createServerFn` handlers:
 
-## 3. AI + export gating
+- `generateAnnualCalendar({ year_id })` — 50 credits
+- `generateSubjectCurriculum({ year_id, grade, subject })` — 25 credits
+- `recalculateSchedule({ year_id, disruption })` — 20 credits
 
-Wrap every server function that costs credits or returns an export blob with a subscription check:
+Each handler:
+1. `requireSupabaseAuth` middleware.
+2. `requireActiveSubscription(supabase, userId)` → if not ok, return `{ error: "PAID_PLAN_REQUIRED" }`.
+3. Load year + capacity + holidays + subjects from DB (admin client).
+4. Call `consume_ai_credits(_user_id, _cost, _monthly_quota, _check_env)` RPC. If returns NULL → return `{ error: "INSUFFICIENT_CREDITS" }`.
+5. Call Lovable AI Gateway via `generateText` with `Output.object({ schema })` — structured JSON output (Zod schema matches table columns).
+6. Persist to `annual_calendars` / `subject_curricula` (upsert on `year_id` (+ grade/subject)).
+7. Insert `ai_runs` row with `lovable_run_id`.
 
-```ts
-const { data: active } = await context.supabase
-  .rpc('has_active_subscription', { user_uuid: context.userId, check_env: env });
-if (!active) return { error: 'PAID_PLAN_REQUIRED' };
-```
+Model: `google/gemini-3-flash-preview` (default). System prompt embeds: never exceed available teaching days, respect difficulty distribution (avoid clustering tough chapters), keep syllabus-completion buffer (30/45/60 days before exams by grade band).
 
-Functions to gate (in `src/lib/onboarding.functions.ts` and anywhere we add export fns):
-- `generateAnnualCalendar`, `generateSubjectCurriculum`, `recalculateSchedule`, `generateLessonPlan`, `generateTeacherTraining`
-- All export endpoints (PDF / DOCX / XLSX)
+## 4. UI wiring
 
-Client-side: in onboarding/results pages, if `useSubscription().isActive === false`, show an "Upgrade to generate" CTA over the action buttons (still let them fill the wizard and preview a sample).
+`src/routes/_authenticated/results.$yearId.tsx`:
+- Three buttons: **Generate Annual Calendar**, **Generate Subject Curriculum** (per row), **Recalculate**.
+- Loading state via `useMutation`. Show error toast for `PAID_PLAN_REQUIRED` → link to `/pricing`; for `INSUFFICIENT_CREDITS` → link to AI top-up.
+- Render persisted calendar (month table) and curriculum (chapter list per grade-subject) below capacity stats.
 
-## 4. DEMO watermark on exports
+## 5. Exports with DEMO watermark
 
-For PDF/DOCX exports generated when user is on a free/expired plan (or for a public sample), stamp every page diagonally:
-> **DEMO — Not Licensed for Production Use**
+`src/lib/exports.functions.ts` — two server fns:
+- `exportYearPdf({ year_id })`
+- `exportYearDocx({ year_id })`
 
-Implementation: in the PDF generator, overlay a 45°-rotated grey 60pt text across each page when `subscription.isActive` is false. (Once gating is in place this only fires for the public sample preview, but it's a belt-and-braces guard.)
+Both:
+1. `requireSupabaseAuth`.
+2. Check `has_active_subscription` — branch `unpaid = true` if false (don't block — watermark instead, per user choice).
+3. Load year + calendar + curricula.
+4. PDF: use `pdf-lib` (Worker-safe, pure JS). Each page rendered with `StandardFonts.Helvetica`; on unpaid, draw `DEMO_WATERMARK_TEXT` rotated 45°, grey 60pt, centred.
+5. DOCX: use `docx` npm package server-side. On unpaid, every page gets a header with watermark text in 48pt grey rotated.
+6. Call `record_export(_user_id)` RPC.
+7. Return `{ filename, base64, mime }`. Client downloads via blob.
 
-## 5. Seats management
+Server route alternative considered; sticking with createServerFn + base64 keeps it simple and same-origin.
 
-**DB migration:** add `extra_seats` integer column to `subscriptions` (incremented by webhook when `extra_user` quantity changes).
+## 6. Admin audit log
 
-**Server fns** (`src/lib/seats.functions.ts`):
-- `listSeatMembers()` — current org members + pending invites
-- `inviteSeatMember({ email, role })` — checks `(planSeats + extra_seats) > currentMembers`; if over, returns `{ needsCheckout: true, addonPriceId }`
-- `removeSeatMember({ userId })`
-- `updateSeatCount({ delta })` — opens Stripe checkout to adjust `extra_user` quantity
+`src/lib/admin.functions.ts`:
+- Add private `logAdminAction(supabaseAdmin, actor, action, details)` helper.
+- Call it from `promoteToAdmin`, `revokeAdmin`, `updateLeadStage`.
+- New `listAuditLog()` server fn — super_admin only.
 
-**UI:** `src/routes/_authenticated/seats.tsx` — table of members with invite/remove, seat counter (e.g. "8 / 10 used"), "Add seat (₹199/mo)" button that opens checkout.
+`src/routes/_authenticated/admin.tsx` — new "Audit log" tab listing 100 most recent entries (actor email, action, target, timestamp).
 
-**Roles:** Principal/Admin, Academic Coordinator, Teacher, Read-Only — stored in `org_members.role` (already exists).
+## 7. Packages
 
-## 6. Pricing page
+`bun add pdf-lib docx ai @ai-sdk/openai-compatible zod` (zod already present).
 
-Update `src/routes/_authenticated/pricing.tsx` to render the new restrictions, storage row, support row, add-ons section (Extra User, Extra Campus, AI top-ups, Paid Services).
+## Out of scope
 
-## Out of scope (not doing this turn)
-- Invite codes (you chose preview-link instead)
-- Actual email invite delivery — we'll generate an invite link the admin can share manually
-- Migrating existing subscribers to new prices (their old prices remain valid in Stripe)
+- Lesson plans, teacher training calendar (PRD items, but bigger AI scope — separate turn).
+- Email delivery of PDF/DOCX.
+- Multi-tenant org-scoped sharing of generated plans.
 
-## File changes
-- Edit: `src/lib/plans.ts`, `src/lib/onboarding.functions.ts`, `src/routes/_authenticated/onboarding.tsx`, `src/routes/_authenticated/results.$yearId.tsx`, `src/routes/_authenticated/pricing.tsx`, `src/components/AppShell.tsx` (nav link)
-- New: `src/lib/seats.functions.ts`, `src/routes/_authenticated/seats.tsx`, `src/lib/watermark.ts`
-- DB migration: `extra_seats` column on `subscriptions`
-- Stripe: new `extra_user` product + revised prices via `payments--batch_create_product`
+## Technical notes
 
-Approve and I'll execute in this order: migration → plans.ts → Stripe products → gating → seats UI → watermark → pricing page.
+- `consume_ai_credits` RPC already exists and handles monthly quota + top-up grants atomically.
+- `has_active_subscription` RPC already exists.
+- Lovable AI gateway returns `X-Lovable-AIG-Run-ID` — stored on `ai_runs` for debugging.
+- All AI prompts include school's board (CBSE / IB / etc.) and language; model is asked to use board-standard terminology.
+- PDF/DOCX generation runs in Workers SSR runtime — `pdf-lib` and `docx` are pure JS and known to work there.
