@@ -29,6 +29,7 @@ export const step2Schema = z.object({
 
 export const gradeSubjectSchema = z.object({
   grade: z.string().min(1),
+  stream: z.string().trim().max(50).optional().default(""),
   subject: z.string().trim().min(1).max(100),
   periods_per_week: z.coerce.number().int().min(1).max(40),
   teacher_name: z.string().trim().max(200).optional().default(""),
