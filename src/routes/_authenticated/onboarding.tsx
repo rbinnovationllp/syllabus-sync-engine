@@ -199,12 +199,20 @@ function OnboardingWizard() {
               </Field>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Field label="Start date" required>
-                  <Input type="date" value={s3.start_date} onChange={(e) => setS3({ ...s3, start_date: e.target.value })} />
+                  <Input type="date" value={s3.start_date} onChange={(e) => {
+                    const start = e.target.value;
+                    const end = start ? sessionEndForStart(start, s1.country, s1.board) : s3.end_date;
+                    setS3({ ...s3, start_date: start, end_date: end, label: sessionLabel(start, end) });
+                  }} />
                 </Field>
-                <Field label="End date" required>
-                  <Input type="date" value={s3.end_date} onChange={(e) => setS3({ ...s3, end_date: e.target.value })} />
+                <Field label="End date (auto from country session)" required>
+                  <Input type="date" value={s3.end_date} onChange={(e) => setS3({ ...s3, end_date: e.target.value, label: sessionLabel(s3.start_date, e.target.value) })} />
                 </Field>
               </div>
+              <p className="text-xs text-muted-foreground -mt-2">
+                End date is auto-filled to match the {s1.country || "selected country"} academic session
+                {" "}(India: April → 31 March). You can override it if your school differs.
+              </p>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 <Field label="Working days/week">
                   <Input type="number" min="1" max="7" value={s3.working_days_per_week} onChange={(e) => setS3({ ...s3, working_days_per_week: Number(e.target.value) })} />
@@ -230,24 +238,63 @@ function OnboardingWizard() {
               </Field>
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <Label>Grade × subject × periods/week</Label>
+                  <Label>Grade × stream × subject × periods/week</Label>
                   <Button type="button" size="sm" variant="outline"
-                    onClick={() => setS3({ ...s3, grade_subjects: [...s3.grade_subjects, { grade: "1", subject: DEFAULT_SUBJECTS[0], periods_per_week: 5, teacher_name: "" }] })}>
-                    <Plus className="h-3 w-3 mr-1" /> Add row
+                    onClick={() => {
+                      const lastGrade = s3.grade_subjects[s3.grade_subjects.length - 1]?.grade ?? "1";
+                      const lastStream = s3.grade_subjects[s3.grade_subjects.length - 1]?.stream ?? "";
+                      const subs = getSubjects(s1.country, s1.board, lastGrade, lastStream);
+                      setS3({ ...s3, grade_subjects: [...s3.grade_subjects, { grade: lastGrade, stream: lastStream, subject: subs[0] ?? "Mathematics", periods_per_week: 5, teacher_name: "" }] });
+                    }}>
+                    <Plus className="h-3 w-3 mr-1" /> Add subject
                   </Button>
                 </div>
+                <p className="text-xs text-muted-foreground mb-2">
+                  Subjects come from the syllabus catalog for <b>{s1.country || "your country"}</b> / <b>{s1.board.toUpperCase()}</b>.
+                  For Grades 11–12, pick a <b>stream</b> first (Science / Commerce / Arts) to filter electives.
+                </p>
                 <div className="space-y-2">
-                  {s3.grade_subjects.map((gs, i) => (
-                    <div key={i} className="grid grid-cols-2 sm:grid-cols-5 gap-2 items-end border p-2 rounded">
-                      <SmallSelect label="Grade" value={gs.grade} onChange={(v) => updateAt(s3.grade_subjects, i, { ...gs, grade: v }, (v2) => setS3({ ...s3, grade_subjects: v2 }))} options={GRADES} />
-                      <SmallInput label="Subject" value={gs.subject} onChange={(v) => updateAt(s3.grade_subjects, i, { ...gs, subject: v }, (v2) => setS3({ ...s3, grade_subjects: v2 }))} />
-                      <SmallInput label="Periods/wk" type="number" value={String(gs.periods_per_week)} onChange={(v) => updateAt(s3.grade_subjects, i, { ...gs, periods_per_week: Number(v) }, (v2) => setS3({ ...s3, grade_subjects: v2 }))} />
-                      <SmallInput label="Teacher" value={gs.teacher_name ?? ""} onChange={(v) => updateAt(s3.grade_subjects, i, { ...gs, teacher_name: v }, (v2) => setS3({ ...s3, grade_subjects: v2 }))} />
-                      <Button type="button" size="sm" variant="ghost" onClick={() => setS3({ ...s3, grade_subjects: s3.grade_subjects.filter((_, j) => j !== i) })}>
-                        <Trash2 className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  ))}
+                  {s3.grade_subjects.map((gs, i) => {
+                    const streams = getStreams(s1.country, s1.board, gs.grade);
+                    const subjects = getSubjects(s1.country, s1.board, gs.grade, gs.stream);
+                    return (
+                      <div key={i} className="grid grid-cols-2 sm:grid-cols-6 gap-2 items-end border p-2 rounded">
+                        <SmallSelect label="Grade" value={gs.grade}
+                          onChange={(v) => {
+                            const newStreams = getStreams(s1.country, s1.board, v);
+                            const newStream = newStreams.length ? (newStreams.find((s) => s.id === gs.stream)?.id ?? newStreams[0].id) : "";
+                            const subs = getSubjects(s1.country, s1.board, v, newStream);
+                            updateAt(s3.grade_subjects, i, { ...gs, grade: v, stream: newStream, subject: subs.includes(gs.subject) ? gs.subject : (subs[0] ?? gs.subject) }, (v2) => setS3({ ...s3, grade_subjects: v2 }));
+                          }} options={GRADES} />
+                        {streams.length > 0 ? (
+                          <div className="space-y-1">
+                            <Label className="text-xs">Stream</Label>
+                            <Select value={gs.stream || streams[0].id}
+                              onValueChange={(v) => {
+                                const subs = getSubjects(s1.country, s1.board, gs.grade, v);
+                                updateAt(s3.grade_subjects, i, { ...gs, stream: v, subject: subs.includes(gs.subject) ? gs.subject : (subs[0] ?? gs.subject) }, (v2) => setS3({ ...s3, grade_subjects: v2 }));
+                              }}>
+                              <SelectTrigger className="h-8 text-sm"><SelectValue /></SelectTrigger>
+                              <SelectContent>{streams.map((s) => <SelectItem key={s.id} value={s.id}>{s.label}</SelectItem>)}</SelectContent>
+                            </Select>
+                          </div>
+                        ) : (
+                          <div className="space-y-1">
+                            <Label className="text-xs text-muted-foreground">Stream</Label>
+                            <div className="h-8 text-xs text-muted-foreground flex items-center px-2 border rounded bg-muted/30">N/A</div>
+                          </div>
+                        )}
+                        <SmallSelect label="Subject" value={gs.subject}
+                          options={subjects}
+                          onChange={(v) => updateAt(s3.grade_subjects, i, { ...gs, subject: v }, (v2) => setS3({ ...s3, grade_subjects: v2 }))} />
+                        <SmallInput label="Periods/wk" type="number" value={String(gs.periods_per_week)} onChange={(v) => updateAt(s3.grade_subjects, i, { ...gs, periods_per_week: Number(v) }, (v2) => setS3({ ...s3, grade_subjects: v2 }))} />
+                        <SmallInput label="Teacher" value={gs.teacher_name ?? ""} onChange={(v) => updateAt(s3.grade_subjects, i, { ...gs, teacher_name: v }, (v2) => setS3({ ...s3, grade_subjects: v2 }))} />
+                        <Button type="button" size="sm" variant="ghost" onClick={() => setS3({ ...s3, grade_subjects: s3.grade_subjects.filter((_, j) => j !== i) })}>
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             </CardContent>
