@@ -23,17 +23,20 @@ export const listMyOrg = createServerFn({ method: "GET" })
       .maybeSingle();
     if (!mem) return null;
     const orgId = mem.org_id;
+    const isAdmin = ["admin", "super_admin"].includes(mem.role as string);
     const [members, invites] = await Promise.all([
       supabase
         .from("org_members")
         .select("user_id, role, created_at, profiles(email, display_name)")
         .eq("org_id", orgId)
         .order("created_at"),
-      supabase
-        .from("invitations")
-        .select("id, email, role, status, expires_at, created_at, token")
-        .eq("org_id", orgId)
-        .order("created_at", { ascending: false }),
+      isAdmin
+        ? supabase
+            .from("invitations")
+            .select("id, email, role, status, expires_at, created_at, token")
+            .eq("org_id", orgId)
+            .order("created_at", { ascending: false })
+        : Promise.resolve({ data: [] as any[] }),
     ]);
     return {
       org: mem.organizations,
@@ -76,6 +79,22 @@ export const revokeInvitation = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => revokeSchema.parse(input))
   .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { data: inv } = await supabase
+      .from("invitations")
+      .select("org_id")
+      .eq("id", data.invitation_id)
+      .maybeSingle();
+    if (!inv) throw new Error("Invitation not found");
+    const { data: caller } = await supabase
+      .from("org_members")
+      .select("role")
+      .eq("org_id", inv.org_id)
+      .eq("user_id", userId)
+      .maybeSingle();
+    if (!caller || !["admin", "super_admin"].includes(caller.role as string)) {
+      throw new Error("Only org admins can revoke invitations");
+    }
     const { error } = await context.supabase
       .from("invitations")
       .update({ status: "revoked" })
