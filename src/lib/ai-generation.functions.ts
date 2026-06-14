@@ -179,6 +179,7 @@ export const generateAnnualCalendar = createServerFn({ method: "POST" })
       ctx = await loadContext(supabaseAdmin, userId, data.year_id);
     } catch (e: any) {
       await logRun(supabaseAdmin, { userId, yearId: data.year_id, action: "generate_annual_calendar", creditsSpent: cost, status: "error", error: e.message });
+      await refundCredits(supabaseAdmin, userId, cost);
       return { error: "LOAD_FAILED" as const, message: e.message };
     }
 
@@ -207,6 +208,7 @@ Build a 12-month plan covering ${ctx.year.start_date} → ${ctx.year.end_date}.`
       runId = r.runId;
     } catch (e: any) {
       await logRun(supabaseAdmin, { userId, yearId: data.year_id, action: "generate_annual_calendar", creditsSpent: cost, status: "error", error: e.message, runId });
+      await refundCredits(supabaseAdmin, userId, cost);
       return { error: "AI_FAILED" as const, message: e.message };
     }
 
@@ -248,6 +250,7 @@ export const generateSubjectCurriculum = createServerFn({ method: "POST" })
       ctx = await loadContext(supabaseAdmin, userId, data.year_id);
     } catch (e: any) {
       await logRun(supabaseAdmin, { userId, yearId: data.year_id, action: "generate_subject_curriculum", creditsSpent: cost, status: "error", error: e.message });
+      await refundCredits(supabaseAdmin, userId, cost);
       return { error: "LOAD_FAILED" as const, message: e.message };
     }
     const gs = ctx.gradeSubjects.find((g: any) => String(g.grade) === data.grade && g.subject.toLowerCase() === data.subject.toLowerCase());
@@ -275,6 +278,7 @@ Year window: ${ctx.year.start_date} → ${ctx.year.end_date}.`;
       output = r.output; runId = r.runId;
     } catch (e: any) {
       await logRun(supabaseAdmin, { userId, yearId: data.year_id, action: "generate_subject_curriculum", creditsSpent: cost, status: "error", error: e.message, runId });
+      await refundCredits(supabaseAdmin, userId, cost);
       return { error: "AI_FAILED" as const, message: e.message };
     }
 
@@ -332,6 +336,7 @@ Output a revised month-by-month plan covering ${ctx.year.start_date} → ${ctx.y
       output = r.output; runId = r.runId;
     } catch (e: any) {
       await logRun(supabaseAdmin, { userId, yearId: data.year_id, action: "recalculate_schedule", creditsSpent: cost, status: "error", error: e.message, runId });
+      await refundCredits(supabaseAdmin, userId, cost);
       return { error: "AI_FAILED" as const, message: e.message };
     }
 
