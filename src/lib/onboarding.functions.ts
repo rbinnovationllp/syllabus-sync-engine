@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { z } from "zod";
 import { fullOnboardingSchema } from "./onboarding-schema";
 import { calculateCapacity } from "./capacity-engine";
 
