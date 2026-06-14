@@ -93,9 +93,9 @@ export const updateLeadStage = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const update: Record<string, unknown> = { stage: data.stage };
+    const update: { stage: string; notes?: string | null } = { stage: data.stage };
     if (data.notes !== undefined) update.notes = data.notes;
-    const { error } = await supabaseAdmin.from("leads").update(update).eq("id", data.id);
+    const { error } = await supabaseAdmin.from("leads").update(update as any).eq("id", data.id);
     if (error) throw new Error(error.message);
     return { ok: true };
   });
