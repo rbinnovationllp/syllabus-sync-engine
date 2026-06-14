@@ -374,6 +374,57 @@ export type Database = {
           },
         ]
       }
+      leads: {
+        Row: {
+          assigned_to: string | null
+          board: string | null
+          country: string | null
+          created_at: string
+          email: string
+          id: string
+          message: string | null
+          name: string
+          notes: string | null
+          phone: string | null
+          school_name: string | null
+          source: string | null
+          stage: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          board?: string | null
+          country?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          message?: string | null
+          name: string
+          notes?: string | null
+          phone?: string | null
+          school_name?: string | null
+          source?: string | null
+          stage?: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string | null
+          board?: string | null
+          country?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          message?: string | null
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          school_name?: string | null
+          source?: string | null
+          stage?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       org_members: {
         Row: {
           created_at: string
@@ -779,7 +830,7 @@ export type Database = {
       record_export: { Args: { _user_id: string }; Returns: number }
     }
     Enums: {
-      app_role: "admin" | "teacher"
+      app_role: "admin" | "teacher" | "super_admin"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -907,7 +958,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "teacher"],
+      app_role: ["admin", "teacher", "super_admin"],
     },
   },
 } as const
