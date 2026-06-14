@@ -114,6 +114,13 @@ export const updateLeadStage = createServerFn({ method: "POST" })
     if (data.notes !== undefined) update.notes = data.notes;
     const { error } = await supabaseAdmin.from("leads").update(update as any).eq("id", data.id);
     if (error) throw new Error(error.message);
+    await logAdminAction(
+      supabaseAdmin,
+      { id: context.userId, email: (context.claims as any)?.email },
+      "lead.stage_changed",
+      { type: "lead", id: data.id },
+      { stage: data.stage },
+    );
     return { ok: true };
   });
 
