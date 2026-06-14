@@ -96,7 +96,7 @@ function ResultsPage() {
     queryFn: () => fetchBalance(),
   });
   const invalidateRunBits = () => {
-    qc.invalidateQueries({ queryKey: ["year-artifacts", yearId] });
+    invalidateRunBits();
     qc.invalidateQueries({ queryKey: ["year-ai-runs", yearId] });
     qc.invalidateQueries({ queryKey: ["ai-credit-balance"] });
   };
@@ -112,7 +112,7 @@ function ResultsPage() {
     onSuccess: (r) => {
       if (handleAiError(r)) return;
       toast.success("Annual calendar generated");
-      qc.invalidateQueries({ queryKey: ["year-artifacts", yearId] });
+      invalidateRunBits();
     },
     onError: (e: any) => toast.error(e?.message ?? "Failed"),
   });
@@ -123,7 +123,7 @@ function ResultsPage() {
     onSuccess: (r) => {
       if (handleAiError(r)) return;
       toast.success("Curriculum generated");
-      qc.invalidateQueries({ queryKey: ["year-artifacts", yearId] });
+      invalidateRunBits();
     },
     onError: (e: any) => toast.error(e?.message ?? "Failed"),
   });
@@ -137,7 +137,7 @@ function ResultsPage() {
       toast.success("Schedule recalibrated");
       setRecalcOpen(false);
       setDisruption("");
-      qc.invalidateQueries({ queryKey: ["year-artifacts", yearId] });
+      invalidateRunBits();
     },
     onError: (e: any) => toast.error(e?.message ?? "Failed"),
   });
