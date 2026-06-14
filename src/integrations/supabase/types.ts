@@ -80,6 +80,42 @@ export type Database = {
           },
         ]
       }
+      ai_credit_grants: {
+        Row: {
+          created_at: string
+          credits_granted: number
+          credits_remaining: number
+          environment: string
+          id: string
+          stripe_payment_intent_id: string | null
+          stripe_session_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          credits_granted: number
+          credits_remaining: number
+          environment?: string
+          id?: string
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          credits_granted?: number
+          credits_remaining?: number
+          environment?: string
+          id?: string
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       capacity_results: {
         Row: {
           academic_year_id: string
@@ -388,6 +424,36 @@ export type Database = {
         }
         Relationships: []
       }
+      plan_usage: {
+        Row: {
+          ai_credits_used: number
+          created_at: string
+          exports_used: number
+          id: string
+          period_month: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          ai_credits_used?: number
+          created_at?: string
+          exports_used?: number
+          id?: string
+          period_month: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          ai_credits_used?: number
+          created_at?: string
+          exports_used?: number
+          id?: string
+          period_month?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -686,6 +752,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      consume_ai_credits: {
+        Args: {
+          _check_env?: string
+          _cost: number
+          _monthly_quota: number
+          _user_id: string
+        }
+        Returns: number
+      }
       has_active_subscription: {
         Args: { check_env?: string; user_uuid: string }
         Returns: boolean
@@ -698,6 +773,7 @@ export type Database = {
         Returns: boolean
       }
       is_org_member: { Args: { _org_id: string }; Returns: boolean }
+      record_export: { Args: { _user_id: string }; Returns: number }
     }
     Enums: {
       app_role: "admin" | "teacher"
