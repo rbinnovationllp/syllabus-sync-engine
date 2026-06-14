@@ -34,6 +34,9 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
               </Button>
             )}
             <Button asChild variant="ghost" size="sm">
+              <Link to="/seats"><Users className="h-4 w-4 mr-1" /> Seats</Link>
+            </Button>
+            <Button asChild variant="ghost" size="sm">
               <Link to="/pricing"><CreditCard className="h-4 w-4 mr-1" /> Plans</Link>
             </Button>
             <Button variant="ghost" size="sm" onClick={handleSignOut}>
