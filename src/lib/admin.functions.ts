@@ -44,6 +44,23 @@ async function assertAdmin(context: { supabase: any; userId: string }) {
   return { roles, isSuperAdmin: roles.includes("super_admin") };
 }
 
+async function logAdminAction(
+  supabaseAdmin: any,
+  actor: { id: string; email?: string | null },
+  action: string,
+  target: { type?: string; id?: string } = {},
+  details: Record<string, unknown> = {},
+) {
+  await supabaseAdmin.from("admin_audit_log").insert({
+    actor_id: actor.id,
+    actor_email: actor.email ?? null,
+    action,
+    target_type: target.type ?? null,
+    target_id: target.id ?? null,
+    details,
+  });
+}
+
 export const getAdminOverview = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
