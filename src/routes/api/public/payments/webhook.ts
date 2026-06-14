@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
-import { type StripeEnv, verifyWebhook } from "@/lib/stripe.server";
+import { type StripeEnv, verifyWebhook, createStripeClient } from "@/lib/stripe.server";
+import { creditsForAddOnPrice } from "@/lib/plans";
+
 
 let _supabase: ReturnType<typeof createClient> | null = null;
 function getSupabase() {
@@ -71,6 +73,37 @@ async function handleSubscriptionDeleted(subscription: any, env: StripeEnv) {
     .eq("environment", env);
 }
 
+async function handleCheckoutCompleted(session: any, env: StripeEnv) {
+  // One-time AI credit pack purchases
+  if (session.mode !== "payment") return;
+  const userId = session.metadata?.userId;
+  if (!userId) return;
+
+  // Look up line items to find which credit pack was bought
+  const stripe = createStripeClient(env);
+  const lineItems = await stripe.checkout.sessions.listLineItems(session.id, { limit: 10 });
+  for (const li of lineItems.data) {
+    const priceId = (li.price as any)?.lookup_key
+      || (li.price as any)?.metadata?.lovable_external_id
+      || li.price?.id;
+    const credits = creditsForAddOnPrice(priceId);
+    if (!credits) continue;
+    const qty = li.quantity ?? 1;
+    const total = credits * qty;
+    await getSupabase().from("ai_credit_grants").upsert(
+      {
+        user_id: userId,
+        stripe_session_id: session.id,
+        stripe_payment_intent_id: session.payment_intent ?? null,
+        credits_granted: total,
+        credits_remaining: total,
+        environment: env,
+      },
+      { onConflict: "stripe_session_id" },
+    );
+  }
+}
+
 async function handleWebhook(req: Request, env: StripeEnv) {
   const event = await verifyWebhook(req, env);
   switch (event.type) {
@@ -80,10 +113,13 @@ async function handleWebhook(req: Request, env: StripeEnv) {
       await handleSubscriptionUpdated(event.data.object, env); break;
     case "customer.subscription.deleted":
       await handleSubscriptionDeleted(event.data.object, env); break;
+    case "checkout.session.completed":
+      await handleCheckoutCompleted(event.data.object, env); break;
     default:
       console.log("Unhandled event:", event.type);
   }
 }
+
 
 export const Route = createFileRoute("/api/public/payments/webhook")({
   server: {
