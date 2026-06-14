@@ -159,6 +159,13 @@ export const promoteToAdmin = createServerFn({ method: "POST" })
       .select();
     if (insErr && !insErr.message.includes("duplicate")) throw new Error(insErr.message);
 
+    await logAdminAction(
+      supabaseAdmin,
+      { id: context.userId, email: (context.claims as any)?.email },
+      "admin.promoted",
+      { type: "user", id: target.id },
+      { email: data.email, role: data.role },
+    );
     return { ok: true, user_id: target.id };
   });
 
