@@ -186,7 +186,28 @@ export const revokeAdmin = createServerFn({ method: "POST" })
       .eq("user_id", data.user_id)
       .eq("role", "admin");
     if (error) throw new Error(error.message);
+    await logAdminAction(
+      supabaseAdmin,
+      { id: context.userId, email: (context.claims as any)?.email },
+      "admin.revoked",
+      { type: "user", id: data.user_id },
+    );
     return { ok: true };
+  });
+
+export const listAuditLog = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { isSuperAdmin } = await assertAdmin(context);
+    if (!isSuperAdmin) throw new Error("Forbidden");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data, error } = await supabaseAdmin
+      .from("admin_audit_log")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(200);
+    if (error) throw new Error(error.message);
+    return data ?? [];
   });
 
 export const listAdmins = createServerFn({ method: "GET" })
