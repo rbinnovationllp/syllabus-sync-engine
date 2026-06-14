@@ -96,7 +96,7 @@ function ResultsPage() {
     queryFn: () => fetchBalance(),
   });
   const invalidateRunBits = () => {
-    invalidateRunBits();
+    qc.invalidateQueries({ queryKey: ["year-artifacts", yearId] });
     qc.invalidateQueries({ queryKey: ["year-ai-runs", yearId] });
     qc.invalidateQueries({ queryKey: ["ai-credit-balance"] });
   };
