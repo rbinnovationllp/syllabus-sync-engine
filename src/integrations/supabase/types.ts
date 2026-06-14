@@ -374,6 +374,56 @@ export type Database = {
           },
         ]
       }
+      invitations: {
+        Row: {
+          accepted_at: string | null
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          invited_by: string
+          org_id: string
+          role: Database["public"]["Enums"]["app_role"]
+          status: string
+          token: string
+          updated_at: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          created_at?: string
+          email: string
+          expires_at?: string
+          id?: string
+          invited_by: string
+          org_id: string
+          role?: Database["public"]["Enums"]["app_role"]
+          status?: string
+          token?: string
+          updated_at?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          created_at?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          invited_by?: string
+          org_id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          status?: string
+          token?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invitations_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       leads: {
         Row: {
           assigned_to: string | null
@@ -601,6 +651,7 @@ export type Database = {
           current_period_end: string | null
           current_period_start: string | null
           environment: string
+          extra_seats: number
           id: string
           price_id: string
           product_id: string
@@ -616,6 +667,7 @@ export type Database = {
           current_period_end?: string | null
           current_period_start?: string | null
           environment?: string
+          extra_seats?: number
           id?: string
           price_id: string
           product_id: string
@@ -631,6 +683,7 @@ export type Database = {
           current_period_end?: string | null
           current_period_start?: string | null
           environment?: string
+          extra_seats?: number
           id?: string
           price_id?: string
           product_id?: string
@@ -830,7 +883,7 @@ export type Database = {
       record_export: { Args: { _user_id: string }; Returns: number }
     }
     Enums: {
-      app_role: "admin" | "teacher" | "super_admin"
+      app_role: "admin" | "teacher" | "super_admin" | "coordinator" | "viewer"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -958,7 +1011,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "teacher", "super_admin"],
+      app_role: ["admin", "teacher", "super_admin", "coordinator", "viewer"],
     },
   },
 } as const
