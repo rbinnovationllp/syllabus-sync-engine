@@ -8,6 +8,8 @@ import {
   generateSubjectCurriculum,
   recalculateSchedule,
   getYearArtifacts,
+  listAiRunsForYear,
+  getAiCreditBalance,
 } from "@/lib/ai-generation.functions";
 import { exportYearPdf, exportYearDocx } from "@/lib/exports.functions";
 import { AppShell } from "@/components/AppShell";
