@@ -286,6 +286,7 @@ export type Database = {
           id: string
           org_id: string
           periods_per_week: number
+          stream: string | null
           subject: string
           teacher_name: string | null
         }
@@ -296,6 +297,7 @@ export type Database = {
           id?: string
           org_id: string
           periods_per_week?: number
+          stream?: string | null
           subject: string
           teacher_name?: string | null
         }
@@ -306,6 +308,7 @@ export type Database = {
           id?: string
           org_id?: string
           periods_per_week?: number
+          stream?: string | null
           subject?: string
           teacher_name?: string | null
         }

@@ -69,6 +69,7 @@ export const submitOnboarding = createServerFn({ method: "POST" })
       academic_year_id: year.id,
       org_id: org.id,
       grade: gs.grade,
+      stream: gs.stream || null,
       subject: gs.subject,
       periods_per_week: gs.periods_per_week,
       teacher_name: gs.teacher_name || null,
