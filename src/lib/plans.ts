@@ -295,8 +295,10 @@ export const PLANS: Plan[] = [
       support: "Dedicated + monthly review",
     },
     prices: [
-      { priceId: "enterprise_global_monthly_usd", amount: 49900, currency: "usd", display: "$499/mo" },
-      { priceId: "enterprise_global_monthly_inr", amount: 1499900, currency: "inr", display: "₹14,999/mo" },
+      { priceId: "enterprise_global_monthly_usd", amount: 49900, currency: "usd", display: "$499/mo", interval: "monthly" },
+      { priceId: "enterprise_global_monthly_inr", amount: 1499900, currency: "inr", display: "₹14,999/mo", interval: "monthly" },
+      { priceId: "enterprise_global_annual_usd", amount: 499000, currency: "usd", display: "$4,990/yr", interval: "annual" },
+      { priceId: "enterprise_global_annual_inr", amount: 14999000, currency: "inr", display: "₹1,49,990/yr", interval: "annual" },
     ],
   },
 ];
