@@ -439,3 +439,50 @@ function AccessTab() {
     </div>
   );
 }
+
+function AuditTab() {
+  const fn = useServerFn(listAuditLog);
+  const q = useQuery({ queryKey: ["admin-audit"], queryFn: () => fn() });
+  if (q.isLoading) return <div className="py-10 text-center text-muted-foreground">Loading audit log…</div>;
+  const rows = q.data ?? [];
+  if (rows.length === 0) {
+    return (
+      <Card className="mt-4"><CardContent className="p-10 text-center text-muted-foreground">
+        No admin actions logged yet.
+      </CardContent></Card>
+    );
+  }
+  return (
+    <Card className="mt-4">
+      <CardHeader><CardTitle>Admin audit log ({rows.length})</CardTitle></CardHeader>
+      <CardContent className="overflow-x-auto">
+        <Table>
+          <TableHeader><TableRow>
+            <TableHead>When</TableHead>
+            <TableHead>Actor</TableHead>
+            <TableHead>Action</TableHead>
+            <TableHead>Target</TableHead>
+            <TableHead>Details</TableHead>
+          </TableRow></TableHeader>
+          <TableBody>
+            {rows.map((r: any) => (
+              <TableRow key={r.id}>
+                <TableCell className="text-xs text-muted-foreground whitespace-nowrap">{new Date(r.created_at).toLocaleString()}</TableCell>
+                <TableCell className="text-sm">{r.actor_email || r.actor_id?.slice(0, 8)}</TableCell>
+                <TableCell><Badge variant="secondary" className="text-[10px]">{r.action}</Badge></TableCell>
+                <TableCell className="text-xs">
+                  {r.target_type ? <span className="text-muted-foreground">{r.target_type}:</span> : null} {r.target_id?.slice(0, 8) || "—"}
+                </TableCell>
+                <TableCell className="text-xs text-muted-foreground max-w-md">
+                  {r.details && Object.keys(r.details).length > 0
+                    ? Object.entries(r.details).map(([k, v]) => `${k}: ${typeof v === "string" ? v : JSON.stringify(v)}`).join(" · ")
+                    : "—"}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </CardContent>
+    </Card>
+  );
+}
