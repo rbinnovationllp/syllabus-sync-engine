@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
@@ -9,8 +9,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import { acceptInvitation, previewInvitation } from "@/lib/seats.functions";
 
 export const Route = createFileRoute("/auth")({
+  validateSearch: (s: Record<string, unknown>) => ({
+    invite: typeof s.invite === "string" ? s.invite : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Sign in — CurriculumOS" },
@@ -22,23 +26,60 @@ export const Route = createFileRoute("/auth")({
 
 function AuthPage() {
   const navigate = useNavigate();
+  const { invite } = useSearch({ from: "/auth" });
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [invitePreview, setInvitePreview] = useState<{
+    email: string;
+    role: string;
+    org_name: string | null;
+  } | null>(null);
 
+  // Preview invite token (if present) so we can prefill email & show context
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      if (data.user) navigate({ to: "/dashboard" });
+    if (!invite) return;
+    previewInvitation({ data: { token: invite } })
+      .then((p) => {
+        if (!p) return toast.error("This invitation link is invalid or expired.");
+        if (p.status !== "pending") return toast.error(`Invitation already ${p.status}.`);
+        setInvitePreview({ email: p.email, role: p.role, org_name: p.org_name });
+        setEmail(p.email);
+      })
+      .catch(() => {});
+  }, [invite]);
+
+  // If already signed in: accept invite (if any) then route to dashboard
+  useEffect(() => {
+    supabase.auth.getUser().then(async ({ data }) => {
+      if (!data.user) return;
+      if (invite) await tryAcceptInvite();
+      navigate({ to: "/dashboard" });
     });
-  }, [navigate]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  async function tryAcceptInvite() {
+    if (!invite) return;
+    try {
+      const res = await acceptInvitation({ data: { token: invite } });
+      toast.success(`Joined ${invitePreview?.org_name ?? "organisation"} as ${res.role}.`);
+    } catch (e: any) {
+      toast.error(e?.message ?? "Could not accept invitation");
+    }
+  }
 
   async function handleEmailSignIn(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) {
+      setLoading(false);
+      return toast.error(error.message);
+    }
+    await tryAcceptInvite();
     setLoading(false);
-    if (error) return toast.error(error.message);
     navigate({ to: "/dashboard" });
   }
 
@@ -53,23 +94,28 @@ function AuthPage() {
         data: { full_name: name },
       },
     });
+    if (error) {
+      setLoading(false);
+      return toast.error(error.message);
+    }
+    await tryAcceptInvite();
     setLoading(false);
-    if (error) return toast.error(error.message);
     toast.success("Account created — you're signed in.");
     navigate({ to: "/dashboard" });
   }
 
   async function handleGoogle() {
     setLoading(true);
-    const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin + "/dashboard",
-    });
+    // Pass invite token through OAuth round-trip so we can accept after callback
+    const redirect = window.location.origin + "/auth" + (invite ? `?invite=${encodeURIComponent(invite)}` : "");
+    const result = await lovable.auth.signInWithOAuth("google", { redirect_uri: redirect });
     if (result.error) {
       setLoading(false);
       toast.error("Google sign-in failed");
       return;
     }
     if (result.redirected) return;
+    await tryAcceptInvite();
     navigate({ to: "/dashboard" });
   }
 
@@ -82,13 +128,23 @@ function AuthPage() {
           </Link>
           <p className="text-sm text-muted-foreground mt-1">AI operating system for school leadership</p>
         </div>
+        {invitePreview && (
+          <Card className="mb-4 border-primary/40 bg-primary/5">
+            <CardContent className="pt-6 text-sm">
+              You've been invited to join{" "}
+              <strong>{invitePreview.org_name ?? "an organisation"}</strong> as{" "}
+              <strong>{invitePreview.role}</strong>. Sign in or create an account with{" "}
+              <strong>{invitePreview.email}</strong> to accept.
+            </CardContent>
+          </Card>
+        )}
         <Card>
           <CardHeader>
             <CardTitle>Welcome</CardTitle>
             <CardDescription>Sign in to plan your academic year.</CardDescription>
           </CardHeader>
           <CardContent>
-            <Tabs defaultValue="signin">
+            <Tabs defaultValue={invitePreview ? "signup" : "signin"}>
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="signin">Sign in</TabsTrigger>
                 <TabsTrigger value="signup">Create account</TabsTrigger>
