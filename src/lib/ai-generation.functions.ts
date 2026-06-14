@@ -142,6 +142,15 @@ async function logRun(
   });
 }
 
+async function refundCredits(supabaseAdmin: any, userId: string, amount: number) {
+  if (!amount || amount <= 0) return;
+  await supabaseAdmin.rpc("refund_ai_credits", {
+    _user_id: userId,
+    _amount: amount,
+    _check_env: "live",
+  });
+}
+
 // ---------- Server fns ----------
 const yearInput = z.object({ year_id: z.string().uuid() });
 
