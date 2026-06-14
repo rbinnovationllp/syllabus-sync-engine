@@ -128,8 +128,10 @@ export const PLANS: Plan[] = [
       support: "Email (48–72 hrs)",
     },
     prices: [
-      { priceId: "retail_single_monthly_usd", amount: 900, currency: "usd", display: "$9/mo" },
-      { priceId: "retail_single_monthly_inr", amount: 49900, currency: "inr", display: "₹499/mo" },
+      { priceId: "retail_single_monthly_usd", amount: 900, currency: "usd", display: "$9/mo", interval: "monthly" },
+      { priceId: "retail_single_monthly_inr", amount: 49900, currency: "inr", display: "₹499/mo", interval: "monthly" },
+      { priceId: "retail_single_annual_usd", amount: 9000, currency: "usd", display: "$90/yr", interval: "annual" },
+      { priceId: "retail_single_annual_inr", amount: 499000, currency: "inr", display: "₹4,990/yr", interval: "annual" },
     ],
   },
   {
