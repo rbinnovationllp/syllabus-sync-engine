@@ -2,7 +2,7 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { LogOut } from "lucide-react";
+import { LogOut, CreditCard } from "lucide-react";
 
 export function AppShell({ children, title }: { children: ReactNode; title?: string }) {
   const navigate = useNavigate();
@@ -19,6 +19,9 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
           <Link to="/dashboard" className="font-semibold tracking-tight">CurriculumOS</Link>
           <div className="flex items-center gap-3">
             {title && <span className="text-sm text-muted-foreground hidden sm:inline">{title}</span>}
+            <Button asChild variant="ghost" size="sm">
+              <Link to="/pricing"><CreditCard className="h-4 w-4 mr-1" /> Plans</Link>
+            </Button>
             <Button variant="ghost" size="sm" onClick={handleSignOut}>
               <LogOut className="h-4 w-4 mr-1" /> Sign out
             </Button>
