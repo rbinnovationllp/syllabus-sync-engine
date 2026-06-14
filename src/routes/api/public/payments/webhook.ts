@@ -10,7 +10,7 @@ function getSupabase() {
       process.env.SUPABASE_SERVICE_ROLE_KEY!,
     );
   }
-  return _supabase;
+  return _supabase as any;
 }
 
 function resolvePriceId(item: any): string | undefined {
