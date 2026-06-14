@@ -107,3 +107,71 @@ export const removeSeatMember = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true };
   });
+
+const acceptSchema = z.object({ token: z.string().min(8).max(128) });
+
+export const acceptInvitation = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => acceptSchema.parse(input))
+  .handler(async ({ data, context }) => {
+    const { userId, claims } = context;
+    const email = (claims?.email as string | undefined)?.toLowerCase();
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: invite, error: inviteErr } = await supabaseAdmin
+      .from("invitations")
+      .select("*")
+      .eq("token", data.token)
+      .maybeSingle();
+    if (inviteErr) throw new Error(inviteErr.message);
+    if (!invite) throw new Error("Invitation not found");
+    if (invite.status !== "pending") throw new Error(`Invitation already ${invite.status}`);
+    if (new Date(invite.expires_at).getTime() < Date.now()) {
+      await supabaseAdmin.from("invitations").update({ status: "expired" }).eq("id", invite.id);
+      throw new Error("Invitation expired");
+    }
+    if (email && invite.email.toLowerCase() !== email) {
+      throw new Error(`This invitation was sent to ${invite.email}. Sign in with that email.`);
+    }
+
+    // Add to org_members (idempotent on unique(org_id, user_id))
+    const { error: memberErr } = await supabaseAdmin
+      .from("org_members")
+      .upsert(
+        { org_id: invite.org_id, user_id: userId, role: invite.role },
+        { onConflict: "org_id,user_id" },
+      );
+    if (memberErr) throw new Error(memberErr.message);
+
+    // Mirror role into user_roles for global RBAC checks (admin/coordinator/etc)
+    await supabaseAdmin
+      .from("user_roles")
+      .insert({ user_id: userId, role: invite.role })
+      .select();
+
+    await supabaseAdmin
+      .from("invitations")
+      .update({ status: "accepted", accepted_at: new Date().toISOString() })
+      .eq("id", invite.id);
+
+    return { ok: true, org_id: invite.org_id, role: invite.role };
+  });
+
+export const previewInvitation = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) => acceptSchema.parse(input))
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: invite } = await supabaseAdmin
+      .from("invitations")
+      .select("email, role, status, expires_at, org_id, organizations(name)")
+      .eq("token", data.token)
+      .maybeSingle();
+    if (!invite) return null;
+    return {
+      email: invite.email,
+      role: invite.role,
+      status: invite.status,
+      expires_at: invite.expires_at,
+      org_name: (invite as any).organizations?.name ?? null,
+    };
+  });
