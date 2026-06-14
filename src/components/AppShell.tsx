@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { LogOut, CreditCard, Shield } from "lucide-react";
+import { LogOut, CreditCard, Shield, Users } from "lucide-react";
 import { getMyAdminStatus } from "@/lib/admin.functions";
 
 export function AppShell({ children, title }: { children: ReactNode; title?: string }) {
@@ -33,6 +33,9 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
                 <Link to="/admin"><Shield className="h-4 w-4 mr-1" /> Admin</Link>
               </Button>
             )}
+            <Button asChild variant="ghost" size="sm">
+              <Link to="/seats"><Users className="h-4 w-4 mr-1" /> Seats</Link>
+            </Button>
             <Button asChild variant="ghost" size="sm">
               <Link to="/pricing"><CreditCard className="h-4 w-4 mr-1" /> Plans</Link>
             </Button>

@@ -1,97 +1,82 @@
-# CurriculumOS — Build Plan
+# Plan — Anti-abuse + New Pricing + Seats
 
-A platform this large can't ship in one pass. I'll build it in 6 phases, each independently usable. You approve this plan once; after each phase you can redirect.
+## 1. Pricing rewrite (`src/lib/plans.ts`)
 
-## Stack
+Update all 5 tiers + add-ons. Keep USD and INR side-by-side.
 
-- **Frontend**: TanStack Start (already scaffolded), React 19, Tailwind, shadcn/ui
-- **Backend**: Lovable Cloud (Supabase) — Postgres + Auth + RLS for multi-tenant isolation
-- **AI**: Lovable AI Gateway (`google/gemini-3-flash-preview` default, `gemini-3-pro` for deep textbook analysis)
-- **Billing**: Lovable's built-in Stripe (5 tier products)
-- **Exports**: `docx`, `exceljs` for native; Google Docs/Sheets via per-user OAuth (Phase 6)
+| Plan | INR/mo | USD/mo | Users | AI credits | Storage |
+|---|---|---|---|---|---|
+| Retail Single | ₹499 | $9 | 1 | 500 | 1 GB |
+| Primary | ₹1,999 | $29 | 6 | 2,000 | 10 GB |
+| Middle | ₹2,999 | $39 | 10 | 3,000 | 20 GB |
+| High School | ₹4,999 | $59 | 18 | 5,000 | 50 GB |
+| Enterprise | ₹14,999 | $179 | 60 | 20,000 | 200 GB |
 
----
+Annual prices = 10× monthly (2 months free per existing `annualRebateEligible` rule).
 
-## Phase 1 — Foundation & Onboarding Wizard
+**Add-ons**
+- `extra_user` — ₹199/mo (~$2.50/mo) — recurring, seat-based quantity (1–500)
+- `extra_campus` — update from ₹5,000 → ₹4,999/mo (~$59/mo)
+- AI credit top-ups unchanged
 
-**Goal**: A signed-in user can complete the 4-step wizard and see `T_available` calculated.
+**Support tiers** added to each plan: Email / Email 48h / Priority Email / Phone+Email / Dedicated AM.
+**Enterprise capped at 1 campus** (was 2).
 
-- Enable Lovable Cloud; email/password + Google auth
-- Schema: `organizations`, `org_members`, `user_roles` (admin/teacher), `schools`, `onboarding_drafts`, `academic_years`, `grade_subjects`, `events`, `holidays` — all RLS-scoped to `org_id`
-- 4-step wizard route `/onboarding`:
-  1. Institutional + geo + board (CBSE/ICSE/IB/Cambridge/Common Core/etc.)
-  2. Fee tier + textbook entry (leave-blank allowed; flagged for Phase 3 AI fill)
-  3. Calendar shape + multi-teacher period matrix (subject × grade × periods/week)
-  4. Holidays, vacations, events with `prep_days` field
-- **Capacity engine** (server fn): implements `T_available = C_total − (H_gov + H_school + V + E + X + T_training + W_offs + B_buffer)`; returns per-grade-subject available blocks
-- Results dashboard: capacity card + breakdown waterfall chart
-- Zero-null fallback: missing fields hydrate from `regional_benchmarks` seed table
+## 2. Stripe products
 
-## Phase 2 — Billing Tiers & Access Enforcement
+Create new `extra_user` product with monthly INR + USD prices (qty 1–500).
+Update existing `extra_campus_monthly_inr` price (₹5,000 → ₹4,999) and other changed prices. Note: Stripe prices are immutable — we create new `price_id`s (e.g. `bundle_high_monthly_inr_v2`) and switch the catalog over. Old subscribers keep their original price until renewal.
 
-**Goal**: Tier tokens gate grade/subject access at DB + UI level.
+## 3. AI + export gating
 
-- Enable Lovable Stripe Payments
-- 5 products created via `batch_create_product`: `retail_single_access`, `bundle_primary_access`, `bundle_middle_access`, `bundle_high_access`, `enterprise_global_access`
-- Stripe webhook at `/api/public/webhooks/stripe` (HMAC-verified) writes to `subscriptions` table
-- `entitlements` table + `has_access(org_id, grade, subject)` SQL function called from RLS policies on planning tables
-- Paywall UI on locked grades; upgrade CTA
+Wrap every server function that costs credits or returns an export blob with a subscription check:
 
-## Phase 3 — AI Book Matching + Difficulty Tagging
+```ts
+const { data: active } = await context.supabase
+  .rpc('has_active_subscription', { user_uuid: context.userId, check_env: env });
+if (!active) return { error: 'PAID_PLAN_REQUIRED' };
+```
 
-**Goal**: Empty textbook fields auto-fill; chapters get Simple/Medium/Tough tags.
+Functions to gate (in `src/lib/onboarding.functions.ts` and anywhere we add export fns):
+- `generateAnnualCalendar`, `generateSubjectCurriculum`, `recalculateSchedule`, `generateLessonPlan`, `generateTeacherTraining`
+- All export endpoints (PDF / DOCX / XLSX)
 
-- `publishers`, `textbooks`, `chapters` reference tables (seeded for Budget/Mid/Premium tiers across regions — start with India/UK/US/Singapore seed sets)
-- Server fn `recommendTextbooks({ region, fee_tier, board, grade })` → Lovable AI structured output picking from registry
-- Background server fn `analyzeChapter({ textbook_id, chapter_id })` using `gemini-3-pro` with structured output: `{ difficulty, concept_dependencies, estimated_periods }`
-- Queue table `analysis_jobs` polled by client; results stored in `chapter_analyses`
+Client-side: in onboarding/results pages, if `useSubscription().isActive === false`, show an "Upgrade to generate" CTA over the action buttons (still let them fill the wizard and preview a sample).
 
-## Phase 4 — Scheduling & Interleaving Engine
+## 4. DEMO watermark on exports
 
-**Goal**: Produce the master academic calendar + per-class ledger + weekly lesson plans.
+For PDF/DOCX exports generated when user is on a free/expired plan (or for a public sample), stamp every page diagonally:
+> **DEMO — Not Licensed for Production Use**
 
-- Pure-TS scheduling algorithm:
-  - Allocate periods per subject across available days
-  - Interleave Tough chapters with Simple ones (no two Tough in same week across the student's subjects)
-  - Cross-subject homework-load balancer (scales lighter subjects when another is in a Tough block)
-  - Board completion guardrails (30/45/60-day buffers by class group)
-- Outputs persisted to `lesson_plans`, `weekly_blocks`, `daily_assignments`
-- Split-screen workspace UI: left = chat assistant (Lovable AI, RAG over the plan), right = live editable calendar/spreadsheet view (TanStack Table + custom calendar grid)
+Implementation: in the PDF generator, overlay a 45°-rotated grey 60pt text across each page when `subscription.isActive` is false. (Once gating is in place this only fires for the public sample preview, but it's a belt-and-braces guard.)
 
-## Phase 5 — Recalibration Engine
+## 5. Seats management
 
-**Goal**: "Recalibrate System" button re-engineers the remaining year.
+**DB migration:** add `extra_seats` integer column to `subscriptions` (incremented by webhook when `extra_user` quantity changes).
 
-- Server fn `recalibrate({ academic_year_id, disruption })`:
-  1. Compress upcoming Simple chapter windows
-  2. Move secondary drills to self-study
-  3. Check guardrail compliance
-  4. If still infeasible → return `advice` payload (Option A: trim events; Option B: zero-period Saturdays) for user choice
-- Audit trail in `recalibration_events`
-- Teacher Professional Development module: `training_modules` seeded by segment (Primary/Middle/Higher Secondary), Saturday orientation scheduler that doesn't collide with student calendar
+**Server fns** (`src/lib/seats.functions.ts`):
+- `listSeatMembers()` — current org members + pending invites
+- `inviteSeatMember({ email, role })` — checks `(planSeats + extra_seats) > currentMembers`; if over, returns `{ needsCheckout: true, addonPriceId }`
+- `removeSeatMember({ userId })`
+- `updateSeatCount({ delta })` — opens Stripe checkout to adjust `extra_user` quantity
 
-## Phase 6 — Exports
+**UI:** `src/routes/_authenticated/seats.tsx` — table of members with invite/remove, seat counter (e.g. "8 / 10 used"), "Add seat (₹199/mo)" button that opens checkout.
 
-**Goal**: All 5 deliverables export to 4 formats.
+**Roles:** Principal/Admin, Academic Coordinator, Teacher, Read-Only — stored in `org_members.role` (already exists).
 
-- Native: `.xlsx` via `exceljs`, `.docx` via `docx` — generated server-side, returned as download
-- Google Docs / Sheets: per-user Google OAuth flow (separate from Lovable Cloud auth); tokens stored encrypted; writes via Drive + Docs/Sheets APIs
-- Five export templates: Master Calendar, Curriculum Ledger, Monthly Roadmap, Weekly Lesson Blocks, Teacher PD Guide
+## 6. Pricing page
 
----
+Update `src/routes/_authenticated/pricing.tsx` to render the new restrictions, storage row, support row, add-ons section (Extra User, Extra Campus, AI top-ups, Paid Services).
 
-## Cross-cutting
+## Out of scope (not doing this turn)
+- Invite codes (you chose preview-link instead)
+- Actual email invite delivery — we'll generate an invite link the admin can share manually
+- Migrating existing subscribers to new prices (their old prices remain valid in Stripe)
 
-- **Multi-tenant isolation**: every table has `org_id`; RLS policies use `has_org_access(org_id)` security-definer fn; roles via separate `user_roles` table (never on profiles)
-- **1:1:1 ID guardrail**: Stripe `client_reference_id` = `auth.uid()`; webhook rejects mismatches
-- **Public landing page** at `/` with marketing pitch (separate route from app)
-- **Error boundaries** + `notFoundComponent` on every route with a loader
-- **No mock AI**: all AI calls hit Lovable AI Gateway from server fns; 402/429 surfaced to UI
+## File changes
+- Edit: `src/lib/plans.ts`, `src/lib/onboarding.functions.ts`, `src/routes/_authenticated/onboarding.tsx`, `src/routes/_authenticated/results.$yearId.tsx`, `src/routes/_authenticated/pricing.tsx`, `src/components/AppShell.tsx` (nav link)
+- New: `src/lib/seats.functions.ts`, `src/routes/_authenticated/seats.tsx`, `src/lib/watermark.ts`
+- DB migration: `extra_seats` column on `subscriptions`
+- Stripe: new `extra_user` product + revised prices via `payments--batch_create_product`
 
-## What I need from you to start Phase 1
-
-1. Confirm Lovable Cloud enable (required for auth + DB)
-2. Confirm "user profiles needed" — yes, since we need school role + display name
-3. Approve this phased approach, or tell me to merge/reorder phases
-
-Phase 1 alone is ~1 large iteration. I'll stop after Phase 1 results dashboard works end-to-end and wait for your sign-off before moving to billing.
+Approve and I'll execute in this order: migration → plans.ts → Stripe products → gating → seats UI → watermark → pricing page.

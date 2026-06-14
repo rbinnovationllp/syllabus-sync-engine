@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedSeatsRouteImport } from './routes/_authenticated/seats'
 import { Route as AuthenticatedPricingRouteImport } from './routes/_authenticated/pricing'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
@@ -32,6 +33,11 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedSeatsRoute = AuthenticatedSeatsRouteImport.update({
+  id: '/seats',
+  path: '/seats',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedPricingRoute = AuthenticatedPricingRouteImport.update({
   id: '/pricing',
@@ -73,6 +79,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/pricing': typeof AuthenticatedPricingRoute
+  '/seats': typeof AuthenticatedSeatsRoute
   '/results/$yearId': typeof AuthenticatedResultsYearIdRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
@@ -83,6 +90,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/pricing': typeof AuthenticatedPricingRoute
+  '/seats': typeof AuthenticatedSeatsRoute
   '/results/$yearId': typeof AuthenticatedResultsYearIdRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
@@ -95,6 +103,7 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/pricing': typeof AuthenticatedPricingRoute
+  '/_authenticated/seats': typeof AuthenticatedSeatsRoute
   '/_authenticated/results/$yearId': typeof AuthenticatedResultsYearIdRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
@@ -107,6 +116,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/onboarding'
     | '/pricing'
+    | '/seats'
     | '/results/$yearId'
     | '/api/public/payments/webhook'
   fileRoutesByTo: FileRoutesByTo
@@ -117,6 +127,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/onboarding'
     | '/pricing'
+    | '/seats'
     | '/results/$yearId'
     | '/api/public/payments/webhook'
   id:
@@ -128,6 +139,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/_authenticated/onboarding'
     | '/_authenticated/pricing'
+    | '/_authenticated/seats'
     | '/_authenticated/results/$yearId'
     | '/api/public/payments/webhook'
   fileRoutesById: FileRoutesById
@@ -161,6 +173,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/seats': {
+      id: '/_authenticated/seats'
+      path: '/seats'
+      fullPath: '/seats'
+      preLoaderRoute: typeof AuthenticatedSeatsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/pricing': {
       id: '/_authenticated/pricing'
@@ -212,6 +231,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
   AuthenticatedPricingRoute: typeof AuthenticatedPricingRoute
+  AuthenticatedSeatsRoute: typeof AuthenticatedSeatsRoute
   AuthenticatedResultsYearIdRoute: typeof AuthenticatedResultsYearIdRoute
 }
 
@@ -220,6 +240,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
   AuthenticatedPricingRoute: AuthenticatedPricingRoute,
+  AuthenticatedSeatsRoute: AuthenticatedSeatsRoute,
   AuthenticatedResultsYearIdRoute: AuthenticatedResultsYearIdRoute,
 }
 
