@@ -382,6 +382,50 @@ function ResultsPage() {
         </div>
       )}
 
+      <Card className="mt-6">
+        <CardHeader>
+          <CardTitle className="text-base">AI generation history</CardTitle>
+          <CardDescription>Every annual calendar, subject curriculum and recalculation run for this year — with status, credits, and any errors returned by the model.</CardDescription>
+        </CardHeader>
+        <CardContent className="overflow-x-auto">
+          {runs.isLoading ? (
+            <div className="text-sm text-muted-foreground">Loading…</div>
+          ) : (runs.data ?? []).length === 0 ? (
+            <div className="text-sm text-muted-foreground">No AI runs yet. Generate a calendar or curriculum to see history here.</div>
+          ) : (
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b text-left text-muted-foreground">
+                  <th className="py-2 pr-3">When</th>
+                  <th className="py-2 pr-3">Action</th>
+                  <th className="py-2 pr-3">Status</th>
+                  <th className="py-2 pr-3 text-right">Credits</th>
+                  <th className="py-2 pr-3">Details</th>
+                </tr>
+              </thead>
+              <tbody>
+                {(runs.data ?? []).map((r: any) => (
+                  <tr key={r.id} className="border-b align-top">
+                    <td className="py-2 pr-3 text-xs text-muted-foreground whitespace-nowrap">{new Date(r.created_at).toLocaleString()}</td>
+                    <td className="py-2 pr-3 text-xs">{String(r.action).replaceAll("_", " ")}</td>
+                    <td className="py-2 pr-3">
+                      <Badge variant={r.status === "success" ? "default" : "destructive"} className="text-[10px]">{r.status}</Badge>
+                    </td>
+                    <td className="py-2 pr-3 text-right">{r.credits_spent}</td>
+                    <td className="py-2 pr-3 text-xs text-muted-foreground">
+                      {r.error ? <span className="text-destructive">{r.error}</span>
+                        : r.details && Object.keys(r.details).length > 0
+                          ? Object.entries(r.details).map(([k, v]) => `${k}: ${v}`).join(" · ")
+                          : r.lovable_run_id ? <span className="font-mono">{String(r.lovable_run_id).slice(0, 12)}…</span> : "—"}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </CardContent>
+      </Card>
+
       <div className="mt-6 flex gap-2">
         <Button variant="outline" asChild><Link to="/dashboard">Back to dashboard</Link></Button>
       </div>
