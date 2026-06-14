@@ -34,19 +34,20 @@ function OnboardingWizard() {
     monthly_fee_per_student: undefined, currency: "USD", fee_tier: "mid", textbooks: [],
   });
   const today = new Date();
-  const nextYear = new Date(today.getFullYear() + 1, today.getMonth(), today.getDate());
+  const initialStart = today.toISOString().slice(0, 10);
+  const initialEnd = sessionEndForStart(initialStart, "", "cbse");
   const [s3, setS3] = useState<Step3>({
-    label: `Academic Year ${today.getFullYear()}-${(today.getFullYear() + 1).toString().slice(2)}`,
-    start_date: today.toISOString().slice(0, 10),
-    end_date: nextYear.toISOString().slice(0, 10),
+    label: sessionLabel(initialStart, initialEnd),
+    start_date: initialStart,
+    end_date: initialEnd,
     working_days_per_week: BENCHMARK_DEFAULTS.working_days_per_week,
     periods_per_day: BENCHMARK_DEFAULTS.periods_per_day,
     period_duration_minutes: BENCHMARK_DEFAULTS.period_duration_minutes,
     weekly_off_days: BENCHMARK_DEFAULTS.weekly_off_days,
     buffer_days: BENCHMARK_DEFAULTS.buffer_days,
     grade_subjects: [
-      { grade: "1", subject: "Mathematics", periods_per_week: 5, teacher_name: "" },
-      { grade: "1", subject: "English", periods_per_week: 5, teacher_name: "" },
+      { grade: "1", stream: "", subject: "Mathematics", periods_per_week: 5, teacher_name: "" },
+      { grade: "1", stream: "", subject: "English", periods_per_week: 5, teacher_name: "" },
     ],
   });
   const [s4, setS4] = useState<Step4>({
