@@ -779,7 +779,7 @@ export type Database = {
       record_export: { Args: { _user_id: string }; Returns: number }
     }
     Enums: {
-      app_role: "admin" | "teacher"
+      app_role: "admin" | "teacher" | "super_admin"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -907,7 +907,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "teacher"],
+      app_role: ["admin", "teacher", "super_admin"],
     },
   },
 } as const
