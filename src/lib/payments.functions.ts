@@ -88,11 +88,33 @@ export const createPortalSession = createServerFn({ method: "POST" })
       .maybeSingle();
     if (subError || !sub?.stripe_customer_id) throw new Error("No subscription found");
 
+    // Validate returnUrl against same-origin allowlist to prevent open redirect
+    let safeReturnUrl: string | undefined;
+    if (data.returnUrl) {
+      try {
+        const parsed = new URL(data.returnUrl);
+        const allowed = new Set<string>([
+          ...(process.env.APP_ORIGIN ? [process.env.APP_ORIGIN] : []),
+        ]);
+        const host = parsed.hostname;
+        if (
+          allowed.has(parsed.origin) ||
+          host.endsWith(".lovable.app") ||
+          host.endsWith(".lovableproject.com") ||
+          host === "localhost"
+        ) {
+          safeReturnUrl = parsed.toString();
+        }
+      } catch {
+        // ignore invalid URL
+      }
+    }
+
     try {
       const stripe = createStripeClient(data.environment);
       const portal = await stripe.billingPortal.sessions.create({
         customer: sub.stripe_customer_id as string,
-        ...(data.returnUrl && { return_url: data.returnUrl }),
+        ...(safeReturnUrl && { return_url: safeReturnUrl }),
       });
       return { url: portal.url };
     } catch (error) {

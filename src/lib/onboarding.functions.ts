@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { z } from "zod";
 import { fullOnboardingSchema } from "./onboarding-schema";
 import { calculateCapacity } from "./capacity-engine";
 
@@ -176,11 +177,9 @@ export const listMyAcademicYears = createServerFn({ method: "GET" })
 
 export const getYearResults = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => {
-    const o = input as { academic_year_id: string };
-    if (!o?.academic_year_id) throw new Error("academic_year_id required");
-    return o;
-  })
+  .inputValidator((input: unknown) =>
+    z.object({ academic_year_id: z.string().uuid() }).parse(input),
+  )
   .handler(async ({ data, context }) => {
     const { supabase } = context;
     const [year, school, capacity, gs] = await Promise.all([
