@@ -250,6 +250,28 @@ function ResultsPage() {
       </div>
 
       <Card className="mb-6">
+        <CardHeader className="pb-2 flex flex-row items-center justify-between gap-2">
+          <div>
+            <CardTitle className="text-base">AI credit balance</CardTitle>
+            <CardDescription>Credits are reserved when you click Generate and refunded automatically if the AI run fails.</CardDescription>
+          </div>
+          <Button size="sm" variant="outline" asChild><Link to="/pricing">Top up</Link></Button>
+        </CardHeader>
+        <CardContent>
+          {balance.isLoading || !balance.data ? (
+            <div className="text-sm text-muted-foreground">Loading balance…</div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
+              <div><div className="text-2xl font-bold">{balance.data.total_remaining}</div><div className="text-xs text-muted-foreground">Total remaining</div></div>
+              <div><div className="text-2xl font-bold">{balance.data.monthly_remaining}</div><div className="text-xs text-muted-foreground">Plan quota left</div></div>
+              <div><div className="text-2xl font-bold">{balance.data.grant_remaining}</div><div className="text-xs text-muted-foreground">Top-up credits</div></div>
+              <div><div className="text-2xl font-bold">{balance.data.monthly_used}</div><div className="text-xs text-muted-foreground">Used this month</div></div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card className="mb-6">
         <CardHeader><CardTitle>Capacity breakdown</CardTitle>
           <CardDescription>How {capacity.c_total} calendar days split across the year.</CardDescription></CardHeader>
         <CardContent>
