@@ -208,8 +208,10 @@ export const PLANS: Plan[] = [
       support: "Priority email",
     },
     prices: [
-      { priceId: "bundle_middle_monthly_usd", amount: 9900, currency: "usd", display: "$99/mo" },
-      { priceId: "bundle_middle_monthly_inr", amount: 299900, currency: "inr", display: "₹2,999/mo" },
+      { priceId: "bundle_middle_monthly_usd", amount: 9900, currency: "usd", display: "$99/mo", interval: "monthly" },
+      { priceId: "bundle_middle_monthly_inr", amount: 299900, currency: "inr", display: "₹2,999/mo", interval: "monthly" },
+      { priceId: "bundle_middle_annual_usd", amount: 99000, currency: "usd", display: "$990/yr", interval: "annual" },
+      { priceId: "bundle_middle_annual_inr", amount: 2999000, currency: "inr", display: "₹29,990/yr", interval: "annual" },
     ],
   },
   {
