@@ -298,7 +298,7 @@ export const PLANS: Plan[] = [
 // Add-ons (one-time AI credit packs + per-campus recurring seat)
 // ---------------------------------------------------------------------------
 
-export type AddOnId = "ai_credits_500" | "ai_credits_2k" | "extra_campus";
+export type AddOnId = "ai_credits_500" | "ai_credits_2k" | "extra_campus" | "extra_user";
 
 export interface AddOn {
   id: AddOnId;
@@ -311,6 +311,28 @@ export interface AddOn {
 }
 
 export const ADD_ONS: AddOn[] = [
+  {
+    id: "extra_user",
+    name: "Additional User Seat",
+    description: "Add one extra user seat beyond your plan's base seat count. Recurring monthly.",
+    creditsGranted: 0,
+    recurring: true,
+    prices: [
+      { priceId: "extra_user_monthly_usd", amount: 250, currency: "usd", display: "$2.50 / mo per seat" },
+      { priceId: "extra_user_monthly_inr", amount: 19900, currency: "inr", display: "₹199 / mo per seat" },
+    ],
+  },
+  {
+    id: "extra_campus",
+    name: "Additional Campus",
+    description: "Add one extra campus to your Enterprise subscription.",
+    creditsGranted: 0,
+    recurring: true,
+    prices: [
+      { priceId: "extra_campus_monthly_usd", amount: 5900, currency: "usd", display: "$59 / mo" },
+      { priceId: "extra_campus_monthly_inr", amount: 499900, currency: "inr", display: "₹4,999 / mo" },
+    ],
+  },
   {
     id: "ai_credits_500",
     name: "AI Credits — 500",
@@ -331,17 +353,6 @@ export const ADD_ONS: AddOn[] = [
     prices: [
       { priceId: "ai_credits_2k_usd", amount: 2399, currency: "usd", display: "$23.99 one-time" },
       { priceId: "ai_credits_2k_inr", amount: 199900, currency: "inr", display: "₹1,999 one-time" },
-    ],
-  },
-  {
-    id: "extra_campus",
-    name: "Additional Campus",
-    description: "Add one campus to your Enterprise Global subscription.",
-    creditsGranted: 0,
-    recurring: true,
-    prices: [
-      { priceId: "extra_campus_monthly_usd", amount: 5900, currency: "usd", display: "$59 / mo" },
-      { priceId: "extra_campus_monthly_inr", amount: 500000, currency: "inr", display: "₹5,000 / mo" },
     ],
   },
 ];
