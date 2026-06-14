@@ -12,7 +12,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Progress } from "@/components/ui/progress";
 import { submitOnboarding } from "@/lib/onboarding.functions";
 import { fullOnboardingSchema, type Step1, type Step2, type Step3, type Step4 } from "@/lib/onboarding-schema";
-import { BOARDS, FEE_TIERS, CURRENCIES, GRADES, DEFAULT_SUBJECTS, BENCHMARK_DEFAULTS } from "@/lib/regional-benchmarks";
+import { BOARDS, FEE_TIERS, CURRENCIES, GRADES, BENCHMARK_DEFAULTS } from "@/lib/regional-benchmarks";
+import { sessionEndForStart, sessionLabel, getStreams, getSubjects } from "@/lib/subject-catalog";
 
 export const Route = createFileRoute("/_authenticated/onboarding")({
   component: OnboardingWizard,
