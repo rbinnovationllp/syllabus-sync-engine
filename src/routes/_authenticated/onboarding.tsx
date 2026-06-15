@@ -244,7 +244,7 @@ function OnboardingWizard() {
                       const lastGrade = s3.grade_subjects[s3.grade_subjects.length - 1]?.grade ?? "1";
                       const lastStream = s3.grade_subjects[s3.grade_subjects.length - 1]?.stream ?? "";
                       const subs = getSubjects(s1.country, s1.board, lastGrade, lastStream);
-                      setS3({ ...s3, grade_subjects: [...s3.grade_subjects, { grade: lastGrade, stream: lastStream, subject: subs[0] ?? "Mathematics", periods_per_week: 5, teacher_name: "" }] });
+                      setS3({ ...s3, grade_subjects: [...s3.grade_subjects, { grade: lastGrade, stream: lastStream, subject: subs[0] ?? "Mathematics", periods_per_week: 5, teacher_name: "", completed_chapters: "" }] });
                     }}>
                     <Plus className="h-3 w-3 mr-1" /> Add subject
                   </Button>
