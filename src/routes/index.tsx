@@ -32,7 +32,9 @@ export const Route = createFileRoute("/")({
       { property: "og:title", content: "CurriculumOS — AI Curriculum Planning for K-12 Schools" },
       { property: "og:description", content: "From holiday calendar to lesson plan in minutes. Built for school leaders worldwide." },
       { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://www.syllabus-sync.in/" },
     ],
+    links: [{ rel: "canonical", href: "https://www.syllabus-sync.in/" }],
   }),
   component: Landing,
 });
