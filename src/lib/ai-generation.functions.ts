@@ -55,7 +55,6 @@ async function loadContext(
         .from("academic_years")
         .select("*, schools(name,country,board,fee_tier,city,state)")
         .eq("id", yearId)
-        .eq("user_id", userId)
         .maybeSingle(),
       supabaseAdmin
         .from("capacity_results")
@@ -73,6 +72,14 @@ async function loadContext(
       supabaseAdmin.from("textbooks_input").select("*").eq("academic_year_id", yearId),
     ]);
   if (!yearRes.data) throw new Error("Academic year not found");
+  // Authorize: caller must belong to the org that owns this year
+  const { data: membership } = await supabaseAdmin
+    .from("org_members")
+    .select("user_id")
+    .eq("org_id", yearRes.data.org_id)
+    .eq("user_id", userId)
+    .maybeSingle();
+  if (!membership) throw new Error("Academic year not found");
   return {
     year: yearRes.data,
     capacity: capRes.data,
