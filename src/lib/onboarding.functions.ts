@@ -69,6 +69,11 @@ export const submitOnboarding = createServerFn({ method: "POST" })
         period_duration_minutes: step3.period_duration_minutes,
         weekly_off_days: step3.weekly_off_days,
         buffer_days: step3.buffer_days,
+        school_start_time: step3.school_start_time || null,
+        school_end_time: step3.school_end_time || null,
+        lunch_start_time: step3.lunch_start_time || null,
+        lunch_end_time: step3.lunch_end_time || null,
+        senior_extra_classes: step3.senior_extra_classes ?? {},
       })
       .select()
       .single();
@@ -81,6 +86,8 @@ export const submitOnboarding = createServerFn({ method: "POST" })
       grade: gs.grade,
       stream: gs.stream || null,
       subject: gs.subject,
+      kind: gs.kind,
+      weekdays: gs.weekdays,
       periods_per_week: gs.periods_per_week,
       teacher_name: gs.teacher_name || null,
       completed_chapters: gs.completed_chapters?.trim() || null,
