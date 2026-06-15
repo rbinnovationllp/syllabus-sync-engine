@@ -189,14 +189,26 @@ export const generateAnnualCalendar = createServerFn({ method: "POST" })
 - Distribute tough topics with easy/medium recovery weeks in between.
 - Reserve revision time before each exam window.
 - Preserve a syllabus-completion buffer of 30 days (grades 1-8), 45 days (9-10), or 60 days (11-12) before the final exam.
+- Respect the school day window (start, end, lunch) — never recommend periods outside it.
+- For senior grades (9-12) with an extra-class window, place only remedial/board-prep work there, never core teaching that disturbs the regular school day.
+- Honor per-subject weekday assignments so alternate-day subjects in senior grades land on the right days.
+- Treat co-curricular rows (Sports, Music, Art, etc.) as protected periods — schedule them but do not allocate syllabus chapters to them.
 Return strictly the requested JSON schema, no prose outside it.`;
+
+    const DOW = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+    const extras = Object.entries((ctx.year as any).senior_extra_classes ?? {})
+      .filter(([, v]: any) => v?.enabled)
+      .map(([g, v]: any) => `Grade ${g}: ${v.start_time}-${v.end_time}`)
+      .join("; ") || "none";
 
     const prompt = `School: ${ctx.year.schools?.name} (${ctx.year.schools?.country}, board: ${ctx.year.schools?.board})
 Academic year: ${ctx.year.label} (${ctx.year.start_date} → ${ctx.year.end_date})
 Working days/week: ${ctx.year.working_days_per_week}, periods/day: ${ctx.year.periods_per_day}, period mins: ${ctx.year.period_duration_minutes ?? 40}
+School day: ${(ctx.year as any).school_start_time ?? "?"} – ${(ctx.year as any).school_end_time ?? "?"} (lunch ${(ctx.year as any).lunch_start_time ?? "?"}–${(ctx.year as any).lunch_end_time ?? "?"})
+Senior extra-class windows: ${extras}
 Capacity: ${ctx.capacity?.t_available ?? "?"} teaching days available.
-Grades & subjects (with periods/week):
-${ctx.gradeSubjects.map((g: any) => `  - Grade ${g.grade} · ${g.subject} → ${g.periods_per_week} pds/wk${g.teacher_name ? ` (teacher: ${g.teacher_name})` : ""}`).join("\n")}
+Grades & subjects:
+${ctx.gradeSubjects.map((g: any) => `  - Grade ${g.grade} · ${g.subject} [${g.kind ?? "core"}] → ${g.periods_per_week} pds/wk on ${(g.weekdays ?? [1,2,3,4,5]).map((d: number) => DOW[d]).join("/")}${g.teacher_name ? ` (teacher: ${g.teacher_name})` : ""}`).join("\n")}
 Holidays: ${ctx.holidays.length}, Vacations: ${ctx.vacations.length}, Exam windows: ${ctx.exams.length}, Events: ${ctx.events.length}, Training days: ${ctx.training.length}
 Build a 12-month plan covering ${ctx.year.start_date} → ${ctx.year.end_date}.`;
 
@@ -305,9 +317,18 @@ export const generateSubjectCurriculum = createServerFn({ method: "POST" })
 - Respects any "already completed" chapters listed by the teacher and continues from the next chapter.
 Return strictly the JSON schema; no extra prose.`;
 
+    const DOW = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+    const weekdaysLabel = (gs.weekdays ?? [1,2,3,4,5]).map((d: number) => DOW[d]).join("/");
+    const seniorWin = ((ctx.year as any).senior_extra_classes ?? {})[data.grade];
+    const seniorClause = seniorWin?.enabled
+      ? `Extra-class window for Grade ${data.grade}: ${seniorWin.start_time}-${seniorWin.end_time}. Only put remedial/board-prep work in this window; never disturb the regular school day.`
+      : "";
+
     const prompt = `School: ${ctx.year.schools?.name} | Board: ${ctx.year.schools?.board} | Country: ${ctx.year.schools?.country}
-Grade ${data.grade} · ${data.subject}
-Periods/week: ${gs.periods_per_week} | Total weeks available: ${weeks} | Total periods: ${totalPeriods}
+Grade ${data.grade} · ${data.subject} [${gs.kind ?? "core"}]
+Periods/week: ${gs.periods_per_week} on ${weekdaysLabel} | Total weeks available: ${weeks} | Total periods: ${totalPeriods}
+School day: ${(ctx.year as any).school_start_time ?? "?"} – ${(ctx.year as any).school_end_time ?? "?"} (lunch ${(ctx.year as any).lunch_start_time ?? "?"}–${(ctx.year as any).lunch_end_time ?? "?"})
+${seniorClause}
 Textbooks: ${books.length === 0 ? "(none specified — choose board-appropriate canonical chapter list)" : books.map((b: any) => `${b.book_name ?? b.title} by ${b.author} (${b.publisher}, ${b.edition_year})`).join("; ")}
 Year window: ${ctx.year.start_date} → ${ctx.year.end_date}.
 ${completedNote}

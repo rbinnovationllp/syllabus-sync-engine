@@ -31,9 +31,19 @@ export const gradeSubjectSchema = z.object({
   grade: z.string().min(1),
   stream: z.string().trim().max(50).optional().default(""),
   subject: z.string().trim().min(1).max(100),
+  kind: z.enum(["core", "co_curricular"]).default("core"),
+  // 0 = Sunday … 6 = Saturday. Default Mon–Fri.
+  weekdays: z.array(z.coerce.number().int().min(0).max(6)).min(1, "Pick at least one weekday").default([1, 2, 3, 4, 5]),
   periods_per_week: z.coerce.number().int().min(1).max(40),
   teacher_name: z.string().trim().max(200).optional().default(""),
   completed_chapters: z.string().trim().max(2000).optional().default(""),
+});
+
+// Optional extra-class window for a single senior grade (9/10/11/12).
+const extraClassWindowSchema = z.object({
+  enabled: z.boolean().default(false),
+  start_time: z.string().regex(/^\d{2}:\d{2}$/, "HH:MM").optional().or(z.literal("")).default(""),
+  end_time: z.string().regex(/^\d{2}:\d{2}$/, "HH:MM").optional().or(z.literal("")).default(""),
 });
 
 export const step3Schema = z.object({
@@ -45,7 +55,14 @@ export const step3Schema = z.object({
   period_duration_minutes: z.coerce.number().int().min(15).max(120),
   weekly_off_days: z.array(z.coerce.number().int().min(0).max(6)).default([0]),
   buffer_days: z.coerce.number().int().min(0).max(60).default(10),
-  grade_subjects: z.array(gradeSubjectSchema).min(1, "Add at least one grade-subject row"),
+  // School day timings (HH:MM, 24h). All optional but recommended for accurate AI plans.
+  school_start_time: z.string().regex(/^\d{2}:\d{2}$/, "HH:MM").optional().or(z.literal("")).default(""),
+  school_end_time: z.string().regex(/^\d{2}:\d{2}$/, "HH:MM").optional().or(z.literal("")).default(""),
+  lunch_start_time: z.string().regex(/^\d{2}:\d{2}$/, "HH:MM").optional().or(z.literal("")).default(""),
+  lunch_end_time: z.string().regex(/^\d{2}:\d{2}$/, "HH:MM").optional().or(z.literal("")).default(""),
+  // Optional extra-class window per senior grade (9/10/11/12).
+  senior_extra_classes: z.record(z.string(), extraClassWindowSchema).default({}),
+  grade_subjects: z.array(gradeSubjectSchema).min(6, "Add at least 6 subject rows (mix of core and co-curricular)"),
 });
 
 const dateRangeSchema = z.object({

@@ -21,10 +21,15 @@ export type Database = {
           end_date: string
           id: string
           label: string
+          lunch_end_time: string | null
+          lunch_start_time: string | null
           org_id: string
           period_duration_minutes: number
           periods_per_day: number
+          school_end_time: string | null
           school_id: string
+          school_start_time: string | null
+          senior_extra_classes: Json
           start_date: string
           status: string
           updated_at: string
@@ -37,10 +42,15 @@ export type Database = {
           end_date: string
           id?: string
           label: string
+          lunch_end_time?: string | null
+          lunch_start_time?: string | null
           org_id: string
           period_duration_minutes?: number
           periods_per_day?: number
+          school_end_time?: string | null
           school_id: string
+          school_start_time?: string | null
+          senior_extra_classes?: Json
           start_date: string
           status?: string
           updated_at?: string
@@ -53,10 +63,15 @@ export type Database = {
           end_date?: string
           id?: string
           label?: string
+          lunch_end_time?: string | null
+          lunch_start_time?: string | null
           org_id?: string
           period_duration_minutes?: number
           periods_per_day?: number
+          school_end_time?: string | null
           school_id?: string
+          school_start_time?: string | null
+          senior_extra_classes?: Json
           start_date?: string
           status?: string
           updated_at?: string
@@ -403,11 +418,13 @@ export type Database = {
           created_at: string
           grade: string
           id: string
+          kind: string
           org_id: string
           periods_per_week: number
           stream: string | null
           subject: string
           teacher_name: string | null
+          weekdays: number[]
         }
         Insert: {
           academic_year_id: string
@@ -415,11 +432,13 @@ export type Database = {
           created_at?: string
           grade: string
           id?: string
+          kind?: string
           org_id: string
           periods_per_week?: number
           stream?: string | null
           subject: string
           teacher_name?: string | null
+          weekdays?: number[]
         }
         Update: {
           academic_year_id?: string
@@ -427,11 +446,13 @@ export type Database = {
           created_at?: string
           grade?: string
           id?: string
+          kind?: string
           org_id?: string
           periods_per_week?: number
           stream?: string | null
           subject?: string
           teacher_name?: string | null
+          weekdays?: number[]
         }
         Relationships: [
           {

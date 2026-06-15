@@ -13,13 +13,26 @@ import { Progress } from "@/components/ui/progress";
 import { submitOnboarding } from "@/lib/onboarding.functions";
 import { fullOnboardingSchema, type Step1, type Step2, type Step3, type Step4 } from "@/lib/onboarding-schema";
 import { BOARDS, FEE_TIERS, CURRENCIES, GRADES, BENCHMARK_DEFAULTS } from "@/lib/regional-benchmarks";
-import { sessionEndForStart, sessionLabel, getStreams, getSubjects } from "@/lib/subject-catalog";
+import { sessionEndForStart, sessionLabel, getStreams, getSubjects, inferSubjectKind, SUBJECT_OTHER } from "@/lib/subject-catalog";
 
 export const Route = createFileRoute("/_authenticated/onboarding")({
   component: OnboardingWizard,
 });
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const WORKDAYS = [1, 2, 3, 4, 5, 6]; // Mon–Sat checkbox options for per-subject cadence
+const SENIOR_GRADES = ["9", "10", "11", "12"];
+
+function makeGS(grade: string, stream: string, subject: string, periods = 5): import("@/lib/onboarding-schema").Step3["grade_subjects"][number] {
+  return {
+    grade, stream, subject,
+    kind: inferSubjectKind(subject),
+    weekdays: [1, 2, 3, 4, 5],
+    periods_per_week: periods,
+    teacher_name: "",
+    completed_chapters: "",
+  };
+}
 
 function OnboardingWizard() {
   const submit = useServerFn(submitOnboarding);
@@ -45,9 +58,20 @@ function OnboardingWizard() {
     period_duration_minutes: BENCHMARK_DEFAULTS.period_duration_minutes,
     weekly_off_days: BENCHMARK_DEFAULTS.weekly_off_days,
     buffer_days: BENCHMARK_DEFAULTS.buffer_days,
+    school_start_time: "08:00",
+    school_end_time: "14:30",
+    lunch_start_time: "11:30",
+    lunch_end_time: "12:00",
+    senior_extra_classes: {},
+    // Seed 6 rows: 4 core + 2 co-curricular so the timetable reflects a realistic
+    // 7-period day with mixed activities (per CurriculumOS scheduling rules).
     grade_subjects: [
-      { grade: "1", stream: "", subject: "Mathematics", periods_per_week: 5, teacher_name: "", completed_chapters: "" },
-      { grade: "1", stream: "", subject: "English", periods_per_week: 5, teacher_name: "", completed_chapters: "" },
+      makeGS("8", "", "Mathematics", 6),
+      makeGS("8", "", "English", 5),
+      makeGS("8", "", "Science", 5),
+      makeGS("8", "", "Social Studies", 4),
+      makeGS("8", "", "Sports / Games", 2),
+      makeGS("8", "", "Art & Craft", 1),
     ],
   });
   const [s4, setS4] = useState<Step4>({
@@ -236,27 +260,81 @@ function OnboardingWizard() {
                   ))}
                 </div>
               </Field>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <Field label="School start time">
+                  <Input type="time" value={s3.school_start_time ?? ""} onChange={(e) => setS3({ ...s3, school_start_time: e.target.value })} />
+                </Field>
+                <Field label="School end time">
+                  <Input type="time" value={s3.school_end_time ?? ""} onChange={(e) => setS3({ ...s3, school_end_time: e.target.value })} />
+                </Field>
+                <Field label="Lunch start">
+                  <Input type="time" value={s3.lunch_start_time ?? ""} onChange={(e) => setS3({ ...s3, lunch_start_time: e.target.value })} />
+                </Field>
+                <Field label="Lunch end">
+                  <Input type="time" value={s3.lunch_end_time ?? ""} onChange={(e) => setS3({ ...s3, lunch_end_time: e.target.value })} />
+                </Field>
+              </div>
+              <p className="text-xs text-muted-foreground -mt-2">
+                School timings keep the AI plan within your real school day so the suggested
+                schedule never bleeds past dismissal. Lunch fields are optional.
+              </p>
+
+              <div>
+                <Label className="mb-2 block">Extra classes for senior grades (optional)</Label>
+                <p className="text-xs text-muted-foreground mb-2">
+                  Enable an after-school extra-class window per senior grade. AI will only schedule
+                  remedial / board-prep work inside this window so the regular school day stays untouched.
+                </p>
+                <div className="grid gap-2">
+                  {SENIOR_GRADES.map((g) => {
+                    const w = s3.senior_extra_classes?.[g] ?? { enabled: false, start_time: "", end_time: "" };
+                    const set = (next: { enabled: boolean; start_time: string; end_time: string }) =>
+                      setS3({ ...s3, senior_extra_classes: { ...s3.senior_extra_classes, [g]: next } });
+                    return (
+                      <div key={g} className="grid grid-cols-2 sm:grid-cols-4 gap-2 items-end border p-2 rounded">
+                        <div className="space-y-1">
+                          <Label className="text-xs">Grade {g}</Label>
+                          <Button type="button" size="sm" variant={w.enabled ? "default" : "outline"}
+                            onClick={() => set({ ...w, enabled: !w.enabled })}>
+                            {w.enabled ? "Enabled" : "Disabled"}
+                          </Button>
+                        </div>
+                        <SmallInput label="Start" type="time" value={w.start_time ?? ""}
+                          onChange={(v) => set({ ...w, start_time: v })} />
+                        <SmallInput label="End" type="time" value={w.end_time ?? ""}
+                          onChange={(v) => set({ ...w, end_time: v })} />
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <Label>Grade × stream × subject × periods/week</Label>
+                  <Label>Subjects & co-curricular activities (min 6)</Label>
                   <Button type="button" size="sm" variant="outline"
                     onClick={() => {
-                      const lastGrade = s3.grade_subjects[s3.grade_subjects.length - 1]?.grade ?? "1";
-                      const lastStream = s3.grade_subjects[s3.grade_subjects.length - 1]?.stream ?? "";
+                      const last = s3.grade_subjects[s3.grade_subjects.length - 1];
+                      const lastGrade = last?.grade ?? "8";
+                      const lastStream = last?.stream ?? "";
                       const subs = getSubjects(s1.country, s1.board, lastGrade, lastStream);
-                      setS3({ ...s3, grade_subjects: [...s3.grade_subjects, { grade: lastGrade, stream: lastStream, subject: subs[0] ?? "Mathematics", periods_per_week: 5, teacher_name: "", completed_chapters: "" }] });
+                      setS3({ ...s3, grade_subjects: [...s3.grade_subjects, makeGS(lastGrade, lastStream, subs[0] ?? "Mathematics")] });
                     }}>
-                    <Plus className="h-3 w-3 mr-1" /> Add subject
+                    <Plus className="h-3 w-3 mr-1" /> Add row
                   </Button>
                 </div>
                 <p className="text-xs text-muted-foreground mb-2">
-                  Subjects come from the syllabus catalog for <b>{s1.country || "your country"}</b> / <b>{s1.board.toUpperCase()}</b>.
-                  For Grades 11–12, pick a <b>stream</b> first (Science / Commerce / Arts) to filter electives.
+                  Mix core subjects (Math, English, etc.) with co-curricular periods (Sports, Music, Art, etc.).
+                  For Grades 11–12, pick a <b>stream</b> first to filter electives. Pick <b>"Other"</b> to type any custom subject name.
+                  Use <b>weekdays</b> to schedule alternate-day subjects common in senior grades.
                 </p>
                 <div className="space-y-2">
                   {s3.grade_subjects.map((gs, i) => {
                     const streams = getStreams(s1.country, s1.board, gs.grade);
                     const subjects = getSubjects(s1.country, s1.board, gs.grade, gs.stream);
+                    const isOther = !subjects.includes(gs.subject);
+                    const subjectSelectValue = isOther ? SUBJECT_OTHER : gs.subject;
+                    const setRow = (next: typeof gs) => updateAt(s3.grade_subjects, i, next, (v2) => setS3({ ...s3, grade_subjects: v2 }));
                     return (
                       <div key={i} className="grid grid-cols-2 sm:grid-cols-6 gap-2 items-end border p-2 rounded">
                         <SmallSelect label="Grade" value={gs.grade}
@@ -264,7 +342,7 @@ function OnboardingWizard() {
                             const newStreams = getStreams(s1.country, s1.board, v);
                             const newStream = newStreams.length ? (newStreams.find((s) => s.id === gs.stream)?.id ?? newStreams[0].id) : "";
                             const subs = getSubjects(s1.country, s1.board, v, newStream);
-                            updateAt(s3.grade_subjects, i, { ...gs, grade: v, stream: newStream, subject: subs.includes(gs.subject) ? gs.subject : (subs[0] ?? gs.subject) }, (v2) => setS3({ ...s3, grade_subjects: v2 }));
+                            setRow({ ...gs, grade: v, stream: newStream, subject: subs.includes(gs.subject) ? gs.subject : (subs[0] ?? gs.subject) });
                           }} options={GRADES} />
                         {streams.length > 0 ? (
                           <div className="space-y-1">
@@ -272,7 +350,7 @@ function OnboardingWizard() {
                             <Select value={gs.stream || streams[0].id}
                               onValueChange={(v) => {
                                 const subs = getSubjects(s1.country, s1.board, gs.grade, v);
-                                updateAt(s3.grade_subjects, i, { ...gs, stream: v, subject: subs.includes(gs.subject) ? gs.subject : (subs[0] ?? gs.subject) }, (v2) => setS3({ ...s3, grade_subjects: v2 }));
+                                setRow({ ...gs, stream: v, subject: subs.includes(gs.subject) ? gs.subject : (subs[0] ?? gs.subject) });
                               }}>
                               <SelectTrigger className="h-8 text-sm"><SelectValue /></SelectTrigger>
                               <SelectContent>{streams.map((s) => <SelectItem key={s.id} value={s.id}>{s.label}</SelectItem>)}</SelectContent>
@@ -284,21 +362,67 @@ function OnboardingWizard() {
                             <div className="h-8 text-xs text-muted-foreground flex items-center px-2 border rounded bg-muted/30">N/A</div>
                           </div>
                         )}
-                        <SmallSelect label="Subject" value={gs.subject}
+                        <SmallSelect label="Subject" value={subjectSelectValue}
                           options={subjects}
-                          onChange={(v) => updateAt(s3.grade_subjects, i, { ...gs, subject: v }, (v2) => setS3({ ...s3, grade_subjects: v2 }))} />
-                        <SmallInput label="Periods/wk" type="number" value={String(gs.periods_per_week)} onChange={(v) => updateAt(s3.grade_subjects, i, { ...gs, periods_per_week: Number(v) }, (v2) => setS3({ ...s3, grade_subjects: v2 }))} />
-                        <SmallInput label="Teacher" value={gs.teacher_name ?? ""} onChange={(v) => updateAt(s3.grade_subjects, i, { ...gs, teacher_name: v }, (v2) => setS3({ ...s3, grade_subjects: v2 }))} />
+                          onChange={(v) => {
+                            if (v === SUBJECT_OTHER) {
+                              setRow({ ...gs, subject: gs.subject && isOther ? gs.subject : "", kind: gs.kind });
+                            } else {
+                              setRow({ ...gs, subject: v, kind: inferSubjectKind(v) });
+                            }
+                          }} />
+                        <SmallInput label="Periods/wk" type="number" value={String(gs.periods_per_week)} onChange={(v) => setRow({ ...gs, periods_per_week: Number(v) })} />
+                        <SmallInput label="Teacher" value={gs.teacher_name ?? ""} onChange={(v) => setRow({ ...gs, teacher_name: v })} />
                         <Button type="button" size="sm" variant="ghost" onClick={() => setS3({ ...s3, grade_subjects: s3.grade_subjects.filter((_, j) => j !== i) })}>
                           <Trash2 className="h-3 w-3" />
                         </Button>
+
+                        {(isOther || subjectSelectValue === SUBJECT_OTHER) && (
+                          <div className="col-span-2 sm:col-span-6 space-y-1">
+                            <Label className="text-xs">Custom subject name</Label>
+                            <Input className="h-8 text-sm" placeholder="e.g. Robotics, Sanskrit, Vocational Skill" value={gs.subject}
+                              onChange={(e) => setRow({ ...gs, subject: e.target.value })} />
+                          </div>
+                        )}
+
+                        <div className="col-span-2 sm:col-span-3 space-y-1">
+                          <Label className="text-xs">Kind</Label>
+                          <div className="flex gap-1">
+                            <Button type="button" size="sm" className="h-7"
+                              variant={gs.kind === "core" ? "default" : "outline"}
+                              onClick={() => setRow({ ...gs, kind: "core" })}>Core</Button>
+                            <Button type="button" size="sm" className="h-7"
+                              variant={gs.kind === "co_curricular" ? "default" : "outline"}
+                              onClick={() => setRow({ ...gs, kind: "co_curricular" })}>Co-curricular</Button>
+                          </div>
+                        </div>
+
+                        <div className="col-span-2 sm:col-span-3 space-y-1">
+                          <Label className="text-xs">Weekdays taught</Label>
+                          <div className="flex gap-1 flex-wrap">
+                            {WORKDAYS.map((d) => {
+                              const on = gs.weekdays.includes(d);
+                              return (
+                                <Button key={d} type="button" size="sm" className="h-7 px-2"
+                                  variant={on ? "default" : "outline"}
+                                  onClick={() => setRow({
+                                    ...gs,
+                                    weekdays: on ? gs.weekdays.filter((x) => x !== d) : [...gs.weekdays, d].sort(),
+                                  })}>
+                                  {DAYS[d]}
+                                </Button>
+                              );
+                            })}
+                          </div>
+                        </div>
+
                         <div className="col-span-2 sm:col-span-6 space-y-1">
                           <Label className="text-xs">Chapters already completed (optional)</Label>
                           <Input
                             className="h-8 text-sm"
                             placeholder="e.g. Ch 1: Number Systems, Ch 2: Polynomials — AI will plan the remaining syllabus from where you stopped"
                             value={gs.completed_chapters ?? ""}
-                            onChange={(e) => updateAt(s3.grade_subjects, i, { ...gs, completed_chapters: e.target.value }, (v2) => setS3({ ...s3, grade_subjects: v2 }))}
+                            onChange={(e) => setRow({ ...gs, completed_chapters: e.target.value })}
                           />
                         </div>
                       </div>
