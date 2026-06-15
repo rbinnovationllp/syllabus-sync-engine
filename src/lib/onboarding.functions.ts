@@ -3,12 +3,13 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 import { fullOnboardingSchema } from "./onboarding-schema";
 import { calculateCapacity } from "./capacity-engine";
+import { friendlyOrgMemberError, logOrgMemberBootstrap } from "./org-errors";
 
 export const submitOnboarding = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => fullOnboardingSchema.parse(input))
   .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
+    const { supabase, userId, claims } = context;
     const { step1, step2, step3, step4 } = data;
 
     // 1. Create organization (admin = creator)
@@ -24,7 +25,14 @@ export const submitOnboarding = createServerFn({ method: "POST" })
     const { error: memErr } = await supabaseAdmin
       .from("org_members")
       .insert({ org_id: org.id, user_id: userId, role: "admin" });
-    if (memErr) throw new Error(`Failed to join org: ${memErr.message}`);
+    if (memErr) throw new Error(friendlyOrgMemberError(memErr.message));
+    await logOrgMemberBootstrap(supabaseAdmin as any, {
+      actorId: userId,
+      actorEmail: (claims?.email as string | undefined) ?? null,
+      orgId: org.id,
+      role: "admin",
+      source: "onboarding",
+    });
 
     // 3. School
     const { data: school, error: schErr } = await supabase
