@@ -234,43 +234,84 @@ export const generateSubjectCurriculum = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { userId, supabase } = context;
     const gate = await requireActiveSubscription(supabase, userId);
-    if (!gate.ok) return { error: "PAID_PLAN_REQUIRED" as const };
+    const isFreePreview = !gate.ok;
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const quota = await getMonthlyQuota(supabaseAdmin, userId);
-    const cost = AI_ACTION_COSTS.generate_subject_curriculum;
-    const { data: spent, error: rpcErr } = await supabaseAdmin.rpc("consume_ai_credits", {
-      _user_id: userId, _cost: cost, _monthly_quota: quota, _check_env: "live",
-    });
-    if (rpcErr) return { error: "CREDITS_ERROR" as const, message: rpcErr.message };
-    if (spent === null) return { error: "INSUFFICIENT_CREDITS" as const };
+
+    // Free-trial gating: unpaid users may generate ONE 30-day preview for ONE subject, total.
+    if (isFreePreview) {
+      const { count } = await supabaseAdmin
+        .from("subject_curricula")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", userId);
+      if ((count ?? 0) >= 1) {
+        return {
+          error: "PAID_PLAN_REQUIRED" as const,
+          message:
+            "Your free 30-day preview has been used. Subscribe to your category to unlock the full annual curriculum for every subject.",
+        };
+      }
+    }
+
+    // Only charge AI credits for paid runs; free previews don't consume credits.
+    let cost = 0;
+    if (!isFreePreview) {
+      const quota = await getMonthlyQuota(supabaseAdmin, userId);
+      cost = AI_ACTION_COSTS.generate_subject_curriculum;
+      const { data: spent, error: rpcErr } = await supabaseAdmin.rpc("consume_ai_credits", {
+        _user_id: userId, _cost: cost, _monthly_quota: quota, _check_env: "live",
+      });
+      if (rpcErr) return { error: "CREDITS_ERROR" as const, message: rpcErr.message };
+      if (spent === null) return { error: "INSUFFICIENT_CREDITS" as const };
+    }
 
     let ctx;
     try {
       ctx = await loadContext(supabaseAdmin, userId, data.year_id);
     } catch (e: any) {
       await logRun(supabaseAdmin, { userId, yearId: data.year_id, action: "generate_subject_curriculum", creditsSpent: cost, status: "error", error: e.message });
-      await refundCredits(supabaseAdmin, userId, cost);
+      if (cost > 0) await refundCredits(supabaseAdmin, userId, cost);
       return { error: "LOAD_FAILED" as const, message: e.message };
     }
     const gs = ctx.gradeSubjects.find((g: any) => String(g.grade) === data.grade && g.subject.toLowerCase() === data.subject.toLowerCase());
     if (!gs) return { error: "SUBJECT_NOT_FOUND" as const };
     const books = ctx.textbooks.filter((b: any) => String(b.grade) === data.grade && b.subject?.toLowerCase() === data.subject.toLowerCase());
-    const weeks = Math.max(1, Math.floor((ctx.capacity?.t_available ?? 180) / Math.max(1, ctx.year.working_days_per_week)));
-    const totalPeriods = weeks * gs.periods_per_week;
+
+    // Capacity sizing: preview = ~30 days from today; paid = remaining session days.
+    const today = new Date();
+    const yearEnd = new Date(ctx.year.end_date);
+    const previewEnd = new Date(today);
+    previewEnd.setDate(previewEnd.getDate() + 30);
+    const previewWindowEnd = previewEnd < yearEnd ? previewEnd : yearEnd;
+    const windowDays = isFreePreview
+      ? Math.max(1, Math.ceil((previewWindowEnd.getTime() - today.getTime()) / 86_400_000))
+      : (ctx.capacity?.t_available ?? 180);
+    const weeks = Math.max(1, Math.floor(windowDays / Math.max(1, ctx.year.working_days_per_week)));
+    const totalPeriods = Math.max(1, weeks * gs.periods_per_week);
+
+    const completedNote = gs.completed_chapters
+      ? `Chapters ALREADY COMPLETED by the teacher (do NOT repeat these — start the plan from the next logical chapter): ${gs.completed_chapters}`
+      : `No chapters have been completed yet — start from the first chapter.`;
+
+    const previewClause = isFreePreview
+      ? `This is a FREE 30-day preview. Plan ONLY the next ${windowDays} calendar days (~${weeks} teaching weeks) of lessons starting today (${today.toISOString().slice(0,10)}). Limit chapter count to fit this window. Add a final summary note: "Subscribe to your category plan to unlock the full annual curriculum."`
+      : `Plan the FULL remaining session (${ctx.year.start_date} → ${ctx.year.end_date}).`;
 
     const system = `You are CurriculumOS, a senior academic coordinator. Produce a chapter-by-chapter teaching plan for ONE grade-subject that:
 - Fits within total_periods AND leaves a buffer of ~15% for revision/recovery.
 - Tags each chapter difficulty (simple/medium/tough). Avoid placing two 'tough' chapters in consecutive weeks.
 - Aligns with the board (${ctx.year.schools?.board}) and the listed textbooks if any.
 - Sequences foundation chapters before dependent ones.
+- Respects any "already completed" chapters listed by the teacher and continues from the next chapter.
 Return strictly the JSON schema; no extra prose.`;
 
     const prompt = `School: ${ctx.year.schools?.name} | Board: ${ctx.year.schools?.board} | Country: ${ctx.year.schools?.country}
 Grade ${data.grade} · ${data.subject}
 Periods/week: ${gs.periods_per_week} | Total weeks available: ${weeks} | Total periods: ${totalPeriods}
-Textbooks: ${books.length === 0 ? "(none specified — choose board-appropriate canonical chapter list)" : books.map((b: any) => `${b.book_name} by ${b.author} (${b.publisher}, ${b.edition_year})`).join("; ")}
-Year window: ${ctx.year.start_date} → ${ctx.year.end_date}.`;
+Textbooks: ${books.length === 0 ? "(none specified — choose board-appropriate canonical chapter list)" : books.map((b: any) => `${b.book_name ?? b.title} by ${b.author} (${b.publisher}, ${b.edition_year})`).join("; ")}
+Year window: ${ctx.year.start_date} → ${ctx.year.end_date}.
+${completedNote}
+${previewClause}`;
 
     let output, runId;
     try {
@@ -278,18 +319,35 @@ Year window: ${ctx.year.start_date} → ${ctx.year.end_date}.`;
       output = r.output; runId = r.runId;
     } catch (e: any) {
       await logRun(supabaseAdmin, { userId, yearId: data.year_id, action: "generate_subject_curriculum", creditsSpent: cost, status: "error", error: e.message, runId });
-      await refundCredits(supabaseAdmin, userId, cost);
+      if (cost > 0) await refundCredits(supabaseAdmin, userId, cost);
       return { error: "AI_FAILED" as const, message: e.message };
     }
 
     await supabaseAdmin
       .from("subject_curricula")
       .upsert(
-        { year_id: data.year_id, user_id: userId, grade: data.grade, subject: data.subject, chapters: output.chapters, meta: { model: MODEL, summary: output.summary, total_periods: output.total_periods, buffer_periods: output.buffer_periods, warnings: output.warnings, generated_at: new Date().toISOString() } },
+        {
+          year_id: data.year_id,
+          user_id: userId,
+          grade: data.grade,
+          subject: data.subject,
+          chapters: output.chapters,
+          meta: {
+            model: MODEL,
+            summary: output.summary,
+            total_periods: output.total_periods,
+            buffer_periods: output.buffer_periods,
+            warnings: output.warnings,
+            generated_at: new Date().toISOString(),
+            preview: isFreePreview,
+            preview_window_days: isFreePreview ? windowDays : null,
+            completed_chapters: gs.completed_chapters ?? null,
+          },
+        },
         { onConflict: "year_id,grade,subject" },
       );
-    await logRun(supabaseAdmin, { userId, yearId: data.year_id, action: "generate_subject_curriculum", creditsSpent: cost, status: "success", runId, details: { grade: data.grade, subject: data.subject } });
-    return { ok: true as const, ...output };
+    await logRun(supabaseAdmin, { userId, yearId: data.year_id, action: "generate_subject_curriculum", creditsSpent: cost, status: "success", runId, details: { grade: data.grade, subject: data.subject, preview: isFreePreview } });
+    return { ok: true as const, preview: isFreePreview, preview_window_days: isFreePreview ? windowDays : null, ...output };
   });
 
 const recalcInput = z.object({
