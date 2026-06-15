@@ -46,8 +46,8 @@ function OnboardingWizard() {
     weekly_off_days: BENCHMARK_DEFAULTS.weekly_off_days,
     buffer_days: BENCHMARK_DEFAULTS.buffer_days,
     grade_subjects: [
-      { grade: "1", stream: "", subject: "Mathematics", periods_per_week: 5, teacher_name: "" },
-      { grade: "1", stream: "", subject: "English", periods_per_week: 5, teacher_name: "" },
+      { grade: "1", stream: "", subject: "Mathematics", periods_per_week: 5, teacher_name: "", completed_chapters: "" },
+      { grade: "1", stream: "", subject: "English", periods_per_week: 5, teacher_name: "", completed_chapters: "" },
     ],
   });
   const [s4, setS4] = useState<Step4>({
