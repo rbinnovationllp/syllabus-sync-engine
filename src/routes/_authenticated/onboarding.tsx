@@ -292,6 +292,15 @@ function OnboardingWizard() {
                         <Button type="button" size="sm" variant="ghost" onClick={() => setS3({ ...s3, grade_subjects: s3.grade_subjects.filter((_, j) => j !== i) })}>
                           <Trash2 className="h-3 w-3" />
                         </Button>
+                        <div className="col-span-2 sm:col-span-6 space-y-1">
+                          <Label className="text-xs">Chapters already completed (optional)</Label>
+                          <Input
+                            className="h-8 text-sm"
+                            placeholder="e.g. Ch 1: Number Systems, Ch 2: Polynomials — AI will plan the remaining syllabus from where you stopped"
+                            value={gs.completed_chapters ?? ""}
+                            onChange={(e) => updateAt(s3.grade_subjects, i, { ...gs, completed_chapters: e.target.value }, (v2) => setS3({ ...s3, grade_subjects: v2 }))}
+                          />
+                        </div>
                       </div>
                     );
                   })}
