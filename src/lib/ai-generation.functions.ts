@@ -317,9 +317,18 @@ export const generateSubjectCurriculum = createServerFn({ method: "POST" })
 - Respects any "already completed" chapters listed by the teacher and continues from the next chapter.
 Return strictly the JSON schema; no extra prose.`;
 
+    const DOW = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+    const weekdaysLabel = (gs.weekdays ?? [1,2,3,4,5]).map((d: number) => DOW[d]).join("/");
+    const seniorWin = ((ctx.year as any).senior_extra_classes ?? {})[data.grade];
+    const seniorClause = seniorWin?.enabled
+      ? `Extra-class window for Grade ${data.grade}: ${seniorWin.start_time}-${seniorWin.end_time}. Only put remedial/board-prep work in this window; never disturb the regular school day.`
+      : "";
+
     const prompt = `School: ${ctx.year.schools?.name} | Board: ${ctx.year.schools?.board} | Country: ${ctx.year.schools?.country}
-Grade ${data.grade} · ${data.subject}
-Periods/week: ${gs.periods_per_week} | Total weeks available: ${weeks} | Total periods: ${totalPeriods}
+Grade ${data.grade} · ${data.subject} [${gs.kind ?? "core"}]
+Periods/week: ${gs.periods_per_week} on ${weekdaysLabel} | Total weeks available: ${weeks} | Total periods: ${totalPeriods}
+School day: ${(ctx.year as any).school_start_time ?? "?"} – ${(ctx.year as any).school_end_time ?? "?"} (lunch ${(ctx.year as any).lunch_start_time ?? "?"}–${(ctx.year as any).lunch_end_time ?? "?"})
+${seniorClause}
 Textbooks: ${books.length === 0 ? "(none specified — choose board-appropriate canonical chapter list)" : books.map((b: any) => `${b.book_name ?? b.title} by ${b.author} (${b.publisher}, ${b.edition_year})`).join("; ")}
 Year window: ${ctx.year.start_date} → ${ctx.year.end_date}.
 ${completedNote}
