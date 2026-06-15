@@ -366,7 +366,7 @@ function PricingPage() {
               <div>
                 <h4 className="text-sm font-semibold mb-2">What's included &amp; restricted</h4>
                 <ul className="space-y-1.5 text-sm">
-                  {pending.plan.restrictions.map((r) => {
+                  {planDisplayRestrictions(pending.plan, currency).map((r) => {
                     const negative = /^no\b/i.test(r);
                     return (
                       <li key={r} className="flex items-start gap-2">
