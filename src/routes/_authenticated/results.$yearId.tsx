@@ -43,9 +43,13 @@ function handleAiError(res: any): boolean {
   if (!res || typeof res !== "object") return false;
   if ("error" in res) {
     if (res.error === "PAID_PLAN_REQUIRED") {
-      toast.error("Active subscription required.", {
-        action: { label: "View plans", onClick: () => (window.location.href = "/pricing") },
-      });
+      toast.error(
+        res.message ??
+          "Subscribe to your category plan to generate full annual curricula. Your free 30-day preview covers one subject only.",
+        {
+          action: { label: "View plans", onClick: () => (window.location.href = "/pricing") },
+        },
+      );
     } else if (res.error === "INSUFFICIENT_CREDITS") {
       toast.error("Not enough AI credits.", {
         action: { label: "Top up", onClick: () => (window.location.href = "/pricing") },
