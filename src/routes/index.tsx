@@ -326,6 +326,10 @@ function Contact() {
                 <li key={x} className="flex items-start gap-2"><CheckCircle2 className="mt-0.5 h-4 w-4 text-emerald-500" /> {x}</li>
               ))}
             </ul>
+            <p className="mt-6 text-sm text-slate-600">
+              Prefer email? Reach support at{" "}
+              <a href="mailto:support@syllabus-sync.in" className="font-medium text-indigo-600 hover:underline">support@syllabus-sync.in</a>.
+            </p>
           </div>
           <Card className="border-slate-200 shadow-xl">
             <CardContent className="p-6">
