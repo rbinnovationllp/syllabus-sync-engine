@@ -311,7 +311,7 @@ function OnboardingWizard() {
 
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <Label>Subjects & co-curricular activities (min 6)</Label>
+                  <Label>Subjects & co-curricular activities (min 6 — add as many as your school needs)</Label>
                   <Button type="button" size="sm" variant="outline"
                     onClick={() => {
                       const last = s3.grade_subjects[s3.grade_subjects.length - 1];
@@ -320,11 +320,12 @@ function OnboardingWizard() {
                       const subs = getSubjects(s1.country, s1.board, lastGrade, lastStream);
                       setS3({ ...s3, grade_subjects: [...s3.grade_subjects, makeGS(lastGrade, lastStream, subs[0] ?? "Mathematics")] });
                     }}>
-                    <Plus className="h-3 w-3 mr-1" /> Add row
+                    <Plus className="h-3 w-3 mr-1" /> Add subject row
                   </Button>
                 </div>
                 <p className="text-xs text-muted-foreground mb-2">
-                  Mix core subjects (Math, English, etc.) with co-curricular periods (Sports, Music, Art, etc.).
+                  Mix core subjects (Math, English, Science, <b>Computer Science</b>, etc.) with co-curricular periods (Sports, Music, Dance, Art & Craft, Karate, etc.).
+                  Most schools run 6–9 subjects per grade — use <b>+ Add subject row</b> for every subject taught so the timetable can schedule all of them.
                   For Grades 11–12, pick a <b>stream</b> first to filter electives. Pick <b>"Other"</b> to type any custom subject name.
                   Use <b>weekdays</b> to schedule alternate-day subjects common in senior grades.
                 </p>
