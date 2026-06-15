@@ -138,7 +138,7 @@ export const PLANS: Plan[] = [
     features: ["Pre-K–Grade 5, all subjects", "Up to 6 users", "2,000 AI credits/mo", "10 GB storage"],
     restrictions: [
       "Single school",
-      "Maximum 6 users (extra user: ₹199/mo)",
+      "Maximum 6 users (extra user: {extra_user_price})",
       "2,000 AI credits / month",
       "10 GB storage",
       "Email support (48 hrs)",
@@ -176,7 +176,7 @@ export const PLANS: Plan[] = [
     features: ["Grades 6–8, all subjects", "Up to 10 users", "3,000 AI credits/mo", "20 GB storage"],
     restrictions: [
       "Single school",
-      "Maximum 10 users (extra user: ₹199/mo)",
+      "Maximum 10 users (extra user: {extra_user_price})",
       "3,000 AI credits / month",
       "20 GB storage",
       "Priority email support",
@@ -214,7 +214,7 @@ export const PLANS: Plan[] = [
     features: ["Grades 9–12, all subjects", "Up to 18 users", "5,000 AI credits/mo", "50 GB storage"],
     restrictions: [
       "Single school",
-      "Maximum 18 users (extra user: ₹199/mo)",
+      "Maximum 18 users (extra user: {extra_user_price})",
       "5,000 AI credits / month",
       "50 GB storage",
       "Phone + Email support",
@@ -258,8 +258,8 @@ export const PLANS: Plan[] = [
       "Dedicated account manager",
     ],
     restrictions: [
-      "1 campus only (extra campus: ₹4,999/mo)",
-      "Maximum 60 users (extra user: ₹199/mo)",
+      "1 campus only (extra campus: {extra_campus_price})",
+      "Maximum 60 users (extra user: {extra_user_price})",
       "20,000 AI credits / month",
       "200 GB storage",
       "Dedicated account manager",
