@@ -32,7 +32,9 @@ export const Route = createFileRoute("/")({
       { property: "og:title", content: "CurriculumOS — AI Curriculum Planning for K-12 Schools" },
       { property: "og:description", content: "From holiday calendar to lesson plan in minutes. Built for school leaders worldwide." },
       { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://www.syllabus-sync.in/" },
     ],
+    links: [{ rel: "canonical", href: "https://www.syllabus-sync.in/" }],
   }),
   component: Landing,
 });
@@ -324,6 +326,10 @@ function Contact() {
                 <li key={x} className="flex items-start gap-2"><CheckCircle2 className="mt-0.5 h-4 w-4 text-emerald-500" /> {x}</li>
               ))}
             </ul>
+            <p className="mt-6 text-sm text-slate-600">
+              Prefer email? Reach support at{" "}
+              <a href="mailto:support@syllabus-sync.in" className="font-medium text-indigo-600 hover:underline">support@syllabus-sync.in</a>.
+            </p>
           </div>
           <Card className="border-slate-200 shadow-xl">
             <CardContent className="p-6">
@@ -359,12 +365,31 @@ function Contact() {
 function Footer() {
   return (
     <footer className="border-t border-slate-200 bg-white">
-      <div className="container mx-auto flex flex-col items-center justify-between gap-3 px-4 py-8 text-xs text-slate-500 sm:flex-row">
-        <span>© {new Date().getFullYear()} CurriculumOS. Built for school leaders worldwide.</span>
-        <div className="flex gap-5">
-          <a href="#features" className="hover:text-slate-800">Features</a>
-          <a href="#contact" className="hover:text-slate-800">Contact</a>
-          <Link to="/auth" className="hover:text-slate-800">Sign in</Link>
+      <div className="container mx-auto grid gap-6 px-4 py-10 text-xs text-slate-500 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="space-y-2">
+          <div className="text-sm font-semibold text-slate-800">CurriculumOS</div>
+          <p>AI curriculum planning for K-12 schools worldwide.</p>
+          <p>
+            Website: <a href="https://www.syllabus-sync.in" className="hover:text-slate-800">https://www.syllabus-sync.in</a>
+          </p>
+          <p>
+            Support: <a href="mailto:support@syllabus-sync.in" className="hover:text-slate-800">support@syllabus-sync.in</a>
+          </p>
+        </div>
+        <div className="space-y-2">
+          <div className="text-sm font-semibold text-slate-800">Company address</div>
+          <p>Rashi Bhartiya Innovation LLP</p>
+          <p>
+            Email: <a href="mailto:rbinnovationllp@gmail.com" className="hover:text-slate-800">rbinnovationllp@gmail.com</a>
+          </p>
+        </div>
+        <div className="space-y-2 sm:col-span-2 lg:col-span-1 lg:text-right">
+          <div className="flex flex-wrap gap-5 lg:justify-end">
+            <a href="#features" className="hover:text-slate-800">Features</a>
+            <a href="#contact" className="hover:text-slate-800">Contact</a>
+            <Link to="/auth" className="hover:text-slate-800">Sign in</Link>
+          </div>
+          <p>© {new Date().getFullYear()} CurriculumOS. All rights reserved.</p>
         </div>
       </div>
     </footer>
