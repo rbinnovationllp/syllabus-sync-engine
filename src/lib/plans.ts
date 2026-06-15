@@ -421,3 +421,20 @@ export function limitsForTier(tier: TierId | null): PlanLimits | null {
 export function aiCostForAction(action: AiAction): number {
   return AI_ACTION_COSTS[action];
 }
+
+/** Resolve currency-aware add-on display price. */
+export function addOnPriceDisplay(addOnId: AddOnId, currency: Currency): string {
+  const addon = ADD_ONS.find((a) => a.id === addOnId);
+  if (!addon) return "";
+  const price = addon.prices.find((p) => p.currency === currency);
+  return price?.display ?? "";
+}
+
+/** Replace {extra_user_price} / {extra_campus_price} placeholders in plan restrictions. */
+export function planDisplayRestrictions(plan: Plan, currency: Currency): string[] {
+  const extraUser = addOnPriceDisplay("extra_user", currency);
+  const extraCampus = addOnPriceDisplay("extra_campus", currency);
+  return plan.restrictions.map((r) =>
+    r.replace("{extra_user_price}", extraUser).replace("{extra_campus_price}", extraCampus),
+  );
+}
