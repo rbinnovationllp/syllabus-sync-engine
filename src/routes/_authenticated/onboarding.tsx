@@ -20,6 +20,19 @@ export const Route = createFileRoute("/_authenticated/onboarding")({
 });
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const WORKDAYS = [1, 2, 3, 4, 5, 6]; // Mon–Sat checkbox options for per-subject cadence
+const SENIOR_GRADES = ["9", "10", "11", "12"];
+
+function makeGS(grade: string, stream: string, subject: string, periods = 5): import("@/lib/onboarding-schema").Step3["grade_subjects"][number] {
+  return {
+    grade, stream, subject,
+    kind: inferSubjectKind(subject),
+    weekdays: [1, 2, 3, 4, 5],
+    periods_per_week: periods,
+    teacher_name: "",
+    completed_chapters: "",
+  };
+}
 
 function OnboardingWizard() {
   const submit = useServerFn(submitOnboarding);
