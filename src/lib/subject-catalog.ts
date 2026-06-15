@@ -226,10 +226,44 @@ function genericSubjects(grade: string): string[] {
   return ["Mathematics", "English", "Science", "Social Studies", "Second Language", "Computer Science", "Physical Education", "Elective"];
 }
 
+// Common co-curricular activities exposed in the subject dropdown so schools can
+// schedule them alongside core academics. Placed after academic subjects, with
+// "Other" always last so users can specify any custom subject.
+export const CO_CURRICULAR_SUBJECTS = [
+  "Sports / Games",
+  "Music",
+  "Dance",
+  "Art & Craft",
+  "Drama / Theatre",
+  "Yoga",
+  "Karate / Martial Arts",
+  "Library",
+  "Club Activity",
+] as const;
+
+export const SUBJECT_OTHER = "Other" as const;
+
 export function getSubjects(country: string, board: string, grade: string, stream?: string): string[] {
   const key = detectCountryKey(country, board);
-  if (key === "india") return indiaSubjects(grade, stream);
-  if (key === "usa" || key === "canada") return usSubjects(grade, stream);
-  if (key === "uk") return ukSubjects(grade, stream);
-  return genericSubjects(grade);
+  let academic: string[];
+  if (key === "india") academic = indiaSubjects(grade, stream);
+  else if (key === "usa" || key === "canada") academic = usSubjects(grade, stream);
+  else if (key === "uk") academic = ukSubjects(grade, stream);
+  else academic = genericSubjects(grade);
+  // De-dupe in case any catalog already includes a co-curricular name.
+  const seen = new Set(academic);
+  const co = CO_CURRICULAR_SUBJECTS.filter((s) => !seen.has(s));
+  return [...academic, ...co, SUBJECT_OTHER];
+}
+
+/** Heuristic: rows that look like sports/music/art default to co-curricular. */
+export function inferSubjectKind(subject: string): "core" | "co_curricular" {
+  const s = subject.toLowerCase();
+  if (
+    s.includes("sport") || s.includes("game") || s.includes("music") || s.includes("dance") ||
+    s.includes("art") || s.includes("craft") || s.includes("drama") || s.includes("theatre") ||
+    s.includes("yoga") || s.includes("karate") || s.includes("martial") ||
+    s.includes("library") || s.includes("club") || s.includes("physical education") || s === "pe"
+  ) return "co_curricular";
+  return "core";
 }
