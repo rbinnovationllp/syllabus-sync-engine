@@ -113,7 +113,7 @@ function SeatsPage() {
                 </div>
               </div>
               <Button asChild variant="outline" size="sm">
-                <Link to="/pricing">Add seats (₹199/mo)</Link>
+                <Link to="/pricing">Add seats</Link>
               </Button>
             </CardContent>
           </Card>
