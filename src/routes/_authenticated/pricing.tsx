@@ -16,6 +16,7 @@ import {
   AI_ACTION_COSTS,
   PAID_SERVICES,
   annualRebateEligible,
+  planDisplayRestrictions,
   type Currency,
   type BillingInterval,
   type Plan,
@@ -204,7 +205,7 @@ function PricingPage() {
                 </CardHeader>
                 <CardContent className="flex-1 flex flex-col gap-4">
                   <ul className="space-y-1.5 text-xs">
-                    {p.restrictions.map((r) => {
+                    {planDisplayRestrictions(p, currency).map((r) => {
                       const negative = /^no\b/i.test(r);
                       return (
                         <li key={r} className="flex items-start gap-2">
@@ -365,7 +366,7 @@ function PricingPage() {
               <div>
                 <h4 className="text-sm font-semibold mb-2">What's included &amp; restricted</h4>
                 <ul className="space-y-1.5 text-sm">
-                  {pending.plan.restrictions.map((r) => {
+                  {planDisplayRestrictions(pending.plan, currency).map((r) => {
                     const negative = /^no\b/i.test(r);
                     return (
                       <li key={r} className="flex items-start gap-2">
