@@ -83,6 +83,7 @@ export const submitOnboarding = createServerFn({ method: "POST" })
       subject: gs.subject,
       periods_per_week: gs.periods_per_week,
       teacher_name: gs.teacher_name || null,
+      completed_chapters: gs.completed_chapters?.trim() || null,
     }));
     const { data: gsInserted, error: gsErr } = await supabase
       .from("grade_subjects")

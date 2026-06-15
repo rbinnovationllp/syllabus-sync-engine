@@ -46,8 +46,8 @@ function OnboardingWizard() {
     weekly_off_days: BENCHMARK_DEFAULTS.weekly_off_days,
     buffer_days: BENCHMARK_DEFAULTS.buffer_days,
     grade_subjects: [
-      { grade: "1", stream: "", subject: "Mathematics", periods_per_week: 5, teacher_name: "" },
-      { grade: "1", stream: "", subject: "English", periods_per_week: 5, teacher_name: "" },
+      { grade: "1", stream: "", subject: "Mathematics", periods_per_week: 5, teacher_name: "", completed_chapters: "" },
+      { grade: "1", stream: "", subject: "English", periods_per_week: 5, teacher_name: "", completed_chapters: "" },
     ],
   });
   const [s4, setS4] = useState<Step4>({
@@ -244,7 +244,7 @@ function OnboardingWizard() {
                       const lastGrade = s3.grade_subjects[s3.grade_subjects.length - 1]?.grade ?? "1";
                       const lastStream = s3.grade_subjects[s3.grade_subjects.length - 1]?.stream ?? "";
                       const subs = getSubjects(s1.country, s1.board, lastGrade, lastStream);
-                      setS3({ ...s3, grade_subjects: [...s3.grade_subjects, { grade: lastGrade, stream: lastStream, subject: subs[0] ?? "Mathematics", periods_per_week: 5, teacher_name: "" }] });
+                      setS3({ ...s3, grade_subjects: [...s3.grade_subjects, { grade: lastGrade, stream: lastStream, subject: subs[0] ?? "Mathematics", periods_per_week: 5, teacher_name: "", completed_chapters: "" }] });
                     }}>
                     <Plus className="h-3 w-3 mr-1" /> Add subject
                   </Button>
@@ -292,6 +292,15 @@ function OnboardingWizard() {
                         <Button type="button" size="sm" variant="ghost" onClick={() => setS3({ ...s3, grade_subjects: s3.grade_subjects.filter((_, j) => j !== i) })}>
                           <Trash2 className="h-3 w-3" />
                         </Button>
+                        <div className="col-span-2 sm:col-span-6 space-y-1">
+                          <Label className="text-xs">Chapters already completed (optional)</Label>
+                          <Input
+                            className="h-8 text-sm"
+                            placeholder="e.g. Ch 1: Number Systems, Ch 2: Polynomials — AI will plan the remaining syllabus from where you stopped"
+                            value={gs.completed_chapters ?? ""}
+                            onChange={(e) => updateAt(s3.grade_subjects, i, { ...gs, completed_chapters: e.target.value }, (v2) => setS3({ ...s3, grade_subjects: v2 }))}
+                          />
+                        </div>
                       </div>
                     );
                   })}

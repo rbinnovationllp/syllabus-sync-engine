@@ -229,7 +229,8 @@ function ResultsPage() {
       {!hasSub && (
         <Card className="mb-4 border-amber-300 bg-amber-50 dark:bg-amber-950/20">
           <CardContent className="py-3 text-sm">
-            Free demo — AI generation is locked and exports are watermarked. <Link to="/pricing" className="text-primary underline">View plans</Link>.
+            <span className="font-medium">Free trial:</span> generate a 30-day preview curriculum for <b>one subject</b> from today.
+            To unlock the full annual curriculum across all your subjects, <Link to="/pricing" className="text-primary underline">subscribe to your category plan</Link>. Exports remain watermarked until you subscribe.
           </CardContent>
         </Card>
       )}
@@ -357,8 +358,19 @@ function ResultsPage() {
           {curricula.map((c) => (
             <Card key={c.id}>
               <CardHeader>
-                <CardTitle className="text-base">Grade {c.grade} · {c.subject}</CardTitle>
+                <CardTitle className="text-base flex items-center gap-2">
+                  Grade {c.grade} · {c.subject}
+                  {c.meta?.preview && <Badge variant="secondary" className="text-[10px]">30-day preview</Badge>}
+                </CardTitle>
                 {c.meta?.summary && <CardDescription>{c.meta.summary}</CardDescription>}
+                {c.meta?.preview && (
+                  <CardDescription className="text-amber-700 dark:text-amber-300">
+                    Preview only — subscribe to your category plan to unlock the full annual curriculum.
+                  </CardDescription>
+                )}
+                {c.meta?.completed_chapters && (
+                  <CardDescription className="text-xs">Resuming after: {c.meta.completed_chapters}</CardDescription>
+                )}
               </CardHeader>
               <CardContent>
                 <ol className="space-y-2 text-sm">

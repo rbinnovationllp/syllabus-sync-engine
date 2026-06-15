@@ -399,6 +399,7 @@ export type Database = {
       grade_subjects: {
         Row: {
           academic_year_id: string
+          completed_chapters: string | null
           created_at: string
           grade: string
           id: string
@@ -410,6 +411,7 @@ export type Database = {
         }
         Insert: {
           academic_year_id: string
+          completed_chapters?: string | null
           created_at?: string
           grade: string
           id?: string
@@ -421,6 +423,7 @@ export type Database = {
         }
         Update: {
           academic_year_id?: string
+          completed_chapters?: string | null
           created_at?: string
           grade?: string
           id?: string
