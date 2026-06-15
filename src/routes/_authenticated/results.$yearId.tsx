@@ -229,7 +229,8 @@ function ResultsPage() {
       {!hasSub && (
         <Card className="mb-4 border-amber-300 bg-amber-50 dark:bg-amber-950/20">
           <CardContent className="py-3 text-sm">
-            Free demo — AI generation is locked and exports are watermarked. <Link to="/pricing" className="text-primary underline">View plans</Link>.
+            <span className="font-medium">Free trial:</span> generate a 30-day preview curriculum for <b>one subject</b> from today.
+            To unlock the full annual curriculum across all your subjects, <Link to="/pricing" className="text-primary underline">subscribe to your category plan</Link>. Exports remain watermarked until you subscribe.
           </CardContent>
         </Card>
       )}
