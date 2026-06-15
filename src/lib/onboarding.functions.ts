@@ -19,8 +19,9 @@ export const submitOnboarding = createServerFn({ method: "POST" })
       .single();
     if (orgErr || !org) throw new Error(`Failed to create org: ${orgErr?.message}`);
 
-    // 2. Join as member
-    const { error: memErr } = await supabase
+    // 2. Join as member (use admin client; self-join policy is intentionally disabled)
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error: memErr } = await supabaseAdmin
       .from("org_members")
       .insert({ org_id: org.id, user_id: userId, role: "admin" });
     if (memErr) throw new Error(`Failed to join org: ${memErr.message}`);
