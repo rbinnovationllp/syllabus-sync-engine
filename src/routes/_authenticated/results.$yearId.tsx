@@ -358,8 +358,19 @@ function ResultsPage() {
           {curricula.map((c) => (
             <Card key={c.id}>
               <CardHeader>
-                <CardTitle className="text-base">Grade {c.grade} · {c.subject}</CardTitle>
+                <CardTitle className="text-base flex items-center gap-2">
+                  Grade {c.grade} · {c.subject}
+                  {c.meta?.preview && <Badge variant="secondary" className="text-[10px]">30-day preview</Badge>}
+                </CardTitle>
                 {c.meta?.summary && <CardDescription>{c.meta.summary}</CardDescription>}
+                {c.meta?.preview && (
+                  <CardDescription className="text-amber-700 dark:text-amber-300">
+                    Preview only — subscribe to your category plan to unlock the full annual curriculum.
+                  </CardDescription>
+                )}
+                {c.meta?.completed_chapters && (
+                  <CardDescription className="text-xs">Resuming after: {c.meta.completed_chapters}</CardDescription>
+                )}
               </CardHeader>
               <CardContent>
                 <ol className="space-y-2 text-sm">
