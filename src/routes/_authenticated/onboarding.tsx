@@ -58,9 +58,20 @@ function OnboardingWizard() {
     period_duration_minutes: BENCHMARK_DEFAULTS.period_duration_minutes,
     weekly_off_days: BENCHMARK_DEFAULTS.weekly_off_days,
     buffer_days: BENCHMARK_DEFAULTS.buffer_days,
+    school_start_time: "08:00",
+    school_end_time: "14:30",
+    lunch_start_time: "11:30",
+    lunch_end_time: "12:00",
+    senior_extra_classes: {},
+    // Seed 6 rows: 4 core + 2 co-curricular so the timetable reflects a realistic
+    // 7-period day with mixed activities (per CurriculumOS scheduling rules).
     grade_subjects: [
-      { grade: "1", stream: "", subject: "Mathematics", periods_per_week: 5, teacher_name: "", completed_chapters: "" },
-      { grade: "1", stream: "", subject: "English", periods_per_week: 5, teacher_name: "", completed_chapters: "" },
+      makeGS("8", "", "Mathematics", 6),
+      makeGS("8", "", "English", 5),
+      makeGS("8", "", "Science", 5),
+      makeGS("8", "", "Social Studies", 4),
+      makeGS("8", "", "Sports / Games", 2),
+      makeGS("8", "", "Art & Craft", 1),
     ],
   });
   const [s4, setS4] = useState<Step4>({
