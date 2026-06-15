@@ -134,7 +134,7 @@ function indiaSubjects(grade: string, stream?: string): string[] {
   }
   // 9–10
   if (g === "9" || g === "10") {
-    return ["Mathematics", "Mathematics (Standard)", "Mathematics (Basic)", "English", "Hindi", "Sanskrit", "Science", "Social Science", "Information Technology", "Artificial Intelligence", "Physical Education", "Art Education", "Regional Language", "French", "German"];
+    return ["Mathematics", "Mathematics (Standard)", "Mathematics (Basic)", "English", "Hindi", "Sanskrit", "Science", "Social Science", "Computer Science", "Information Technology", "Artificial Intelligence", "Physical Education", "Art Education", "Regional Language", "French", "German"];
   }
   // 11–12 by stream
   if (g === "11" || g === "12") {
