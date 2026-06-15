@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { friendlyOrgMemberError, logOrgMemberBootstrap } from "./org-errors";
 
 const inviteSchema = z.object({
   org_id: z.string().uuid(),
@@ -153,14 +154,22 @@ export const acceptInvitation = createServerFn({ method: "POST" })
       throw new Error(`This invitation was sent to ${invite.email}. Sign in with that email.`);
     }
 
-    // Add to org_members (idempotent on unique(org_id, user_id))
+    // Add to org_members (idempotent on unique(org_id, user_id)) via admin client
+    // because the user-scoped RLS policy intentionally blocks self-joins.
     const { error: memberErr } = await supabaseAdmin
       .from("org_members")
       .upsert(
         { org_id: invite.org_id, user_id: userId, role: invite.role },
         { onConflict: "org_id,user_id" },
       );
-    if (memberErr) throw new Error(memberErr.message);
+    if (memberErr) throw new Error(friendlyOrgMemberError(memberErr.message));
+    await logOrgMemberBootstrap(supabaseAdmin as any, {
+      actorId: userId,
+      actorEmail: email ?? null,
+      orgId: invite.org_id,
+      role: invite.role,
+      source: "invitation_accept",
+    });
 
     // Mirror role into user_roles for global RBAC checks (admin/coordinator/etc)
     await supabaseAdmin
