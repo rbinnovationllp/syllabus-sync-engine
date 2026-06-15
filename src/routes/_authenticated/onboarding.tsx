@@ -374,7 +374,10 @@ function OnboardingWizard() {
                           }} />
                         <SmallInput label="Periods/wk" type="number" value={String(gs.periods_per_week)} onChange={(v) => setRow({ ...gs, periods_per_week: Number(v) })} />
                         <SmallInput label="Teacher" value={gs.teacher_name ?? ""} onChange={(v) => setRow({ ...gs, teacher_name: v })} />
-                        <Button type="button" size="sm" variant="ghost" onClick={() => setS3({ ...s3, grade_subjects: s3.grade_subjects.filter((_, j) => j !== i) })}>
+                        <Button type="button" size="sm" variant="ghost"
+                          disabled={s3.grade_subjects.length <= 6}
+                          title={s3.grade_subjects.length <= 6 ? "Minimum 6 subject rows required" : "Remove row"}
+                          onClick={() => setS3({ ...s3, grade_subjects: s3.grade_subjects.filter((_, j) => j !== i) })}>
                           <Trash2 className="h-3 w-3" />
                         </Button>
 
