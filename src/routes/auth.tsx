@@ -28,6 +28,7 @@ function AuthPage() {
   const navigate = useNavigate();
   const { invite } = useSearch({ from: "/auth" });
   const [loading, setLoading] = useState(false);
+  const [tab, setTab] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
@@ -37,7 +38,6 @@ function AuthPage() {
     org_name: string | null;
   } | null>(null);
 
-  // Preview invite token (if present) so we can prefill email & show context
   useEffect(() => {
     if (!invite) return;
     previewInvitation({ data: { token: invite } })
@@ -46,11 +46,11 @@ function AuthPage() {
         if (p.status !== "pending") return toast.error(`Invitation already ${p.status}.`);
         setInvitePreview({ email: p.email, role: p.role, org_name: p.org_name });
         setEmail(p.email);
+        setTab("signup");
       })
       .catch(() => {});
   }, [invite]);
 
-  // If already signed in: accept invite (if any) then route to dashboard
   useEffect(() => {
     supabase.auth.getUser().then(async ({ data }) => {
       if (!data.user) return;
@@ -76,6 +76,9 @@ function AuthPage() {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
       setLoading(false);
+      const m = error.message.toLowerCase();
+      if (m.includes("invalid")) return toast.error("Wrong email or password. Use ‘Forgot password?’ if you don't remember it.");
+      if (m.includes("not confirmed")) return toast.error("Please confirm your email first — check your inbox.");
       return toast.error(error.message);
     }
     await tryAcceptInvite();
@@ -86,7 +89,7 @@ function AuthPage() {
   async function handleEmailSignUp(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -96,17 +99,38 @@ function AuthPage() {
     });
     if (error) {
       setLoading(false);
+      const m = error.message.toLowerCase();
+      if (m.includes("already") || m.includes("registered") || m.includes("exists")) {
+        toast.error("An account with this email already exists. Try signing in instead.");
+        setTab("signin");
+        return;
+      }
       return toast.error(error.message);
     }
-    await tryAcceptInvite();
     setLoading(false);
+    if (!data.session) {
+      toast.success("Account created. Check your email to confirm, then sign in.");
+      setTab("signin");
+      return;
+    }
+    await tryAcceptInvite();
     toast.success("Account created — you're signed in.");
     navigate({ to: "/dashboard" });
   }
 
+  async function handleForgotPassword() {
+    if (!email) return toast.error("Enter your email above first, then click Forgot password.");
+    setLoading(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.origin + "/reset-password",
+    });
+    setLoading(false);
+    if (error) return toast.error(error.message);
+    toast.success("Password reset email sent. Check your inbox.");
+  }
+
   async function handleGoogle() {
     setLoading(true);
-    // Pass invite token through OAuth round-trip so we can accept after callback
     const redirect = window.location.origin + "/auth" + (invite ? `?invite=${encodeURIComponent(invite)}` : "");
     const result = await lovable.auth.signInWithOAuth("google", { redirect_uri: redirect });
     if (result.error) {
@@ -144,7 +168,7 @@ function AuthPage() {
             <CardDescription>Sign in to plan your academic year.</CardDescription>
           </CardHeader>
           <CardContent>
-            <Tabs defaultValue={invitePreview ? "signup" : "signin"}>
+            <Tabs value={tab} onValueChange={(v) => setTab(v as "signin" | "signup")}>
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="signin">Sign in</TabsTrigger>
                 <TabsTrigger value="signup">Create account</TabsTrigger>
@@ -156,7 +180,12 @@ function AuthPage() {
                     <Input id="si-email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
                   </div>
                   <div className="space-y-1.5">
-                    <Label htmlFor="si-password">Password</Label>
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="si-password">Password</Label>
+                      <button type="button" onClick={handleForgotPassword} className="text-xs text-primary hover:underline" disabled={loading}>
+                        Forgot password?
+                      </button>
+                    </div>
                     <Input id="si-password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
                   </div>
                   <Button type="submit" className="w-full" disabled={loading}>
