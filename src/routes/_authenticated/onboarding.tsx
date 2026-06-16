@@ -192,9 +192,16 @@ function OnboardingWizard({ onSwitchType }: { onSwitchType?: () => void }) {
         <div className="mb-6">
           <div className="flex justify-between text-xs text-muted-foreground mb-2">
             <span>Step {step} of 4</span>
-            <span>
-              {["Institution", "Books & Fees", "Calendar & Teachers", "Holidays & Events"][step - 1]}
-            </span>
+            <div className="flex items-center gap-3">
+              <span>
+                {["Institution", "Books & Fees", "Calendar & Teachers", "Holidays & Events"][step - 1]}
+              </span>
+              {onSwitchType && (
+                <button type="button" onClick={onSwitchType} className="text-primary hover:underline">
+                  Switch profile type
+                </button>
+              )}
+            </div>
           </div>
           <Progress value={progress} />
         </div>
@@ -673,7 +680,7 @@ function ListSection<T>({ title, rows, addLabel, onAdd, onRemove, render }: {
 // ---------------------------------------------------------------------------
 const PERIOD_DURATION_OPTIONS = [60, 90, 120];
 
-function TutorWizard() {
+function TutorWizard({ onSwitchType }: { onSwitchType?: () => void }) {
   const submit = useServerFn(submitOnboarding);
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
