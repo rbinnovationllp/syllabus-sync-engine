@@ -643,7 +643,7 @@ function TutorWizard() {
       step1: {
         school_name: tutorName.trim(),
         region: "",
-        country: "",
+        country: "N/A",
         state_province: "",
         city: "",
         board: "custom",
