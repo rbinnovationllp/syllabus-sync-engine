@@ -62,7 +62,8 @@ export const step3Schema = z.object({
   lunch_end_time: z.string().regex(/^\d{2}:\d{2}$/, "HH:MM").optional().or(z.literal("")).default(""),
   // Optional extra-class window per senior grade (9/10/11/12).
   senior_extra_classes: z.record(z.string(), extraClassWindowSchema).default({}),
-  grade_subjects: z.array(gradeSubjectSchema).min(6, "Add at least 6 subject rows (mix of core and co-curricular)"),
+  // Schools should have 6+ rows (enforced in UI); tutors/coaching (retail tier) can submit 1.
+  grade_subjects: z.array(gradeSubjectSchema).min(1, "Add at least one subject"),
 });
 
 const dateRangeSchema = z.object({
