@@ -113,7 +113,7 @@ function makeGS(grade: string, stream: string, subject: string, periods = 5): im
   };
 }
 
-function OnboardingWizard() {
+function OnboardingWizard({ onSwitchType }: { onSwitchType?: () => void }) {
   const submit = useServerFn(submitOnboarding);
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
