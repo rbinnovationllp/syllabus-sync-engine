@@ -14,10 +14,26 @@ import { submitOnboarding } from "@/lib/onboarding.functions";
 import { fullOnboardingSchema, type Step1, type Step2, type Step3, type Step4 } from "@/lib/onboarding-schema";
 import { BOARDS, FEE_TIERS, CURRENCIES, GRADES, BENCHMARK_DEFAULTS } from "@/lib/regional-benchmarks";
 import { sessionEndForStart, sessionLabel, getStreams, getSubjects, inferSubjectKind, SUBJECT_OTHER } from "@/lib/subject-catalog";
+import { useSubscription } from "@/hooks/useSubscription";
 
 export const Route = createFileRoute("/_authenticated/onboarding")({
-  component: OnboardingWizard,
+  component: OnboardingRouter,
 });
+
+function OnboardingRouter() {
+  const { tier, isLoading } = useSubscription();
+  if (isLoading) {
+    return (
+      <AppShell title="Onboarding">
+        <div className="flex items-center justify-center p-8">
+          <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+        </div>
+      </AppShell>
+    );
+  }
+  if (tier === "retail_single_access") return <TutorWizard />;
+  return <OnboardingWizard />;
+}
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const WORKDAYS = [1, 2, 3, 4, 5, 6]; // Mon–Sat checkbox options for per-subject cadence
@@ -584,5 +600,251 @@ function ListSection<T>({ title, rows, addLabel, onAdd, onRemove, render }: {
         </div>
       )}
     </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Tutor / Coaching Institute simplified wizard (Retail Single Access tier).
+// Skips school profile, board, fee tier, teacher matrix, and timetable details.
+// Collects only: class, subject, book, period duration, dates, holidays, exams.
+// ---------------------------------------------------------------------------
+const PERIOD_DURATION_OPTIONS = [60, 90, 120];
+
+function TutorWizard() {
+  const submit = useServerFn(submitOnboarding);
+  const navigate = useNavigate();
+  const [step, setStep] = useState(1);
+  const [saving, setSaving] = useState(false);
+
+  const today = new Date();
+  const initialStart = today.toISOString().slice(0, 10);
+  const initialEnd = sessionEndForStart(initialStart, "", "custom");
+
+  const [tutorName, setTutorName] = useState("");
+  const [grade, setGrade] = useState("8");
+  const [subject, setSubject] = useState("Mathematics");
+  const [book, setBook] = useState({ title: "", author: "", publisher: "", edition_year: "" });
+  const [periodDuration, setPeriodDuration] = useState(60);
+  const [periodsPerWeek, setPeriodsPerWeek] = useState(3);
+  const [startDate, setStartDate] = useState(initialStart);
+  const [endDate, setEndDate] = useState(initialEnd);
+
+  const [s4, setS4] = useState<Step4>({
+    holidays: [], vacation_breaks: [], events: [], exam_windows: [], training_days: [],
+  });
+
+  const progress = (step / 2) * 100;
+
+  async function handleSubmit() {
+    if (!tutorName.trim()) return toast.error("Please enter your name or institute name");
+    if (!subject.trim()) return toast.error("Subject is required");
+
+    const payload = {
+      step1: {
+        school_name: tutorName.trim(),
+        region: "",
+        country: "N/A",
+        state_province: "",
+        city: "",
+        board: "custom",
+      },
+      step2: {
+        currency: "USD",
+        fee_tier: "mid" as const,
+        textbooks: book.title || book.author || book.publisher
+          ? [{
+              grade,
+              subject,
+              title: book.title,
+              author: book.author,
+              publisher: book.publisher,
+              edition_year: book.edition_year ? Number(book.edition_year) : undefined,
+            }]
+          : [],
+      },
+      step3: {
+        label: sessionLabel(startDate, endDate),
+        start_date: startDate,
+        end_date: endDate,
+        working_days_per_week: 6,
+        periods_per_day: 1,
+        period_duration_minutes: periodDuration,
+        weekly_off_days: [0],
+        buffer_days: 5,
+        school_start_time: "",
+        school_end_time: "",
+        lunch_start_time: "",
+        lunch_end_time: "",
+        senior_extra_classes: {},
+        grade_subjects: [{
+          grade,
+          stream: "",
+          subject,
+          kind: inferSubjectKind(subject),
+          weekdays: [1, 2, 3, 4, 5],
+          periods_per_week: periodsPerWeek,
+          teacher_name: "",
+          completed_chapters: "",
+        }],
+      },
+      step4: s4,
+    };
+
+    const parsed = fullOnboardingSchema.safeParse(payload);
+    if (!parsed.success) {
+      const first = parsed.error.issues[0];
+      return toast.error(`${first.path.join(".")}: ${first.message}`);
+    }
+    setSaving(true);
+    try {
+      const result = await submit({ data: parsed.data });
+      toast.success(`Plan ready — ${result.breakdown.t_available} teaching days available.`);
+      navigate({ to: "/results/$yearId", params: { yearId: result.academic_year_id } });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to save");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <AppShell title="Tutor onboarding">
+      <div className="max-w-3xl mx-auto">
+        <div className="mb-6">
+          <div className="flex justify-between text-xs text-muted-foreground mb-2">
+            <span>Step {step} of 2</span>
+            <span>{["Class & book", "Holidays & exams"][step - 1]}</span>
+          </div>
+          <Progress value={progress} />
+        </div>
+
+        {step === 1 && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Your class & textbook</CardTitle>
+              <CardDescription>
+                Built for individual tutors and coaching institutes — only the essentials needed
+                to plan your course schedule.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Field label="Your name or institute name" required>
+                <Input value={tutorName} onChange={(e) => setTutorName(e.target.value)} maxLength={200} placeholder="e.g. Sharma Tutorials" />
+              </Field>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Field label="Class / grade" required>
+                  <Select value={grade} onValueChange={setGrade}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>{GRADES.map((g) => <SelectItem key={g} value={g}>{g}</SelectItem>)}</SelectContent>
+                  </Select>
+                </Field>
+                <Field label="Subject" required>
+                  <Input value={subject} onChange={(e) => setSubject(e.target.value)} placeholder="e.g. Mathematics" />
+                </Field>
+              </div>
+
+              <div className="border rounded p-3 space-y-3">
+                <Label className="text-sm font-medium">Textbook details</Label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <SmallInput label="Book title" value={book.title} onChange={(v) => setBook({ ...book, title: v })} />
+                  <SmallInput label="Author" value={book.author} onChange={(v) => setBook({ ...book, author: v })} />
+                  <SmallInput label="Publisher" value={book.publisher} onChange={(v) => setBook({ ...book, publisher: v })} />
+                  <SmallInput label="Edition year" type="number" value={book.edition_year} onChange={(v) => setBook({ ...book, edition_year: v })} />
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Edition year matters — chapter content changes between editions.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Field label="Period duration" required>
+                  <Select value={String(periodDuration)} onValueChange={(v) => setPeriodDuration(Number(v))}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {PERIOD_DURATION_OPTIONS.map((m) => <SelectItem key={m} value={String(m)}>{m} minutes</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </Field>
+                <Field label="Classes per week" required>
+                  <Input type="number" min="1" max="14" value={periodsPerWeek} onChange={(e) => setPeriodsPerWeek(Number(e.target.value) || 1)} />
+                </Field>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Field label="Course start date" required>
+                  <Input type="date" value={startDate} onChange={(e) => {
+                    setStartDate(e.target.value);
+                    setEndDate(sessionEndForStart(e.target.value, "", "custom"));
+                  }} />
+                </Field>
+                <Field label="Course end date" required>
+                  <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+                </Field>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {step === 2 && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Holidays, breaks & exams</CardTitle>
+              <CardDescription>
+                Add any days you won't teach so the AI plans only around your real availability. Skip what doesn't apply.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <ListSection title="Holidays" rows={s4.holidays}
+                addLabel="Add holiday"
+                onAdd={() => setS4({ ...s4, holidays: [...s4.holidays, { name: "", date: startDate, scope: "school" }] })}
+                onRemove={(i) => setS4({ ...s4, holidays: s4.holidays.filter((_, j) => j !== i) })}
+                render={(h, i) => (
+                  <>
+                    <SmallInput label="Name" value={h.name} onChange={(v) => updateAt(s4.holidays, i, { ...h, name: v }, (v2) => setS4({ ...s4, holidays: v2 }))} />
+                    <SmallInput label="Date" type="date" value={h.date} onChange={(v) => updateAt(s4.holidays, i, { ...h, date: v }, (v2) => setS4({ ...s4, holidays: v2 }))} />
+                  </>
+                )} />
+              <ListSection title="Vacation breaks" rows={s4.vacation_breaks}
+                addLabel="Add vacation"
+                onAdd={() => setS4({ ...s4, vacation_breaks: [...s4.vacation_breaks, { name: "", start_date: startDate, end_date: startDate }] })}
+                onRemove={(i) => setS4({ ...s4, vacation_breaks: s4.vacation_breaks.filter((_, j) => j !== i) })}
+                render={(v, i) => (
+                  <>
+                    <SmallInput label="Name" value={v.name} onChange={(x) => updateAt(s4.vacation_breaks, i, { ...v, name: x }, (v2) => setS4({ ...s4, vacation_breaks: v2 }))} />
+                    <SmallInput label="Start" type="date" value={v.start_date} onChange={(x) => updateAt(s4.vacation_breaks, i, { ...v, start_date: x }, (v2) => setS4({ ...s4, vacation_breaks: v2 }))} />
+                    <SmallInput label="End" type="date" value={v.end_date} onChange={(x) => updateAt(s4.vacation_breaks, i, { ...v, end_date: x }, (v2) => setS4({ ...s4, vacation_breaks: v2 }))} />
+                  </>
+                )} />
+              <ListSection title="Exam dates" rows={s4.exam_windows}
+                addLabel="Add exam"
+                onAdd={() => setS4({ ...s4, exam_windows: [...s4.exam_windows, { name: "", start_date: startDate, end_date: startDate }] })}
+                onRemove={(i) => setS4({ ...s4, exam_windows: s4.exam_windows.filter((_, j) => j !== i) })}
+                render={(x, i) => (
+                  <>
+                    <SmallInput label="Name" value={x.name} onChange={(v) => updateAt(s4.exam_windows, i, { ...x, name: v }, (v2) => setS4({ ...s4, exam_windows: v2 }))} />
+                    <SmallInput label="Start" type="date" value={x.start_date} onChange={(v) => updateAt(s4.exam_windows, i, { ...x, start_date: v }, (v2) => setS4({ ...s4, exam_windows: v2 }))} />
+                    <SmallInput label="End" type="date" value={x.end_date} onChange={(v) => updateAt(s4.exam_windows, i, { ...x, end_date: v }, (v2) => setS4({ ...s4, exam_windows: v2 }))} />
+                  </>
+                )} />
+            </CardContent>
+          </Card>
+        )}
+
+        <div className="flex justify-between mt-6">
+          <Button variant="outline" onClick={() => setStep(step - 1)} disabled={step === 1 || saving}>
+            <ArrowLeft className="h-4 w-4 mr-1" /> Back
+          </Button>
+          {step < 2 ? (
+            <Button onClick={() => setStep(step + 1)}>
+              Next <ArrowRight className="h-4 w-4 ml-1" />
+            </Button>
+          ) : (
+            <Button onClick={handleSubmit} disabled={saving}>
+              {saving && <Loader2 className="h-4 w-4 mr-1 animate-spin" />} Build my plan
+            </Button>
+          )}
+        </div>
+      </div>
+    </AppShell>
   );
 }
