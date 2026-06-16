@@ -168,7 +168,7 @@ function AuthPage() {
             <CardDescription>Sign in to plan your academic year.</CardDescription>
           </CardHeader>
           <CardContent>
-            <Tabs defaultValue={invitePreview ? "signup" : "signin"}>
+            <Tabs value={tab} onValueChange={(v) => setTab(v as "signin" | "signup")}>
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="signin">Sign in</TabsTrigger>
                 <TabsTrigger value="signup">Create account</TabsTrigger>
@@ -180,7 +180,12 @@ function AuthPage() {
                     <Input id="si-email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
                   </div>
                   <div className="space-y-1.5">
-                    <Label htmlFor="si-password">Password</Label>
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="si-password">Password</Label>
+                      <button type="button" onClick={handleForgotPassword} className="text-xs text-primary hover:underline" disabled={loading}>
+                        Forgot password?
+                      </button>
+                    </div>
                     <Input id="si-password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
                   </div>
                   <Button type="submit" className="w-full" disabled={loading}>
