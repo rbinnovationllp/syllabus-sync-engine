@@ -14,10 +14,26 @@ import { submitOnboarding } from "@/lib/onboarding.functions";
 import { fullOnboardingSchema, type Step1, type Step2, type Step3, type Step4 } from "@/lib/onboarding-schema";
 import { BOARDS, FEE_TIERS, CURRENCIES, GRADES, BENCHMARK_DEFAULTS } from "@/lib/regional-benchmarks";
 import { sessionEndForStart, sessionLabel, getStreams, getSubjects, inferSubjectKind, SUBJECT_OTHER } from "@/lib/subject-catalog";
+import { useSubscription } from "@/hooks/useSubscription";
 
 export const Route = createFileRoute("/_authenticated/onboarding")({
-  component: OnboardingWizard,
+  component: OnboardingRouter,
 });
+
+function OnboardingRouter() {
+  const { tier, isLoading } = useSubscription();
+  if (isLoading) {
+    return (
+      <AppShell title="Onboarding">
+        <div className="flex items-center justify-center p-8">
+          <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+        </div>
+      </AppShell>
+    );
+  }
+  if (tier === "retail_single_access") return <TutorWizard />;
+  return <OnboardingWizard />;
+}
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const WORKDAYS = [1, 2, 3, 4, 5, 6]; // Mon–Sat checkbox options for per-subject cadence
