@@ -20,8 +20,17 @@ export const Route = createFileRoute("/_authenticated/onboarding")({
   component: OnboardingRouter,
 });
 
+type ProfileType = "institution" | "tutor";
+const PROFILE_TYPE_KEY = "curriculumos.profile_type";
+
 function OnboardingRouter() {
   const { tier, isLoading } = useSubscription();
+  const [profileType, setProfileType] = useState<ProfileType | null>(() => {
+    if (typeof window === "undefined") return null;
+    const stored = window.localStorage.getItem(PROFILE_TYPE_KEY) as ProfileType | null;
+    return stored === "institution" || stored === "tutor" ? stored : null;
+  });
+
   if (isLoading) {
     return (
       <AppShell title="Onboarding">
@@ -31,8 +40,62 @@ function OnboardingRouter() {
       </AppShell>
     );
   }
-  if (tier === "retail_single_access") return <TutorWizard />;
-  return <OnboardingWizard />;
+
+  // Retail tier is tutor-only — lock to tutor flow regardless of stored choice.
+  const effectiveType: ProfileType | null = tier === "retail_single_access" ? "tutor" : profileType;
+
+  function choose(type: ProfileType) {
+    window.localStorage.setItem(PROFILE_TYPE_KEY, type);
+    setProfileType(type);
+  }
+  function reset() {
+    window.localStorage.removeItem(PROFILE_TYPE_KEY);
+    setProfileType(null);
+  }
+
+  if (!effectiveType) return <ProfileTypeChooser onChoose={choose} />;
+  if (effectiveType === "tutor")
+    return <TutorWizard onSwitchType={tier !== "retail_single_access" ? reset : undefined} />;
+  return <OnboardingWizard onSwitchType={reset} />;
+}
+
+function ProfileTypeChooser({ onChoose }: { onChoose: (t: ProfileType) => void }) {
+  return (
+    <AppShell title="Onboarding">
+      <div className="max-w-3xl mx-auto">
+        <div className="text-center mb-6">
+          <h1 className="text-2xl font-bold">Who is this plan for?</h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Pick the option that best describes you. We'll only ask the questions you need.
+          </p>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <button
+            type="button"
+            onClick={() => onChoose("institution")}
+            className="text-left rounded-lg border bg-card p-6 hover:border-primary hover:shadow-sm transition"
+          >
+            <div className="text-lg font-semibold mb-1">School / Coaching Institute</div>
+            <p className="text-sm text-muted-foreground">
+              Multiple classes, subjects and teachers. Full setup: school profile, board, fees,
+              textbooks, calendar, teaching matrix, exams and events.
+            </p>
+          </button>
+          <button
+            type="button"
+            onClick={() => onChoose("tutor")}
+            className="text-left rounded-lg border bg-card p-6 hover:border-primary hover:shadow-sm transition"
+          >
+            <div className="text-lg font-semibold mb-1">Private Tutor</div>
+            <p className="text-sm text-muted-foreground">
+              You teach one class / one subject from a textbook. Quick 2-step setup: book details,
+              period duration, holidays and exam dates — no school profile required.
+            </p>
+          </button>
+        </div>
+      </div>
+    </AppShell>
+  );
 }
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -50,7 +113,7 @@ function makeGS(grade: string, stream: string, subject: string, periods = 5): im
   };
 }
 
-function OnboardingWizard() {
+function OnboardingWizard({ onSwitchType }: { onSwitchType?: () => void }) {
   const submit = useServerFn(submitOnboarding);
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
@@ -129,9 +192,16 @@ function OnboardingWizard() {
         <div className="mb-6">
           <div className="flex justify-between text-xs text-muted-foreground mb-2">
             <span>Step {step} of 4</span>
-            <span>
-              {["Institution", "Books & Fees", "Calendar & Teachers", "Holidays & Events"][step - 1]}
-            </span>
+            <div className="flex items-center gap-3">
+              <span>
+                {["Institution", "Books & Fees", "Calendar & Teachers", "Holidays & Events"][step - 1]}
+              </span>
+              {onSwitchType && (
+                <button type="button" onClick={onSwitchType} className="text-primary hover:underline">
+                  Switch profile type
+                </button>
+              )}
+            </div>
           </div>
           <Progress value={progress} />
         </div>
@@ -610,7 +680,7 @@ function ListSection<T>({ title, rows, addLabel, onAdd, onRemove, render }: {
 // ---------------------------------------------------------------------------
 const PERIOD_DURATION_OPTIONS = [60, 90, 120];
 
-function TutorWizard() {
+function TutorWizard({ onSwitchType }: { onSwitchType?: () => void }) {
   const submit = useServerFn(submitOnboarding);
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
@@ -713,7 +783,14 @@ function TutorWizard() {
         <div className="mb-6">
           <div className="flex justify-between text-xs text-muted-foreground mb-2">
             <span>Step {step} of 2</span>
-            <span>{["Class & book", "Holidays & exams"][step - 1]}</span>
+            <div className="flex items-center gap-3">
+              <span>{["Class & book", "Holidays & exams"][step - 1]}</span>
+              {onSwitchType && (
+                <button type="button" onClick={onSwitchType} className="text-primary hover:underline">
+                  Switch profile type
+                </button>
+              )}
+            </div>
           </div>
           <Progress value={progress} />
         </div>
