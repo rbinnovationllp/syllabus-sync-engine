@@ -89,7 +89,7 @@ async function runTick() {
     const in7 = new Date(today.getTime() + 7 * 86_400_000).toISOString().slice(0, 10);
     const { data: trainings } = await supabaseAdmin
       .from("training_days")
-      .select("id, academic_year_id, date, topic")
+      .select("id, academic_year_id, date")
       .gte("date", todayIso)
       .lte("date", in7);
 
