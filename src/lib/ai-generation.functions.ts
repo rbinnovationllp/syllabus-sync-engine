@@ -362,10 +362,13 @@ Year window: ${ctx.year.start_date} → ${ctx.year.end_date}.
 ${completedNote}
 ${previewClause}`;
 
-    let output, runId;
+    let output, runId, modelUsed: AllowedModel = MODEL, escalated = false;
     try {
-      const r = await runAi(prompt, system, curriculumSchema);
-      output = r.output; runId = r.runId;
+      const r = await runAi(prompt, system, curriculumSchema, {
+        orgId: ctx.year.org_id,
+        lowConfidence: (o: any) => Array.isArray(o?.warnings) && o.warnings.length >= 3,
+      });
+      output = r.output; runId = r.runId; modelUsed = r.modelUsed; escalated = r.escalated;
     } catch (e: any) {
       await logRun(supabaseAdmin, { userId, yearId: data.year_id, action: "generate_subject_curriculum", creditsSpent: cost, status: "error", error: e.message, runId });
       if (cost > 0) await refundCredits(supabaseAdmin, userId, cost);
