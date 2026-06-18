@@ -381,6 +381,98 @@ export type Database = {
           },
         ]
       }
+      disruptions: {
+        Row: {
+          affected_grades: string[]
+          affected_sections: string[]
+          applied_version_id: string | null
+          category: string
+          created_at: string
+          end_date: string | null
+          id: string
+          lost_days: number
+          lost_periods: number
+          notes: string | null
+          org_id: string
+          reason: string
+          reported_by: string | null
+          school_id: string
+          start_date: string | null
+          status: string
+          updated_at: string
+          year_id: string
+        }
+        Insert: {
+          affected_grades?: string[]
+          affected_sections?: string[]
+          applied_version_id?: string | null
+          category?: string
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          lost_days?: number
+          lost_periods?: number
+          notes?: string | null
+          org_id: string
+          reason: string
+          reported_by?: string | null
+          school_id: string
+          start_date?: string | null
+          status?: string
+          updated_at?: string
+          year_id: string
+        }
+        Update: {
+          affected_grades?: string[]
+          affected_sections?: string[]
+          applied_version_id?: string | null
+          category?: string
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          lost_days?: number
+          lost_periods?: number
+          notes?: string | null
+          org_id?: string
+          reason?: string
+          reported_by?: string | null
+          school_id?: string
+          start_date?: string | null
+          status?: string
+          updated_at?: string
+          year_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "disruptions_applied_version_id_fkey"
+            columns: ["applied_version_id"]
+            isOneToOne: false
+            referencedRelation: "curriculum_versions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "disruptions_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "disruptions_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "disruptions_year_id_fkey"
+            columns: ["year_id"]
+            isOneToOne: false
+            referencedRelation: "academic_years"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       events: {
         Row: {
           academic_year_id: string
