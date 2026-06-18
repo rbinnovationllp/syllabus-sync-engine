@@ -304,6 +304,7 @@ Score the proposal and list fault lines.`;
       verdict: verdictRow,
       status: finalStatus,
       threshold: EXCELLENCE_THRESHOLD,
+      model: modelUsed,
     };
   });
 
