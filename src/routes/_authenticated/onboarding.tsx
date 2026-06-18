@@ -179,6 +179,8 @@ function OnboardingWizard({ onSwitchType }: { onSwitchType?: () => void }) {
     try {
       const result = await submit({ data: parsed.data });
       toast.success(`Plan ready — ${result.breakdown.t_available} teaching days available.`);
+      // Clear drafts after a successful submission so the next year starts fresh.
+      clearS1(); clearS2(); clearS3(); clearS4(); clearStep();
       navigate({ to: "/results/$yearId", params: { yearId: result.academic_year_id } });
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Failed to save");
