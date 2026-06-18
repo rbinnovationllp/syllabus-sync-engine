@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as PartnersRouteImport } from './routes/partners'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
@@ -29,6 +30,11 @@ import { Route as AuthenticatedCurriculumYearIdRescheduleRouteImport } from './r
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PartnersRoute = PartnersRouteImport.update({
+  id: '/partners',
+  path: '/partners',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -115,6 +121,7 @@ const AuthenticatedCurriculumYearIdRescheduleRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/partners': typeof PartnersRoute
   '/reset-password': typeof ResetPasswordRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/assignments': typeof AuthenticatedAssignmentsRoute
@@ -132,6 +139,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/partners': typeof PartnersRoute
   '/reset-password': typeof ResetPasswordRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/assignments': typeof AuthenticatedAssignmentsRoute
@@ -151,6 +159,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/partners': typeof PartnersRoute
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/assignments': typeof AuthenticatedAssignmentsRoute
@@ -170,6 +179,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/partners'
     | '/reset-password'
     | '/admin'
     | '/assignments'
@@ -187,6 +197,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/partners'
     | '/reset-password'
     | '/admin'
     | '/assignments'
@@ -205,6 +216,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/partners'
     | '/reset-password'
     | '/_authenticated/admin'
     | '/_authenticated/assignments'
@@ -224,6 +236,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  PartnersRoute: typeof PartnersRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
 }
@@ -235,6 +248,13 @@ declare module '@tanstack/react-router' {
       path: '/reset-password'
       fullPath: '/reset-password'
       preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/partners': {
+      id: '/partners'
+      path: '/partners'
+      fullPath: '/partners'
+      preLoaderRoute: typeof PartnersRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -381,6 +401,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  PartnersRoute: PartnersRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
 }
