@@ -560,6 +560,16 @@ function OnboardingWizard({ onSwitchType }: { onSwitchType?: () => void }) {
               <CardDescription>Skip any section to use a balanced baseline calendar.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
+              <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-dashed bg-muted/30 p-3 text-xs">
+                <div className="text-muted-foreground">
+                  {hasCountryDefaults(s1.country)
+                    ? <>National{s1.state_province ? " & state" : ""} holidays for <strong>{s1.country}</strong>{s1.state_province ? <> / <strong>{s1.state_province}</strong></> : null} are prefilled. Edit or delete any that don't apply to your school.</>
+                    : <>No built-in holiday list for <strong>{s1.country || "(country not set)"}</strong>. Add your school's holidays manually below.</>}
+                </div>
+                <Button type="button" size="sm" variant="outline" onClick={reloadHolidayDefaults}>
+                  Reload defaults
+                </Button>
+              </div>
               <ListSection title="Holidays" rows={s4.holidays}
                 addLabel="Add holiday"
                 onAdd={() => setS4({ ...s4, holidays: [...s4.holidays, { name: "", date: s3.start_date, scope: "school" }] })}
