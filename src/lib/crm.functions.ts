@@ -322,7 +322,7 @@ export const provisionSchoolFromAccount = createServerFn({ method: "POST" })
 
     // Provision a new organization to host the school
     const { data: org, error: orgErr } = await supabaseAdmin.from("organizations")
-      .insert({ name: a.name }).select().single();
+      .insert({ name: a.name, owner_id: context.userId }).select().single();
     if (orgErr) throw new Error(orgErr.message);
 
     const { data: row, error } = await supabaseAdmin.from("schools").insert({
