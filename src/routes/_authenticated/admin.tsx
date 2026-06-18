@@ -45,6 +45,7 @@ import {
 } from "lucide-react";
 import { EnforcementTab } from "@/components/admin/EnforcementTab";
 import { CurriculumReviewsTab } from "@/components/admin/CurriculumReviewsTab";
+import { AiUsageTab } from "@/components/admin/AiUsageTab";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({ meta: [{ title: "Admin & CRM — CurriculumOS" }] }),
@@ -137,6 +138,7 @@ function AdminDashboard({ isSuperAdmin }: { isSuperAdmin: boolean }) {
           <TabsTrigger value="clients">Clients</TabsTrigger>
           <TabsTrigger value="subscriptions">Subscriptions</TabsTrigger>
           <TabsTrigger value="usage">Usage</TabsTrigger>
+          <TabsTrigger value="ai-usage">AI usage</TabsTrigger>
           <TabsTrigger value="schools">Schools</TabsTrigger>
           {isSuperAdmin && <TabsTrigger value="access">Admin access</TabsTrigger>}
           {isSuperAdmin && <TabsTrigger value="partners">Partners</TabsTrigger>}
@@ -148,6 +150,7 @@ function AdminDashboard({ isSuperAdmin }: { isSuperAdmin: boolean }) {
         <TabsContent value="clients"><ClientsTab clients={d.clients} /></TabsContent>
         <TabsContent value="subscriptions"><SubscriptionsTab subs={d.subscriptions} clients={d.clients} /></TabsContent>
         <TabsContent value="usage"><UsageTab usage={d.usage} clients={d.clients} /></TabsContent>
+        <TabsContent value="ai-usage"><AiUsageTab /></TabsContent>
         <TabsContent value="schools"><SchoolsTab schools={d.schools} /></TabsContent>
         {isSuperAdmin && <TabsContent value="access"><AccessTab /></TabsContent>}
         {isSuperAdmin && <TabsContent value="partners"><EnforcementTab /></TabsContent>}
