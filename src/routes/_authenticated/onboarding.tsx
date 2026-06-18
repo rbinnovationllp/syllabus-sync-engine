@@ -15,6 +15,7 @@ import { fullOnboardingSchema, type Step1, type Step2, type Step3, type Step4 } 
 import { BOARDS, FEE_TIERS, CURRENCIES, GRADES, BENCHMARK_DEFAULTS } from "@/lib/regional-benchmarks";
 import { sessionEndForStart, sessionLabel, getStreams, getSubjects, inferSubjectKind, SUBJECT_OTHER } from "@/lib/subject-catalog";
 import { useSubscription } from "@/hooks/useSubscription";
+import { useDraftState } from "@/hooks/useDraftState";
 
 export const Route = createFileRoute("/_authenticated/onboarding")({
   component: OnboardingRouter,
