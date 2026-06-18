@@ -477,7 +477,7 @@ export const getYearArtifacts = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     const [calendar, curricula] = await Promise.all([
       supabase.from("annual_calendars").select("plan, meta, updated_at").eq("year_id", data.year_id).maybeSingle(),
-      supabase.from("subject_curricula").select("*").eq("year_id", data.year_id).order("grade").order("subject"),
+      supabase.from("subject_curricula").select("*").eq("year_id", data.year_id).is("deleted_at", null).order("grade").order("subject"),
     ]);
     return {
       calendar: calendar.data ?? null,
