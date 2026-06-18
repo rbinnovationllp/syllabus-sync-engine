@@ -26,6 +26,7 @@ import { Route as AuthenticatedResultsYearIdRouteImport } from './routes/_authen
 import { Route as AuthenticatedCurriculumProposalsRouteImport } from './routes/_authenticated/curriculum.proposals'
 import { Route as AuthenticatedAccountUsageRouteImport } from './routes/_authenticated/account.usage'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
+import { Route as ApiPublicCronNotificationsTickRouteImport } from './routes/api/public/cron/notifications-tick'
 import { Route as AuthenticatedCurriculumYearIdRescheduleRouteImport } from './routes/_authenticated/curriculum.$yearId.reschedule'
 import { Route as AuthenticatedCurriculumYearIdProposeRouteImport } from './routes/_authenticated/curriculum.$yearId.propose'
 
@@ -119,6 +120,12 @@ const ApiPublicPaymentsWebhookRoute =
     path: '/api/public/payments/webhook',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicCronNotificationsTickRoute =
+  ApiPublicCronNotificationsTickRouteImport.update({
+    id: '/api/public/cron/notifications-tick',
+    path: '/api/public/cron/notifications-tick',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AuthenticatedCurriculumYearIdRescheduleRoute =
   AuthenticatedCurriculumYearIdRescheduleRouteImport.update({
     id: '/curriculum/$yearId/reschedule',
@@ -150,6 +157,7 @@ export interface FileRoutesByFullPath {
   '/school/profile': typeof AuthenticatedSchoolProfileRoute
   '/curriculum/$yearId/propose': typeof AuthenticatedCurriculumYearIdProposeRoute
   '/curriculum/$yearId/reschedule': typeof AuthenticatedCurriculumYearIdRescheduleRoute
+  '/api/public/cron/notifications-tick': typeof ApiPublicCronNotificationsTickRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRoutesByTo {
@@ -170,6 +178,7 @@ export interface FileRoutesByTo {
   '/school/profile': typeof AuthenticatedSchoolProfileRoute
   '/curriculum/$yearId/propose': typeof AuthenticatedCurriculumYearIdProposeRoute
   '/curriculum/$yearId/reschedule': typeof AuthenticatedCurriculumYearIdRescheduleRoute
+  '/api/public/cron/notifications-tick': typeof ApiPublicCronNotificationsTickRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRoutesById {
@@ -192,6 +201,7 @@ export interface FileRoutesById {
   '/_authenticated/school/profile': typeof AuthenticatedSchoolProfileRoute
   '/_authenticated/curriculum/$yearId/propose': typeof AuthenticatedCurriculumYearIdProposeRoute
   '/_authenticated/curriculum/$yearId/reschedule': typeof AuthenticatedCurriculumYearIdRescheduleRoute
+  '/api/public/cron/notifications-tick': typeof ApiPublicCronNotificationsTickRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRouteTypes {
@@ -214,6 +224,7 @@ export interface FileRouteTypes {
     | '/school/profile'
     | '/curriculum/$yearId/propose'
     | '/curriculum/$yearId/reschedule'
+    | '/api/public/cron/notifications-tick'
     | '/api/public/payments/webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -234,6 +245,7 @@ export interface FileRouteTypes {
     | '/school/profile'
     | '/curriculum/$yearId/propose'
     | '/curriculum/$yearId/reschedule'
+    | '/api/public/cron/notifications-tick'
     | '/api/public/payments/webhook'
   id:
     | '__root__'
@@ -255,6 +267,7 @@ export interface FileRouteTypes {
     | '/_authenticated/school/profile'
     | '/_authenticated/curriculum/$yearId/propose'
     | '/_authenticated/curriculum/$yearId/reschedule'
+    | '/api/public/cron/notifications-tick'
     | '/api/public/payments/webhook'
   fileRoutesById: FileRoutesById
 }
@@ -264,6 +277,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   PartnersRoute: typeof PartnersRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  ApiPublicCronNotificationsTickRoute: typeof ApiPublicCronNotificationsTickRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
 }
 
@@ -388,6 +402,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicPaymentsWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/cron/notifications-tick': {
+      id: '/api/public/cron/notifications-tick'
+      path: '/api/public/cron/notifications-tick'
+      fullPath: '/api/public/cron/notifications-tick'
+      preLoaderRoute: typeof ApiPublicCronNotificationsTickRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/curriculum/$yearId/reschedule': {
       id: '/_authenticated/curriculum/$yearId/reschedule'
       path: '/curriculum/$yearId/reschedule'
@@ -448,6 +469,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   PartnersRoute: PartnersRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  ApiPublicCronNotificationsTickRoute: ApiPublicCronNotificationsTickRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
 }
 export const routeTree = rootRouteImport

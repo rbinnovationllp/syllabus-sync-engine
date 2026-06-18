@@ -36,7 +36,7 @@ async function runTick() {
       // earliest upcoming exam window for this year
       const { data: exam } = await supabaseAdmin
         .from("exam_windows")
-        .select("name, start_date, grade")
+        .select("name, start_date")
         .eq("academic_year_id", a.academic_year_id)
         .gte("start_date", todayIso)
         .order("start_date", { ascending: true })
