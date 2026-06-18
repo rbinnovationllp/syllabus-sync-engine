@@ -385,7 +385,8 @@ ${previewClause}`;
           subject: data.subject,
           chapters: output.chapters,
           meta: {
-            model: MODEL,
+            model: modelUsed,
+            escalated,
             summary: output.summary,
             total_periods: output.total_periods,
             buffer_periods: output.buffer_periods,
