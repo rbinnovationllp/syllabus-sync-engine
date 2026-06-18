@@ -18,6 +18,7 @@ import { Route as AuthenticatedSeatsRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedPricingRouteImport } from './routes/_authenticated/pricing'
 import { Route as AuthenticatedPartnerRouteImport } from './routes/_authenticated/partner'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
+import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedAssignmentsRouteImport } from './routes/_authenticated/assignments'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
@@ -26,6 +27,7 @@ import { Route as AuthenticatedResultsYearIdRouteImport } from './routes/_authen
 import { Route as AuthenticatedCurriculumProposalsRouteImport } from './routes/_authenticated/curriculum.proposals'
 import { Route as AuthenticatedAccountUsageRouteImport } from './routes/_authenticated/account.usage'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
+import { Route as ApiPublicCronNotificationsTickRouteImport } from './routes/api/public/cron/notifications-tick'
 import { Route as AuthenticatedCurriculumYearIdRescheduleRouteImport } from './routes/_authenticated/curriculum.$yearId.reschedule'
 import { Route as AuthenticatedCurriculumYearIdProposeRouteImport } from './routes/_authenticated/curriculum.$yearId.propose'
 
@@ -73,6 +75,12 @@ const AuthenticatedOnboardingRoute = AuthenticatedOnboardingRouteImport.update({
   path: '/onboarding',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedNotificationsRoute =
+  AuthenticatedNotificationsRouteImport.update({
+    id: '/notifications',
+    path: '/notifications',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -119,6 +127,12 @@ const ApiPublicPaymentsWebhookRoute =
     path: '/api/public/payments/webhook',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicCronNotificationsTickRoute =
+  ApiPublicCronNotificationsTickRouteImport.update({
+    id: '/api/public/cron/notifications-tick',
+    path: '/api/public/cron/notifications-tick',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AuthenticatedCurriculumYearIdRescheduleRoute =
   AuthenticatedCurriculumYearIdRescheduleRouteImport.update({
     id: '/curriculum/$yearId/reschedule',
@@ -140,6 +154,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AuthenticatedAdminRoute
   '/assignments': typeof AuthenticatedAssignmentsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/notifications': typeof AuthenticatedNotificationsRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/partner': typeof AuthenticatedPartnerRoute
   '/pricing': typeof AuthenticatedPricingRoute
@@ -150,6 +165,7 @@ export interface FileRoutesByFullPath {
   '/school/profile': typeof AuthenticatedSchoolProfileRoute
   '/curriculum/$yearId/propose': typeof AuthenticatedCurriculumYearIdProposeRoute
   '/curriculum/$yearId/reschedule': typeof AuthenticatedCurriculumYearIdRescheduleRoute
+  '/api/public/cron/notifications-tick': typeof ApiPublicCronNotificationsTickRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRoutesByTo {
@@ -160,6 +176,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AuthenticatedAdminRoute
   '/assignments': typeof AuthenticatedAssignmentsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/notifications': typeof AuthenticatedNotificationsRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/partner': typeof AuthenticatedPartnerRoute
   '/pricing': typeof AuthenticatedPricingRoute
@@ -170,6 +187,7 @@ export interface FileRoutesByTo {
   '/school/profile': typeof AuthenticatedSchoolProfileRoute
   '/curriculum/$yearId/propose': typeof AuthenticatedCurriculumYearIdProposeRoute
   '/curriculum/$yearId/reschedule': typeof AuthenticatedCurriculumYearIdRescheduleRoute
+  '/api/public/cron/notifications-tick': typeof ApiPublicCronNotificationsTickRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRoutesById {
@@ -182,6 +200,7 @@ export interface FileRoutesById {
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/assignments': typeof AuthenticatedAssignmentsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/partner': typeof AuthenticatedPartnerRoute
   '/_authenticated/pricing': typeof AuthenticatedPricingRoute
@@ -192,6 +211,7 @@ export interface FileRoutesById {
   '/_authenticated/school/profile': typeof AuthenticatedSchoolProfileRoute
   '/_authenticated/curriculum/$yearId/propose': typeof AuthenticatedCurriculumYearIdProposeRoute
   '/_authenticated/curriculum/$yearId/reschedule': typeof AuthenticatedCurriculumYearIdRescheduleRoute
+  '/api/public/cron/notifications-tick': typeof ApiPublicCronNotificationsTickRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRouteTypes {
@@ -204,6 +224,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/assignments'
     | '/dashboard'
+    | '/notifications'
     | '/onboarding'
     | '/partner'
     | '/pricing'
@@ -214,6 +235,7 @@ export interface FileRouteTypes {
     | '/school/profile'
     | '/curriculum/$yearId/propose'
     | '/curriculum/$yearId/reschedule'
+    | '/api/public/cron/notifications-tick'
     | '/api/public/payments/webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -224,6 +246,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/assignments'
     | '/dashboard'
+    | '/notifications'
     | '/onboarding'
     | '/partner'
     | '/pricing'
@@ -234,6 +257,7 @@ export interface FileRouteTypes {
     | '/school/profile'
     | '/curriculum/$yearId/propose'
     | '/curriculum/$yearId/reschedule'
+    | '/api/public/cron/notifications-tick'
     | '/api/public/payments/webhook'
   id:
     | '__root__'
@@ -245,6 +269,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin'
     | '/_authenticated/assignments'
     | '/_authenticated/dashboard'
+    | '/_authenticated/notifications'
     | '/_authenticated/onboarding'
     | '/_authenticated/partner'
     | '/_authenticated/pricing'
@@ -255,6 +280,7 @@ export interface FileRouteTypes {
     | '/_authenticated/school/profile'
     | '/_authenticated/curriculum/$yearId/propose'
     | '/_authenticated/curriculum/$yearId/reschedule'
+    | '/api/public/cron/notifications-tick'
     | '/api/public/payments/webhook'
   fileRoutesById: FileRoutesById
 }
@@ -264,6 +290,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   PartnersRoute: typeof PartnersRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  ApiPublicCronNotificationsTickRoute: typeof ApiPublicCronNotificationsTickRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
 }
 
@@ -332,6 +359,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedOnboardingRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/notifications': {
+      id: '/_authenticated/notifications'
+      path: '/notifications'
+      fullPath: '/notifications'
+      preLoaderRoute: typeof AuthenticatedNotificationsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
@@ -388,6 +422,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicPaymentsWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/cron/notifications-tick': {
+      id: '/api/public/cron/notifications-tick'
+      path: '/api/public/cron/notifications-tick'
+      fullPath: '/api/public/cron/notifications-tick'
+      preLoaderRoute: typeof ApiPublicCronNotificationsTickRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/curriculum/$yearId/reschedule': {
       id: '/_authenticated/curriculum/$yearId/reschedule'
       path: '/curriculum/$yearId/reschedule'
@@ -409,6 +450,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedAssignmentsRoute: typeof AuthenticatedAssignmentsRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
   AuthenticatedPartnerRoute: typeof AuthenticatedPartnerRoute
   AuthenticatedPricingRoute: typeof AuthenticatedPricingRoute
@@ -425,6 +467,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   AuthenticatedAssignmentsRoute: AuthenticatedAssignmentsRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
   AuthenticatedPartnerRoute: AuthenticatedPartnerRoute,
   AuthenticatedPricingRoute: AuthenticatedPricingRoute,
@@ -448,6 +491,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   PartnersRoute: PartnersRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  ApiPublicCronNotificationsTickRoute: ApiPublicCronNotificationsTickRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
 }
 export const routeTree = rootRouteImport

@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { LogOut, CreditCard, Shield, Users } from "lucide-react";
 import { getMyAdminStatus } from "@/lib/admin.functions";
+import { NotificationBell } from "@/components/NotificationBell";
 
 export function AppShell({ children, title }: { children: ReactNode; title?: string }) {
   const navigate = useNavigate();
@@ -39,6 +40,7 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
             <Button asChild variant="ghost" size="sm">
               <Link to="/pricing"><CreditCard className="h-4 w-4 mr-1" /> Plans</Link>
             </Button>
+            <NotificationBell />
             <Button variant="ghost" size="sm" onClick={handleSignOut}>
               <LogOut className="h-4 w-4 mr-1" /> Sign out
             </Button>
