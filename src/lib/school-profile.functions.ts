@@ -18,11 +18,11 @@ export const getSchoolProfile = createServerFn({ method: "POST" })
       .maybeSingle();
     if (yearRes.error) throw new Error(yearRes.error.message);
     if (!yearRes.data) throw new Error("Academic year not found");
-    const year = yearRes.data;
-    const school = (year as any).schools;
-    const orgId = (year as any).org_id as string;
+    const year = yearRes.data as any;
+    const school = year.schools;
+    const orgId = year.org_id as string;
 
-    const [holidays, vacations, events, exams, training, gradeSubjects, textbooks, membership] =
+    const [holidays, vacations, events, exams, training, gradeSubjects, membership] =
       await Promise.all([
         supabase.from("holidays").select("*").eq("academic_year_id", yearId).order("date"),
         supabase.from("vacation_breaks").select("*").eq("academic_year_id", yearId).order("start_date"),
@@ -30,9 +30,13 @@ export const getSchoolProfile = createServerFn({ method: "POST" })
         supabase.from("exam_windows").select("*").eq("academic_year_id", yearId).order("start_date"),
         supabase.from("training_days").select("*").eq("academic_year_id", yearId).order("date"),
         supabase.from("grade_subjects").select("*").eq("academic_year_id", yearId),
-        supabase.from("textbooks_input").select("*").eq("academic_year_id", yearId),
         supabase.from("org_members").select("role").eq("org_id", orgId).eq("user_id", userId).maybeSingle(),
       ]);
+
+    const gsIds = (gradeSubjects.data ?? []).map((g: any) => g.id);
+    const textbooksRes = gsIds.length
+      ? await supabase.from("textbooks_input").select("*").in("grade_subject_id", gsIds)
+      : { data: [] as any[] };
 
     return {
       year,
@@ -43,7 +47,7 @@ export const getSchoolProfile = createServerFn({ method: "POST" })
       exams: exams.data ?? [],
       training: training.data ?? [],
       grade_subjects: gradeSubjects.data ?? [],
-      textbooks: textbooks.data ?? [],
+      textbooks: textbooksRes.data ?? [],
       can_edit: membership.data?.role === "admin",
       my_role: membership.data?.role ?? null,
     };
