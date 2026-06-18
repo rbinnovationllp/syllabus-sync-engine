@@ -452,10 +452,14 @@ Capacity: ${ctx.capacity?.t_available ?? "?"} teaching days.
 Working days/wk: ${ctx.year.working_days_per_week}, periods/day: ${ctx.year.periods_per_day}.
 Output a revised month-by-month plan covering ${ctx.year.start_date} → ${ctx.year.end_date}.`;
 
-    let output, runId;
+    let output, runId, modelUsed: AllowedModel = MODEL, escalated = false;
     try {
-      const r = await runAi(prompt, system, calendarSchema);
-      output = r.output; runId = r.runId;
+      const r = await runAi(prompt, system, calendarSchema, {
+        orgId: ctx.year.org_id,
+        // Recalibration always allowed to escalate — disruptions are sensitive.
+        lowConfidence: (o: any) => Array.isArray(o?.warnings) && o.warnings.length >= 2,
+      });
+      output = r.output; runId = r.runId; modelUsed = r.modelUsed; escalated = r.escalated;
     } catch (e: any) {
       await logRun(supabaseAdmin, { userId, yearId: data.year_id, action: "recalculate_schedule", creditsSpent: cost, status: "error", error: e.message, runId });
       await refundCredits(supabaseAdmin, userId, cost);
@@ -465,7 +469,7 @@ Output a revised month-by-month plan covering ${ctx.year.start_date} → ${ctx.y
     await supabaseAdmin
       .from("annual_calendars")
       .upsert(
-        { year_id: data.year_id, user_id: userId, plan: output, meta: { model: MODEL, recalibrated_at: new Date().toISOString(), disruption: data.disruption } },
+        { year_id: data.year_id, user_id: userId, plan: output, meta: { model: modelUsed, escalated, recalibrated_at: new Date().toISOString(), disruption: data.disruption } },
         { onConflict: "year_id" },
       );
     await supabaseAdmin.rpc("append_curriculum_version", {
@@ -474,13 +478,13 @@ Output a revised month-by-month plan covering ${ctx.year.start_date} → ${ctx.y
       _grade: null as unknown as string,
       _subject: null as unknown as string,
       _payload: output as any,
-      _meta: { model: MODEL, recalibrated_at: new Date().toISOString(), disruption: data.disruption },
+      _meta: { model: modelUsed, escalated, recalibrated_at: new Date().toISOString(), disruption: data.disruption },
       _diff_summary: `Recalibrated: ${data.disruption.slice(0, 120)}`,
       _source: "recalibration",
       _created_by: userId,
     });
-    await logRun(supabaseAdmin, { userId, yearId: data.year_id, action: "recalculate_schedule", creditsSpent: cost, status: "success", runId, details: { disruption: data.disruption } });
-    return { ok: true as const, plan: output };
+    await logRun(supabaseAdmin, { userId, yearId: data.year_id, action: "recalculate_schedule", creditsSpent: cost, status: "success", runId, details: { disruption: data.disruption, model: modelUsed, escalated } });
+    return { ok: true as const, plan: output, model: modelUsed, escalated };
   });
 
 // ---------- Read fns ----------
