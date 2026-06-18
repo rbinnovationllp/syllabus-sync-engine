@@ -5,7 +5,7 @@ import { listMyAcademicYears } from "@/lib/onboarding.functions";
 import { AppShell } from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, Plus } from "lucide-react";
+import { Calendar, Plus, BookLock } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   component: DashboardPage,
@@ -26,9 +26,14 @@ function DashboardPage() {
           <h1 className="text-2xl font-bold tracking-tight">Your academic years</h1>
           <p className="text-sm text-muted-foreground">Each year holds your school's calendar, capacity, and curriculum plan.</p>
         </div>
-        <Button onClick={() => navigate({ to: "/onboarding" })}>
-          <Plus className="h-4 w-4 mr-1" /> New academic year
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => navigate({ to: "/school/profile" })}>
+            <BookLock className="h-4 w-4 mr-1" /> School profile
+          </Button>
+          <Button onClick={() => navigate({ to: "/onboarding" })}>
+            <Plus className="h-4 w-4 mr-1" /> New academic year
+          </Button>
+        </div>
       </div>
 
       {isLoading ? (
