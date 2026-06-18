@@ -1,9 +1,9 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { generateText, Output } from "ai";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { DEFAULT_MODEL, type AllowedModel } from "@/lib/ai-policy";
 
-const MODEL = "google/gemini-3-flash-preview";
+const MODEL: AllowedModel = DEFAULT_MODEL;
 const EXCELLENCE_THRESHOLD = 0.85;
 
 const chapterSchema = z.object({
@@ -255,18 +255,19 @@ Teacher's diff summary: ${proposal.diff_summary ?? "(none provided)"}
 Score the proposal and list fault lines.`;
 
     let result;
+    let modelUsed: AllowedModel = MODEL;
     try {
-      const key = process.env.LOVABLE_API_KEY;
-      if (!key) throw new Error("AI gateway not configured");
-      const { createLovableAiGatewayProvider } = await import("@/lib/ai-gateway.server");
-      const gateway = createLovableAiGatewayProvider(key);
-      const { experimental_output } = await generateText({
-        model: gateway(MODEL),
+      const { runAiWithFallback } = await import("@/lib/ai-policy.server");
+      const r = await runAiWithFallback(supabaseAdmin, {
         system,
         prompt,
-        experimental_output: Output.object({ schema: reviewSchema }),
+        schema: reviewSchema,
+        options: { orgId: (ctx.year as any)?.org_id ?? null },
+        // Only escalate if the reviewer is uncertain.
+        lowConfidence: (o: any) => o?.score >= 0.55 && o?.score < 0.75,
       });
-      result = experimental_output;
+      result = r.output;
+      modelUsed = r.modelUsed;
     } catch (e: any) {
       // Refund credit, mark back to draft, and surface the error.
       await supabaseAdmin.rpc("refund_ai_credits", {
@@ -303,6 +304,7 @@ Score the proposal and list fault lines.`;
       verdict: verdictRow,
       status: finalStatus,
       threshold: EXCELLENCE_THRESHOLD,
+      model: modelUsed,
     };
   });
 

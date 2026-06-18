@@ -28,6 +28,7 @@ import { Route as AuthenticatedSchoolProfileRouteImport } from './routes/_authen
 import { Route as AuthenticatedResultsYearIdRouteImport } from './routes/_authenticated/results.$yearId'
 import { Route as AuthenticatedCurriculumProposalsRouteImport } from './routes/_authenticated/curriculum.proposals'
 import { Route as AuthenticatedAccountUsageRouteImport } from './routes/_authenticated/account.usage'
+import { Route as AuthenticatedAccountAiCostRouteImport } from './routes/_authenticated/account.ai-cost'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 import { Route as ApiPublicCronNotificationsTickRouteImport } from './routes/api/public/cron/notifications-tick'
 import { Route as ApiPublicCronHealthCheckRouteImport } from './routes/api/public/cron/health-check'
@@ -136,6 +137,12 @@ const AuthenticatedAccountUsageRoute =
     path: '/account/usage',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAccountAiCostRoute =
+  AuthenticatedAccountAiCostRouteImport.update({
+    id: '/account/ai-cost',
+    path: '/account/ai-cost',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const ApiPublicPaymentsWebhookRoute =
   ApiPublicPaymentsWebhookRouteImport.update({
     id: '/api/public/payments/webhook',
@@ -187,6 +194,7 @@ export interface FileRoutesByFullPath {
   '/partner': typeof AuthenticatedPartnerRoute
   '/pricing': typeof AuthenticatedPricingRoute
   '/seats': typeof AuthenticatedSeatsRoute
+  '/account/ai-cost': typeof AuthenticatedAccountAiCostRoute
   '/account/usage': typeof AuthenticatedAccountUsageRoute
   '/curriculum/proposals': typeof AuthenticatedCurriculumProposalsRoute
   '/results/$yearId': typeof AuthenticatedResultsYearIdRoute
@@ -213,6 +221,7 @@ export interface FileRoutesByTo {
   '/partner': typeof AuthenticatedPartnerRoute
   '/pricing': typeof AuthenticatedPricingRoute
   '/seats': typeof AuthenticatedSeatsRoute
+  '/account/ai-cost': typeof AuthenticatedAccountAiCostRoute
   '/account/usage': typeof AuthenticatedAccountUsageRoute
   '/curriculum/proposals': typeof AuthenticatedCurriculumProposalsRoute
   '/results/$yearId': typeof AuthenticatedResultsYearIdRoute
@@ -241,6 +250,7 @@ export interface FileRoutesById {
   '/_authenticated/partner': typeof AuthenticatedPartnerRoute
   '/_authenticated/pricing': typeof AuthenticatedPricingRoute
   '/_authenticated/seats': typeof AuthenticatedSeatsRoute
+  '/_authenticated/account/ai-cost': typeof AuthenticatedAccountAiCostRoute
   '/_authenticated/account/usage': typeof AuthenticatedAccountUsageRoute
   '/_authenticated/curriculum/proposals': typeof AuthenticatedCurriculumProposalsRoute
   '/_authenticated/results/$yearId': typeof AuthenticatedResultsYearIdRoute
@@ -269,6 +279,7 @@ export interface FileRouteTypes {
     | '/partner'
     | '/pricing'
     | '/seats'
+    | '/account/ai-cost'
     | '/account/usage'
     | '/curriculum/proposals'
     | '/results/$yearId'
@@ -295,6 +306,7 @@ export interface FileRouteTypes {
     | '/partner'
     | '/pricing'
     | '/seats'
+    | '/account/ai-cost'
     | '/account/usage'
     | '/curriculum/proposals'
     | '/results/$yearId'
@@ -322,6 +334,7 @@ export interface FileRouteTypes {
     | '/_authenticated/partner'
     | '/_authenticated/pricing'
     | '/_authenticated/seats'
+    | '/_authenticated/account/ai-cost'
     | '/_authenticated/account/usage'
     | '/_authenticated/curriculum/proposals'
     | '/_authenticated/results/$yearId'
@@ -481,6 +494,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAccountUsageRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/account/ai-cost': {
+      id: '/_authenticated/account/ai-cost'
+      path: '/account/ai-cost'
+      fullPath: '/account/ai-cost'
+      preLoaderRoute: typeof AuthenticatedAccountAiCostRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/api/public/payments/webhook': {
       id: '/api/public/payments/webhook'
       path: '/api/public/payments/webhook'
@@ -547,6 +567,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedPartnerRoute: typeof AuthenticatedPartnerRoute
   AuthenticatedPricingRoute: typeof AuthenticatedPricingRoute
   AuthenticatedSeatsRoute: typeof AuthenticatedSeatsRoute
+  AuthenticatedAccountAiCostRoute: typeof AuthenticatedAccountAiCostRoute
   AuthenticatedAccountUsageRoute: typeof AuthenticatedAccountUsageRoute
   AuthenticatedCurriculumProposalsRoute: typeof AuthenticatedCurriculumProposalsRoute
   AuthenticatedResultsYearIdRoute: typeof AuthenticatedResultsYearIdRoute
@@ -566,6 +587,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedPartnerRoute: AuthenticatedPartnerRoute,
   AuthenticatedPricingRoute: AuthenticatedPricingRoute,
   AuthenticatedSeatsRoute: AuthenticatedSeatsRoute,
+  AuthenticatedAccountAiCostRoute: AuthenticatedAccountAiCostRoute,
   AuthenticatedAccountUsageRoute: AuthenticatedAccountUsageRoute,
   AuthenticatedCurriculumProposalsRoute: AuthenticatedCurriculumProposalsRoute,
   AuthenticatedResultsYearIdRoute: AuthenticatedResultsYearIdRoute,

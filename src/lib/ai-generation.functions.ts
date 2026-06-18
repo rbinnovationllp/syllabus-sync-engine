@@ -1,11 +1,13 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
-import { generateText, Output } from "ai";
 import { requireActiveSubscription } from "@/lib/subscription-gate";
 import { AI_ACTION_COSTS, tierForPriceId, planForTier, type AiAction } from "@/lib/plans";
+import { DEFAULT_MODEL, type AllowedModel } from "@/lib/ai-policy";
 
-const MODEL = "google/gemini-3-flash-preview";
+// Legacy label kept for backward-compat in stored meta. Real model used per-run
+// is resolved by the policy layer (resolveTenantModel + runAiWithFallback).
+const MODEL: AllowedModel = DEFAULT_MODEL;
 
 // ---------- Zod schemas for structured AI output ----------
 const calendarSchema = z.object({
@@ -110,18 +112,18 @@ async function runAi<T>(
   prompt: string,
   system: string,
   schema: z.ZodSchema<T>,
-): Promise<{ output: T; runId?: string }> {
-  const key = process.env.LOVABLE_API_KEY;
-  if (!key) throw new Error("AI gateway not configured");
-  const { createLovableAiGatewayProvider } = await import("@/lib/ai-gateway.server");
-  const gateway = createLovableAiGatewayProvider(key);
-  const { experimental_output } = await generateText({
-    model: gateway(MODEL),
+  opts: { orgId?: string | null; lowConfidence?: (out: T) => boolean } = {},
+): Promise<{ output: T; runId?: string; modelUsed: AllowedModel; escalated: boolean }> {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { runAiWithFallback } = await import("@/lib/ai-policy.server");
+  const r = await runAiWithFallback(supabaseAdmin, {
     system,
     prompt,
-    experimental_output: Output.object({ schema }),
+    schema,
+    options: { orgId: opts.orgId ?? null },
+    lowConfidence: opts.lowConfidence,
   });
-  return { output: experimental_output, runId: gateway.getRunId() };
+  return { output: r.output, runId: r.runId, modelUsed: r.modelUsed, escalated: r.escalated };
 }
 
 async function logRun(
@@ -221,10 +223,18 @@ Build a 12-month plan covering ${ctx.year.start_date} → ${ctx.year.end_date}.`
 
     let output;
     let runId: string | undefined;
+    let modelUsed: AllowedModel = MODEL;
+    let escalated = false;
     try {
-      const r = await runAi(prompt, system, calendarSchema);
+      const r = await runAi(prompt, system, calendarSchema, {
+        orgId: ctx.year.org_id,
+        // Escalate when AI emitted >=3 warnings, suggesting confidence is low.
+        lowConfidence: (o: any) => Array.isArray(o?.warnings) && o.warnings.length >= 3,
+      });
       output = r.output;
       runId = r.runId;
+      modelUsed = r.modelUsed;
+      escalated = r.escalated;
     } catch (e: any) {
       await logRun(supabaseAdmin, { userId, yearId: data.year_id, action: "generate_annual_calendar", creditsSpent: cost, status: "error", error: e.message, runId });
       await refundCredits(supabaseAdmin, userId, cost);
@@ -234,7 +244,7 @@ Build a 12-month plan covering ${ctx.year.start_date} → ${ctx.year.end_date}.`
     await supabaseAdmin
       .from("annual_calendars")
       .upsert(
-        { year_id: data.year_id, user_id: userId, plan: output, meta: { model: MODEL, generated_at: new Date().toISOString() } },
+        { year_id: data.year_id, user_id: userId, plan: output, meta: { model: modelUsed, escalated, generated_at: new Date().toISOString() } },
         { onConflict: "year_id" },
       );
     await supabaseAdmin.rpc("append_curriculum_version", {
@@ -243,13 +253,13 @@ Build a 12-month plan covering ${ctx.year.start_date} → ${ctx.year.end_date}.`
       _grade: null as unknown as string,
       _subject: null as unknown as string,
       _payload: output as any,
-      _meta: { model: MODEL, generated_at: new Date().toISOString() },
+      _meta: { model: modelUsed, escalated, generated_at: new Date().toISOString() },
       _diff_summary: "Generated annual calendar",
       _source: "generation",
       _created_by: userId,
     });
-    await logRun(supabaseAdmin, { userId, yearId: data.year_id, action: "generate_annual_calendar", creditsSpent: cost, status: "success", runId });
-    return { ok: true as const, plan: output };
+    await logRun(supabaseAdmin, { userId, yearId: data.year_id, action: "generate_annual_calendar", creditsSpent: cost, status: "success", runId, details: { model: modelUsed, escalated } });
+    return { ok: true as const, plan: output, model: modelUsed, escalated };
   });
 
 const subjectInput = z.object({
@@ -352,10 +362,13 @@ Year window: ${ctx.year.start_date} → ${ctx.year.end_date}.
 ${completedNote}
 ${previewClause}`;
 
-    let output, runId;
+    let output, runId, modelUsed: AllowedModel = MODEL, escalated = false;
     try {
-      const r = await runAi(prompt, system, curriculumSchema);
-      output = r.output; runId = r.runId;
+      const r = await runAi(prompt, system, curriculumSchema, {
+        orgId: ctx.year.org_id,
+        lowConfidence: (o: any) => Array.isArray(o?.warnings) && o.warnings.length >= 3,
+      });
+      output = r.output; runId = r.runId; modelUsed = r.modelUsed; escalated = r.escalated;
     } catch (e: any) {
       await logRun(supabaseAdmin, { userId, yearId: data.year_id, action: "generate_subject_curriculum", creditsSpent: cost, status: "error", error: e.message, runId });
       if (cost > 0) await refundCredits(supabaseAdmin, userId, cost);
@@ -372,7 +385,8 @@ ${previewClause}`;
           subject: data.subject,
           chapters: output.chapters,
           meta: {
-            model: MODEL,
+            model: modelUsed,
+            escalated,
             summary: output.summary,
             total_periods: output.total_periods,
             buffer_periods: output.buffer_periods,
@@ -391,13 +405,13 @@ ${previewClause}`;
       _grade: data.grade,
       _subject: data.subject,
       _payload: { chapters: output.chapters, summary: output.summary } as any,
-      _meta: { model: MODEL, total_periods: output.total_periods, buffer_periods: output.buffer_periods, preview: isFreePreview },
+      _meta: { model: modelUsed, escalated, total_periods: output.total_periods, buffer_periods: output.buffer_periods, preview: isFreePreview },
       _diff_summary: isFreePreview ? "30-day preview generated" : "Generated subject curriculum",
       _source: "generation",
       _created_by: userId,
     });
-    await logRun(supabaseAdmin, { userId, yearId: data.year_id, action: "generate_subject_curriculum", creditsSpent: cost, status: "success", runId, details: { grade: data.grade, subject: data.subject, preview: isFreePreview } });
-    return { ok: true as const, preview: isFreePreview, preview_window_days: isFreePreview ? windowDays : null, ...output };
+    await logRun(supabaseAdmin, { userId, yearId: data.year_id, action: "generate_subject_curriculum", creditsSpent: cost, status: "success", runId, details: { grade: data.grade, subject: data.subject, preview: isFreePreview, model: modelUsed, escalated } });
+    return { ok: true as const, preview: isFreePreview, preview_window_days: isFreePreview ? windowDays : null, model: modelUsed, escalated, ...output };
   });
 
 const recalcInput = z.object({
@@ -438,10 +452,14 @@ Capacity: ${ctx.capacity?.t_available ?? "?"} teaching days.
 Working days/wk: ${ctx.year.working_days_per_week}, periods/day: ${ctx.year.periods_per_day}.
 Output a revised month-by-month plan covering ${ctx.year.start_date} → ${ctx.year.end_date}.`;
 
-    let output, runId;
+    let output, runId, modelUsed: AllowedModel = MODEL, escalated = false;
     try {
-      const r = await runAi(prompt, system, calendarSchema);
-      output = r.output; runId = r.runId;
+      const r = await runAi(prompt, system, calendarSchema, {
+        orgId: ctx.year.org_id,
+        // Recalibration always allowed to escalate — disruptions are sensitive.
+        lowConfidence: (o: any) => Array.isArray(o?.warnings) && o.warnings.length >= 2,
+      });
+      output = r.output; runId = r.runId; modelUsed = r.modelUsed; escalated = r.escalated;
     } catch (e: any) {
       await logRun(supabaseAdmin, { userId, yearId: data.year_id, action: "recalculate_schedule", creditsSpent: cost, status: "error", error: e.message, runId });
       await refundCredits(supabaseAdmin, userId, cost);
@@ -451,7 +469,7 @@ Output a revised month-by-month plan covering ${ctx.year.start_date} → ${ctx.y
     await supabaseAdmin
       .from("annual_calendars")
       .upsert(
-        { year_id: data.year_id, user_id: userId, plan: output, meta: { model: MODEL, recalibrated_at: new Date().toISOString(), disruption: data.disruption } },
+        { year_id: data.year_id, user_id: userId, plan: output, meta: { model: modelUsed, escalated, recalibrated_at: new Date().toISOString(), disruption: data.disruption } },
         { onConflict: "year_id" },
       );
     await supabaseAdmin.rpc("append_curriculum_version", {
@@ -460,13 +478,13 @@ Output a revised month-by-month plan covering ${ctx.year.start_date} → ${ctx.y
       _grade: null as unknown as string,
       _subject: null as unknown as string,
       _payload: output as any,
-      _meta: { model: MODEL, recalibrated_at: new Date().toISOString(), disruption: data.disruption },
+      _meta: { model: modelUsed, escalated, recalibrated_at: new Date().toISOString(), disruption: data.disruption },
       _diff_summary: `Recalibrated: ${data.disruption.slice(0, 120)}`,
       _source: "recalibration",
       _created_by: userId,
     });
-    await logRun(supabaseAdmin, { userId, yearId: data.year_id, action: "recalculate_schedule", creditsSpent: cost, status: "success", runId, details: { disruption: data.disruption } });
-    return { ok: true as const, plan: output };
+    await logRun(supabaseAdmin, { userId, yearId: data.year_id, action: "recalculate_schedule", creditsSpent: cost, status: "success", runId, details: { disruption: data.disruption, model: modelUsed, escalated } });
+    return { ok: true as const, plan: output, model: modelUsed, escalated };
   });
 
 // ---------- Read fns ----------
