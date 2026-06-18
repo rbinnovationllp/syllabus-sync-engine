@@ -318,6 +318,109 @@ export type Database = {
           },
         ]
       }
+      curriculum_edit_proposals: {
+        Row: {
+          ai_fault_lines: Json
+          ai_report: string | null
+          ai_reviewed_at: string | null
+          ai_score: number | null
+          ai_verdict: string | null
+          base_version_id: string | null
+          created_at: string
+          diff_summary: string | null
+          finalized_at: string | null
+          grade: string
+          id: string
+          org_id: string
+          proposed_payload: Json
+          rejected_at: string | null
+          rejected_by: string | null
+          rejection_reason: string | null
+          status: string
+          subject: string
+          teacher_ack_at: string | null
+          teacher_ack_text: string | null
+          teacher_id: string
+          title: string | null
+          updated_at: string
+          year_id: string
+        }
+        Insert: {
+          ai_fault_lines?: Json
+          ai_report?: string | null
+          ai_reviewed_at?: string | null
+          ai_score?: number | null
+          ai_verdict?: string | null
+          base_version_id?: string | null
+          created_at?: string
+          diff_summary?: string | null
+          finalized_at?: string | null
+          grade: string
+          id?: string
+          org_id: string
+          proposed_payload?: Json
+          rejected_at?: string | null
+          rejected_by?: string | null
+          rejection_reason?: string | null
+          status?: string
+          subject: string
+          teacher_ack_at?: string | null
+          teacher_ack_text?: string | null
+          teacher_id: string
+          title?: string | null
+          updated_at?: string
+          year_id: string
+        }
+        Update: {
+          ai_fault_lines?: Json
+          ai_report?: string | null
+          ai_reviewed_at?: string | null
+          ai_score?: number | null
+          ai_verdict?: string | null
+          base_version_id?: string | null
+          created_at?: string
+          diff_summary?: string | null
+          finalized_at?: string | null
+          grade?: string
+          id?: string
+          org_id?: string
+          proposed_payload?: Json
+          rejected_at?: string | null
+          rejected_by?: string | null
+          rejection_reason?: string | null
+          status?: string
+          subject?: string
+          teacher_ack_at?: string | null
+          teacher_ack_text?: string | null
+          teacher_id?: string
+          title?: string | null
+          updated_at?: string
+          year_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "curriculum_edit_proposals_base_version_id_fkey"
+            columns: ["base_version_id"]
+            isOneToOne: false
+            referencedRelation: "curriculum_versions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "curriculum_edit_proposals_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "curriculum_edit_proposals_year_id_fkey"
+            columns: ["year_id"]
+            isOneToOne: false
+            referencedRelation: "academic_years"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       curriculum_versions: {
         Row: {
           created_at: string
@@ -1596,6 +1699,15 @@ export type Database = {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
+        }
+        Returns: boolean
+      }
+      is_assigned_teacher: {
+        Args: {
+          _grade: string
+          _subject: string
+          _user_id: string
+          _year_id: string
         }
         Returns: boolean
       }
