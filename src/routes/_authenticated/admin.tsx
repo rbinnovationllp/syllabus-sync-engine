@@ -44,6 +44,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { EnforcementTab } from "@/components/admin/EnforcementTab";
+import { CurriculumReviewsTab } from "@/components/admin/CurriculumReviewsTab";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({ meta: [{ title: "Admin & CRM — CurriculumOS" }] }),
