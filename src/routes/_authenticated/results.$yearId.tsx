@@ -374,13 +374,24 @@ function ResultsPage() {
                       <CardDescription className="text-xs">Resuming after: {c.meta.completed_chapters}</CardDescription>
                     )}
                   </div>
-                  <VersionHistoryDialog
-                    year_id={yearId}
-                    entity_type="subject_curriculum"
-                    grade={String(c.grade)}
-                    subject={c.subject}
-                    canRestore
-                  />
+                  <div className="flex items-center gap-2">
+                    <Button asChild size="sm" variant="outline">
+                      <Link
+                        to="/curriculum/$yearId/propose"
+                        params={{ yearId }}
+                        search={{ grade: String(c.grade), subject: c.subject }}
+                      >
+                        <FileText className="h-3.5 w-3.5 mr-1" /> Propose changes
+                      </Link>
+                    </Button>
+                    <VersionHistoryDialog
+                      year_id={yearId}
+                      entity_type="subject_curriculum"
+                      grade={String(c.grade)}
+                      subject={c.subject}
+                      canRestore
+                    />
+                  </div>
                 </div>
               </CardHeader>
               <CardContent>
