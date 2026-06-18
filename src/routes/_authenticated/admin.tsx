@@ -46,6 +46,7 @@ import {
 import { EnforcementTab } from "@/components/admin/EnforcementTab";
 import { CurriculumReviewsTab } from "@/components/admin/CurriculumReviewsTab";
 import { AiUsageTab } from "@/components/admin/AiUsageTab";
+import { AiModelSettingsTab } from "@/components/admin/AiModelSettingsTab";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({ meta: [{ title: "Admin & CRM — CurriculumOS" }] }),
