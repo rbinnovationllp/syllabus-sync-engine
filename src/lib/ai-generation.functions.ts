@@ -385,6 +385,17 @@ ${previewClause}`;
         },
         { onConflict: "year_id,grade,subject" },
       );
+    await supabaseAdmin.rpc("append_curriculum_version", {
+      _year_id: data.year_id,
+      _entity_type: "subject_curriculum",
+      _grade: data.grade,
+      _subject: data.subject,
+      _payload: { chapters: output.chapters, summary: output.summary } as any,
+      _meta: { model: MODEL, total_periods: output.total_periods, buffer_periods: output.buffer_periods, preview: isFreePreview },
+      _diff_summary: isFreePreview ? "30-day preview generated" : "Generated subject curriculum",
+      _source: "generation",
+      _created_by: userId,
+    });
     await logRun(supabaseAdmin, { userId, yearId: data.year_id, action: "generate_subject_curriculum", creditsSpent: cost, status: "success", runId, details: { grade: data.grade, subject: data.subject, preview: isFreePreview } });
     return { ok: true as const, preview: isFreePreview, preview_window_days: isFreePreview ? windowDays : null, ...output };
   });
