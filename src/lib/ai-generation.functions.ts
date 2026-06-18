@@ -1,11 +1,13 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
-import { generateText, Output } from "ai";
 import { requireActiveSubscription } from "@/lib/subscription-gate";
 import { AI_ACTION_COSTS, tierForPriceId, planForTier, type AiAction } from "@/lib/plans";
+import { DEFAULT_MODEL, type AllowedModel } from "@/lib/ai-policy";
 
-const MODEL = "google/gemini-3-flash-preview";
+// Legacy label kept for backward-compat in stored meta. Real model used per-run
+// is resolved by the policy layer (resolveTenantModel + runAiWithFallback).
+const MODEL: AllowedModel = DEFAULT_MODEL;
 
 // ---------- Zod schemas for structured AI output ----------
 const calendarSchema = z.object({
