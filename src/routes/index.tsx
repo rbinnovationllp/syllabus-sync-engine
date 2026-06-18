@@ -69,6 +69,7 @@ function Nav() {
           <a href="#features" className="hover:text-slate-900">Features</a>
           <a href="#how" className="hover:text-slate-900">How it works</a>
           <a href="#boards" className="hover:text-slate-900">Curricula</a>
+          <Link to="/partners" className="hover:text-slate-900">Partners</Link>
           <a href="#contact" className="hover:text-slate-900">Contact</a>
         </nav>
         <div className="flex items-center gap-2">
