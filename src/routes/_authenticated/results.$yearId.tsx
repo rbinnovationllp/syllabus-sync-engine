@@ -298,8 +298,15 @@ function ResultsPage() {
 
       {calendar?.plan?.months?.length > 0 && (
         <Card className="mb-6">
-          <CardHeader><CardTitle>Annual calendar</CardTitle>
-            <CardDescription>AI-generated month-by-month plan.</CardDescription></CardHeader>
+          <CardHeader>
+            <div className="flex items-start justify-between gap-2">
+              <div>
+                <CardTitle>Annual calendar</CardTitle>
+                <CardDescription>AI-generated month-by-month plan.</CardDescription>
+              </div>
+              <VersionHistoryDialog year_id={yearId} entity_type="annual_calendar" canRestore />
+            </div>
+          </CardHeader>
           <CardContent>
             <div className="grid gap-3 md:grid-cols-2">
               {calendar.plan.months.map((m: any, i: number) => (
