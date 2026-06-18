@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { LogOut, CreditCard, Shield, Users } from "lucide-react";
 import { getMyAdminStatus } from "@/lib/admin.functions";
+import { NotificationBell } from "@/components/NotificationBell";
 
 export function AppShell({ children, title }: { children: ReactNode; title?: string }) {
   const navigate = useNavigate();

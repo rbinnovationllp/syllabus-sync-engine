@@ -18,6 +18,7 @@ import { Route as AuthenticatedSeatsRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedPricingRouteImport } from './routes/_authenticated/pricing'
 import { Route as AuthenticatedPartnerRouteImport } from './routes/_authenticated/partner'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
+import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedAssignmentsRouteImport } from './routes/_authenticated/assignments'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
@@ -74,6 +75,12 @@ const AuthenticatedOnboardingRoute = AuthenticatedOnboardingRouteImport.update({
   path: '/onboarding',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedNotificationsRoute =
+  AuthenticatedNotificationsRouteImport.update({
+    id: '/notifications',
+    path: '/notifications',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -147,6 +154,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AuthenticatedAdminRoute
   '/assignments': typeof AuthenticatedAssignmentsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/notifications': typeof AuthenticatedNotificationsRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/partner': typeof AuthenticatedPartnerRoute
   '/pricing': typeof AuthenticatedPricingRoute
@@ -168,6 +176,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AuthenticatedAdminRoute
   '/assignments': typeof AuthenticatedAssignmentsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/notifications': typeof AuthenticatedNotificationsRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/partner': typeof AuthenticatedPartnerRoute
   '/pricing': typeof AuthenticatedPricingRoute
@@ -191,6 +200,7 @@ export interface FileRoutesById {
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/assignments': typeof AuthenticatedAssignmentsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/partner': typeof AuthenticatedPartnerRoute
   '/_authenticated/pricing': typeof AuthenticatedPricingRoute
@@ -214,6 +224,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/assignments'
     | '/dashboard'
+    | '/notifications'
     | '/onboarding'
     | '/partner'
     | '/pricing'
@@ -235,6 +246,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/assignments'
     | '/dashboard'
+    | '/notifications'
     | '/onboarding'
     | '/partner'
     | '/pricing'
@@ -257,6 +269,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin'
     | '/_authenticated/assignments'
     | '/_authenticated/dashboard'
+    | '/_authenticated/notifications'
     | '/_authenticated/onboarding'
     | '/_authenticated/partner'
     | '/_authenticated/pricing'
@@ -346,6 +359,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedOnboardingRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/notifications': {
+      id: '/_authenticated/notifications'
+      path: '/notifications'
+      fullPath: '/notifications'
+      preLoaderRoute: typeof AuthenticatedNotificationsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
@@ -430,6 +450,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedAssignmentsRoute: typeof AuthenticatedAssignmentsRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
   AuthenticatedPartnerRoute: typeof AuthenticatedPartnerRoute
   AuthenticatedPricingRoute: typeof AuthenticatedPricingRoute
@@ -446,6 +467,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   AuthenticatedAssignmentsRoute: AuthenticatedAssignmentsRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
   AuthenticatedPartnerRoute: AuthenticatedPartnerRoute,
   AuthenticatedPricingRoute: AuthenticatedPricingRoute,
