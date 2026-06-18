@@ -1,9 +1,9 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { generateText, Output } from "ai";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { DEFAULT_MODEL, type AllowedModel } from "@/lib/ai-policy";
 
-const MODEL = "google/gemini-3-flash-preview";
+const MODEL: AllowedModel = DEFAULT_MODEL;
 const EXCELLENCE_THRESHOLD = 0.85;
 
 const chapterSchema = z.object({
