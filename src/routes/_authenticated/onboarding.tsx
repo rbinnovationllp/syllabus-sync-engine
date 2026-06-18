@@ -15,6 +15,7 @@ import { fullOnboardingSchema, type Step1, type Step2, type Step3, type Step4 } 
 import { BOARDS, FEE_TIERS, CURRENCIES, GRADES, BENCHMARK_DEFAULTS } from "@/lib/regional-benchmarks";
 import { sessionEndForStart, sessionLabel, getStreams, getSubjects, inferSubjectKind, SUBJECT_OTHER } from "@/lib/subject-catalog";
 import { useSubscription } from "@/hooks/useSubscription";
+import { useDraftState } from "@/hooks/useDraftState";
 
 export const Route = createFileRoute("/_authenticated/onboarding")({
   component: OnboardingRouter,
@@ -116,19 +117,19 @@ function makeGS(grade: string, stream: string, subject: string, periods = 5): im
 function OnboardingWizard({ onSwitchType }: { onSwitchType?: () => void }) {
   const submit = useServerFn(submitOnboarding);
   const navigate = useNavigate();
-  const [step, setStep] = useState(1);
+  const [step, setStep, clearStep] = useDraftState<number>("curriculumos.onboarding.step", 1);
   const [saving, setSaving] = useState(false);
 
-  const [s1, setS1] = useState<Step1>({
+  const [s1, setS1, clearS1] = useDraftState<Step1>("curriculumos.onboarding.s1", {
     school_name: "", region: "", country: "", state_province: "", city: "", board: "cbse",
   });
-  const [s2, setS2] = useState<Step2>({
+  const [s2, setS2, clearS2] = useDraftState<Step2>("curriculumos.onboarding.s2", {
     monthly_fee_per_student: undefined, currency: "USD", fee_tier: "mid", textbooks: [],
   });
   const today = new Date();
   const initialStart = today.toISOString().slice(0, 10);
   const initialEnd = sessionEndForStart(initialStart, "", "cbse");
-  const [s3, setS3] = useState<Step3>({
+  const [s3, setS3, clearS3] = useDraftState<Step3>("curriculumos.onboarding.s3", {
     label: sessionLabel(initialStart, initialEnd),
     start_date: initialStart,
     end_date: initialEnd,
@@ -153,7 +154,7 @@ function OnboardingWizard({ onSwitchType }: { onSwitchType?: () => void }) {
       makeGS("8", "", "Art & Craft", 1),
     ],
   });
-  const [s4, setS4] = useState<Step4>({
+  const [s4, setS4, clearS4] = useDraftState<Step4>("curriculumos.onboarding.s4", {
     holidays: [], vacation_breaks: [], events: [], exam_windows: [], training_days: [],
   });
 
@@ -178,6 +179,8 @@ function OnboardingWizard({ onSwitchType }: { onSwitchType?: () => void }) {
     try {
       const result = await submit({ data: parsed.data });
       toast.success(`Plan ready — ${result.breakdown.t_available} teaching days available.`);
+      // Clear drafts after a successful submission so the next year starts fresh.
+      clearS1(); clearS2(); clearS3(); clearS4(); clearStep();
       navigate({ to: "/results/$yearId", params: { yearId: result.academic_year_id } });
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Failed to save");
@@ -683,23 +686,23 @@ const PERIOD_DURATION_OPTIONS = [60, 90, 120];
 function TutorWizard({ onSwitchType }: { onSwitchType?: () => void }) {
   const submit = useServerFn(submitOnboarding);
   const navigate = useNavigate();
-  const [step, setStep] = useState(1);
+  const [step, setStep, clearStep] = useDraftState<number>("curriculumos.tutor.step", 1);
   const [saving, setSaving] = useState(false);
 
   const today = new Date();
   const initialStart = today.toISOString().slice(0, 10);
   const initialEnd = sessionEndForStart(initialStart, "", "custom");
 
-  const [tutorName, setTutorName] = useState("");
-  const [grade, setGrade] = useState("8");
-  const [subject, setSubject] = useState("Mathematics");
-  const [book, setBook] = useState({ title: "", author: "", publisher: "", edition_year: "" });
-  const [periodDuration, setPeriodDuration] = useState(60);
-  const [periodsPerWeek, setPeriodsPerWeek] = useState(3);
-  const [startDate, setStartDate] = useState(initialStart);
-  const [endDate, setEndDate] = useState(initialEnd);
+  const [tutorName, setTutorName, clearTutorName] = useDraftState("curriculumos.tutor.name", "");
+  const [grade, setGrade, clearGrade] = useDraftState("curriculumos.tutor.grade", "8");
+  const [subject, setSubject, clearSubject] = useDraftState("curriculumos.tutor.subject", "Mathematics");
+  const [book, setBook, clearBook] = useDraftState("curriculumos.tutor.book", { title: "", author: "", publisher: "", edition_year: "" });
+  const [periodDuration, setPeriodDuration, clearPeriodDuration] = useDraftState("curriculumos.tutor.periodDuration", 60);
+  const [periodsPerWeek, setPeriodsPerWeek, clearPeriodsPerWeek] = useDraftState("curriculumos.tutor.periodsPerWeek", 3);
+  const [startDate, setStartDate, clearStartDate] = useDraftState("curriculumos.tutor.startDate", initialStart);
+  const [endDate, setEndDate, clearEndDate] = useDraftState("curriculumos.tutor.endDate", initialEnd);
 
-  const [s4, setS4] = useState<Step4>({
+  const [s4, setS4, clearS4] = useDraftState<Step4>("curriculumos.tutor.s4", {
     holidays: [], vacation_breaks: [], events: [], exam_windows: [], training_days: [],
   });
 
@@ -769,6 +772,9 @@ function TutorWizard({ onSwitchType }: { onSwitchType?: () => void }) {
     try {
       const result = await submit({ data: parsed.data });
       toast.success(`Plan ready — ${result.breakdown.t_available} teaching days available.`);
+      clearTutorName(); clearGrade(); clearSubject(); clearBook();
+      clearPeriodDuration(); clearPeriodsPerWeek(); clearStartDate(); clearEndDate();
+      clearS4(); clearStep();
       navigate({ to: "/results/$yearId", params: { yearId: result.academic_year_id } });
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Failed to save");
