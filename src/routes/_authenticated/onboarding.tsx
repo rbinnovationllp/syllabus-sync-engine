@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { getDefaultHolidays, hasCountryDefaults } from "@/lib/default-holidays";
 import { toast } from "sonner";
 import { Loader2, Plus, Trash2, ArrowLeft, ArrowRight } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
@@ -159,6 +160,31 @@ function OnboardingWizard({ onSwitchType }: { onSwitchType?: () => void }) {
   });
 
   const progress = (step / 4) * 100;
+
+  // Auto-prefill national / state holidays the first time the admin lands on
+  // step 4 with an empty holiday list. The list stays fully editable — every
+  // row can be removed and new ones can be added at any time.
+  const holidayPrefillRef = useRef(false);
+  useEffect(() => {
+    if (step !== 4 || holidayPrefillRef.current) return;
+    if (s4.holidays.length > 0) { holidayPrefillRef.current = true; return; }
+    const seeded = getDefaultHolidays(s1.country, s1.state_province, s3.start_date, s3.end_date);
+    if (seeded.length > 0) {
+      setS4({ ...s4, holidays: seeded });
+      toast.success(`Prefilled ${seeded.length} default holidays for ${s1.country}${s1.state_province ? `, ${s1.state_province}` : ""}. Edit or remove any that don't apply.`);
+    }
+    holidayPrefillRef.current = true;
+  }, [step]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  function reloadHolidayDefaults() {
+    const seeded = getDefaultHolidays(s1.country, s1.state_province, s3.start_date, s3.end_date);
+    if (seeded.length === 0) {
+      toast.error(`No built-in defaults for "${s1.country || "(country not set)"}". Add holidays manually.`);
+      return;
+    }
+    setS4({ ...s4, holidays: seeded });
+    toast.success(`Reloaded ${seeded.length} default holidays.`);
+  }
 
   function toggleOff(dow: number) {
     setS3((p) => ({
@@ -534,6 +560,16 @@ function OnboardingWizard({ onSwitchType }: { onSwitchType?: () => void }) {
               <CardDescription>Skip any section to use a balanced baseline calendar.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
+              <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-dashed bg-muted/30 p-3 text-xs">
+                <div className="text-muted-foreground">
+                  {hasCountryDefaults(s1.country)
+                    ? <>National{s1.state_province ? " & state" : ""} holidays for <strong>{s1.country}</strong>{s1.state_province ? <> / <strong>{s1.state_province}</strong></> : null} are prefilled. Edit or delete any that don't apply to your school.</>
+                    : <>No built-in holiday list for <strong>{s1.country || "(country not set)"}</strong>. Add your school's holidays manually below.</>}
+                </div>
+                <Button type="button" size="sm" variant="outline" onClick={reloadHolidayDefaults}>
+                  Reload defaults
+                </Button>
+              </div>
               <ListSection title="Holidays" rows={s4.holidays}
                 addLabel="Add holiday"
                 onAdd={() => setS4({ ...s4, holidays: [...s4.holidays, { name: "", date: s3.start_date, scope: "school" }] })}
