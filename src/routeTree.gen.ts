@@ -15,12 +15,14 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedSeatsRouteImport } from './routes/_authenticated/seats'
 import { Route as AuthenticatedPricingRouteImport } from './routes/_authenticated/pricing'
+import { Route as AuthenticatedPartnerRouteImport } from './routes/_authenticated/partner'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedAssignmentsRouteImport } from './routes/_authenticated/assignments'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedSchoolProfileRouteImport } from './routes/_authenticated/school.profile'
 import { Route as AuthenticatedResultsYearIdRouteImport } from './routes/_authenticated/results.$yearId'
+import { Route as AuthenticatedAccountUsageRouteImport } from './routes/_authenticated/account.usage'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 import { Route as AuthenticatedCurriculumYearIdRescheduleRouteImport } from './routes/_authenticated/curriculum.$yearId.reschedule'
 
@@ -51,6 +53,11 @@ const AuthenticatedSeatsRoute = AuthenticatedSeatsRouteImport.update({
 const AuthenticatedPricingRoute = AuthenticatedPricingRouteImport.update({
   id: '/pricing',
   path: '/pricing',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedPartnerRoute = AuthenticatedPartnerRouteImport.update({
+  id: '/partner',
+  path: '/partner',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedOnboardingRoute = AuthenticatedOnboardingRouteImport.update({
@@ -86,6 +93,12 @@ const AuthenticatedResultsYearIdRoute =
     path: '/results/$yearId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAccountUsageRoute =
+  AuthenticatedAccountUsageRouteImport.update({
+    id: '/account/usage',
+    path: '/account/usage',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const ApiPublicPaymentsWebhookRoute =
   ApiPublicPaymentsWebhookRouteImport.update({
     id: '/api/public/payments/webhook',
@@ -107,8 +120,10 @@ export interface FileRoutesByFullPath {
   '/assignments': typeof AuthenticatedAssignmentsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
+  '/partner': typeof AuthenticatedPartnerRoute
   '/pricing': typeof AuthenticatedPricingRoute
   '/seats': typeof AuthenticatedSeatsRoute
+  '/account/usage': typeof AuthenticatedAccountUsageRoute
   '/results/$yearId': typeof AuthenticatedResultsYearIdRoute
   '/school/profile': typeof AuthenticatedSchoolProfileRoute
   '/curriculum/$yearId/reschedule': typeof AuthenticatedCurriculumYearIdRescheduleRoute
@@ -122,8 +137,10 @@ export interface FileRoutesByTo {
   '/assignments': typeof AuthenticatedAssignmentsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
+  '/partner': typeof AuthenticatedPartnerRoute
   '/pricing': typeof AuthenticatedPricingRoute
   '/seats': typeof AuthenticatedSeatsRoute
+  '/account/usage': typeof AuthenticatedAccountUsageRoute
   '/results/$yearId': typeof AuthenticatedResultsYearIdRoute
   '/school/profile': typeof AuthenticatedSchoolProfileRoute
   '/curriculum/$yearId/reschedule': typeof AuthenticatedCurriculumYearIdRescheduleRoute
@@ -139,8 +156,10 @@ export interface FileRoutesById {
   '/_authenticated/assignments': typeof AuthenticatedAssignmentsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
+  '/_authenticated/partner': typeof AuthenticatedPartnerRoute
   '/_authenticated/pricing': typeof AuthenticatedPricingRoute
   '/_authenticated/seats': typeof AuthenticatedSeatsRoute
+  '/_authenticated/account/usage': typeof AuthenticatedAccountUsageRoute
   '/_authenticated/results/$yearId': typeof AuthenticatedResultsYearIdRoute
   '/_authenticated/school/profile': typeof AuthenticatedSchoolProfileRoute
   '/_authenticated/curriculum/$yearId/reschedule': typeof AuthenticatedCurriculumYearIdRescheduleRoute
@@ -156,8 +175,10 @@ export interface FileRouteTypes {
     | '/assignments'
     | '/dashboard'
     | '/onboarding'
+    | '/partner'
     | '/pricing'
     | '/seats'
+    | '/account/usage'
     | '/results/$yearId'
     | '/school/profile'
     | '/curriculum/$yearId/reschedule'
@@ -171,8 +192,10 @@ export interface FileRouteTypes {
     | '/assignments'
     | '/dashboard'
     | '/onboarding'
+    | '/partner'
     | '/pricing'
     | '/seats'
+    | '/account/usage'
     | '/results/$yearId'
     | '/school/profile'
     | '/curriculum/$yearId/reschedule'
@@ -187,8 +210,10 @@ export interface FileRouteTypes {
     | '/_authenticated/assignments'
     | '/_authenticated/dashboard'
     | '/_authenticated/onboarding'
+    | '/_authenticated/partner'
     | '/_authenticated/pricing'
     | '/_authenticated/seats'
+    | '/_authenticated/account/usage'
     | '/_authenticated/results/$yearId'
     | '/_authenticated/school/profile'
     | '/_authenticated/curriculum/$yearId/reschedule'
@@ -247,6 +272,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPricingRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/partner': {
+      id: '/_authenticated/partner'
+      path: '/partner'
+      fullPath: '/partner'
+      preLoaderRoute: typeof AuthenticatedPartnerRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/onboarding': {
       id: '/_authenticated/onboarding'
       path: '/onboarding'
@@ -289,6 +321,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedResultsYearIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/account/usage': {
+      id: '/_authenticated/account/usage'
+      path: '/account/usage'
+      fullPath: '/account/usage'
+      preLoaderRoute: typeof AuthenticatedAccountUsageRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/api/public/payments/webhook': {
       id: '/api/public/payments/webhook'
       path: '/api/public/payments/webhook'
@@ -311,8 +350,10 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAssignmentsRoute: typeof AuthenticatedAssignmentsRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
+  AuthenticatedPartnerRoute: typeof AuthenticatedPartnerRoute
   AuthenticatedPricingRoute: typeof AuthenticatedPricingRoute
   AuthenticatedSeatsRoute: typeof AuthenticatedSeatsRoute
+  AuthenticatedAccountUsageRoute: typeof AuthenticatedAccountUsageRoute
   AuthenticatedResultsYearIdRoute: typeof AuthenticatedResultsYearIdRoute
   AuthenticatedSchoolProfileRoute: typeof AuthenticatedSchoolProfileRoute
   AuthenticatedCurriculumYearIdRescheduleRoute: typeof AuthenticatedCurriculumYearIdRescheduleRoute
@@ -323,8 +364,10 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAssignmentsRoute: AuthenticatedAssignmentsRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
+  AuthenticatedPartnerRoute: AuthenticatedPartnerRoute,
   AuthenticatedPricingRoute: AuthenticatedPricingRoute,
   AuthenticatedSeatsRoute: AuthenticatedSeatsRoute,
+  AuthenticatedAccountUsageRoute: AuthenticatedAccountUsageRoute,
   AuthenticatedResultsYearIdRoute: AuthenticatedResultsYearIdRoute,
   AuthenticatedSchoolProfileRoute: AuthenticatedSchoolProfileRoute,
   AuthenticatedCurriculumYearIdRescheduleRoute:
