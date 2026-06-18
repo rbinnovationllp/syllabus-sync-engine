@@ -12,12 +12,14 @@ function randomCode(): string {
 export const getMyPartner = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { supabase, userId } = context;
-    const { data } = await supabase
+    const { userId } = context;
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data, error } = await supabaseAdmin
       .from("referral_partners")
       .select("id, code, display_name, status, payout_email, payout_method, terms_accepted_at, nda_accepted_at, created_at, is_house")
       .eq("user_id", userId)
       .maybeSingle();
+    if (error) throw new Error(error.message);
     return data;
   });
 
@@ -38,19 +40,21 @@ export const becomePartner = createServerFn({ method: "POST" })
     return data;
   })
   .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
+    const { userId } = context;
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    const { data: existing } = await supabase
+    const { data: existing, error: existingError } = await supabaseAdmin
       .from("referral_partners")
       .select("id, code")
       .eq("user_id", userId)
       .maybeSingle();
+    if (existingError) throw new Error(existingError.message);
     if (existing) return existing;
 
     // Generate a unique code (retry on collision).
     for (let attempt = 0; attempt < 5; attempt++) {
       const code = randomCode();
-      const { data: row, error } = await supabase
+      const { data: row, error } = await supabaseAdmin
         .from("referral_partners")
         .insert({
           user_id: userId,
@@ -66,7 +70,15 @@ export const becomePartner = createServerFn({ method: "POST" })
         .select("id, code")
         .single();
       if (!error && row) return row;
-      if (error && !error.message.toLowerCase().includes("duplicate")) throw error;
+      if (error?.code === "23505" && error.message.toLowerCase().includes("user_id")) {
+        const { data: existingAfterRace } = await supabaseAdmin
+          .from("referral_partners")
+          .select("id, code")
+          .eq("user_id", userId)
+          .maybeSingle();
+        if (existingAfterRace) return existingAfterRace;
+      }
+      if (error && error.code !== "23505") throw new Error(error.message);
     }
     throw new Error("Could not generate a unique referral code. Please try again.");
   });
@@ -74,21 +86,24 @@ export const becomePartner = createServerFn({ method: "POST" })
 export const getMyPartnerStats = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { supabase, userId } = context;
+    const { userId } = context;
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    const { data: partner } = await supabase
+    const { data: partner, error: partnerError } = await supabaseAdmin
       .from("referral_partners")
       .select("id, status")
       .eq("user_id", userId)
       .maybeSingle();
+    if (partnerError) throw new Error(partnerError.message);
     if (!partner) {
       return { hasPartner: false as const };
     }
 
-    const { data: comms } = await supabase
+    const { data: comms, error: commsError } = await supabaseAdmin
       .from("referral_commissions")
       .select("commission_cents, currency, status")
       .eq("partner_id", partner.id);
+    if (commsError) throw new Error(commsError.message);
 
     const totals = {
       lifetimeAccruedCents: 0,
@@ -113,10 +128,11 @@ export const getMyPartnerStats = createServerFn({ method: "GET" })
       }
     }
 
-    const { data: attributions } = await supabase
+    const { data: attributions, error: attributionsError } = await supabaseAdmin
       .from("referral_attributions")
       .select("org_id, attributed_at, is_house_fallback")
       .eq("partner_id", partner.id);
+    if (attributionsError) throw new Error(attributionsError.message);
 
     return {
       hasPartner: true as const,
@@ -130,18 +146,21 @@ export const getMyPartnerStats = createServerFn({ method: "GET" })
 export const getMyCommissions = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { supabase, userId } = context;
-    const { data: partner } = await supabase
+    const { userId } = context;
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: partner, error: partnerError } = await supabaseAdmin
       .from("referral_partners")
       .select("id")
       .eq("user_id", userId)
       .maybeSingle();
+    if (partnerError) throw new Error(partnerError.message);
     if (!partner) return [];
-    const { data } = await supabase
+    const { data, error } = await supabaseAdmin
       .from("referral_commissions")
       .select("id, org_id, commission_cents, currency, status, accrued_at, paid_at")
       .eq("partner_id", partner.id)
       .order("accrued_at", { ascending: false })
       .limit(200);
+    if (error) throw new Error(error.message);
     return data ?? [];
   });
