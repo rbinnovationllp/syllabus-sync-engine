@@ -319,11 +319,22 @@ export const provisionSchoolFromAccount = createServerFn({ method: "POST" })
     const { data: a, error: aErr } = await supabaseAdmin.from("crm_accounts").select("*").eq("id", data.account_id).maybeSingle();
     if (aErr) throw new Error(aErr.message);
     if (!a) throw new Error("Account not found");
+
+    // Provision a new organization to host the school
+    const { data: org, error: orgErr } = await supabaseAdmin.from("organizations")
+      .insert({ name: a.name }).select().single();
+    if (orgErr) throw new Error(orgErr.message);
+
     const { data: row, error } = await supabaseAdmin.from("schools").insert({
-      name: a.name, country: a.country, city: a.city, board: a.board, fee_tier: a.fee_tier,
+      org_id: org.id,
+      name: a.name,
+      country: a.country,
+      city: a.city,
+      board: a.board,
+      fee_tier: a.fee_tier,
     }).select().single();
     if (error) throw new Error(error.message);
-    return { school_id: row.id };
+    return { school_id: row.id, org_id: org.id };
   });
 
 // ============ AI: draft follow-up email ============
