@@ -207,21 +207,9 @@ function ResultsPage() {
             {genCal.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
             Generate annual calendar
           </Button>
-          <Dialog open={recalcOpen} onOpenChange={setRecalcOpen}>
-            <DialogTrigger asChild>
-              <Button variant="outline"><RotateCcw className="mr-2 h-4 w-4" />Recalculate</Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader><DialogTitle>Recalculate schedule</DialogTitle></DialogHeader>
-              <Label htmlFor="dis">Describe the disruption</Label>
-              <Input id="dis" value={disruption} onChange={(e) => setDisruption(e.target.value)} placeholder="e.g. 5-day cyclone closure in October" />
-              <DialogFooter>
-                <Button onClick={() => recalc.mutate()} disabled={disruption.length < 5 || recalc.isPending}>
-                  {recalc.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Recalibrate
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+          <Link to="/curriculum/$yearId/reschedule" params={{ yearId }}>
+            <Button variant="outline"><RotateCcw className="mr-2 h-4 w-4" />Reschedule</Button>
+          </Link>
           <Button variant="outline" onClick={() => exportPdf.mutate()} disabled={exportPdf.isPending}>
             <FileDown className="mr-2 h-4 w-4" />PDF
           </Button>
