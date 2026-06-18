@@ -1,86 +1,174 @@
-# Build plan: AI core + exports + admin audit
+# CurriculumOS — Build Roadmap
 
-## 1. Database (one migration)
+Nine focused PRs. Each is shippable on its own. Order is chosen so dependencies land before consumers.
 
-New tables — all RLS-scoped to owner; `service_role` full access.
+---
 
-- `annual_calendars` — `year_id`, `user_id`, `plan` (jsonb: months → topics/assessments/events), `meta` (jsonb), generated/updated_at.
-- `subject_curricula` — `year_id`, `user_id`, `grade`, `subject`, `chapters` (jsonb: ordered list with week_no, periods, difficulty, notes), `meta` (jsonb).
-- `ai_runs` — `user_id`, `action` (enum: `generate_annual_calendar` | `generate_subject_curriculum` | `recalculate_schedule`), `year_id`, `credits_spent`, `status`, `error`, `lovable_run_id`, `created_at`. For analytics + debugging.
-- `admin_audit_log` — `actor_id`, `actor_email`, `action` (text), `target_type`, `target_id`, `details` (jsonb), `created_at`. Visible to `super_admin` only.
+## PR 1 — Master School Profile (read-only view + admin-only edit RLS)
 
-Helper trigger: `audit_admin_action()` not used — we'll log explicitly from `admin.functions.ts` (keeps it simple, no SQL side-effects on RLS-blocked rows).
+**Goal:** A single trusted source of truth that every other feature reads from (capacity engine, reschedule flow, plan generators, AI prompts).
 
-## 2. AI gateway helper
+**Scope**
+- New route `/_authenticated/school/profile` — read-only summary of onboarding data: school info, board, working days/periods, subject allocation, holidays, vacations, events, exams, training days, textbooks.
+- "Edit" button visible only to `school_admin` / `super_admin` (via `has_role`).
+- Tighten RLS on `schools`, `academic_years`, `holidays`, `vacation_breaks`, `events`, `exam_windows`, `training_days`, `grade_subjects`, `subject_curricula`, `textbooks_input`, `annual_calendars`: SELECT for any org member; INSERT/UPDATE/DELETE only for school_admin of that school.
+- Add `audit_log` trigger on every master-data UPDATE (who, what, before/after) → reuses `admin_audit_log`.
 
-`src/lib/ai-gateway.server.ts` — paste the canonical `createLovableAiGatewayProvider` helper from Lovable AI knowledge. Server-only.
+**Why first:** every later PR queries this profile; locking permissions now prevents teachers from corrupting masters later.
 
-## 3. AI generation server functions
+---
 
-New file `src/lib/ai-generation.functions.ts` — three `createServerFn` handlers:
+## PR 2 — Teacher Assignments + Admin Panel
 
-- `generateAnnualCalendar({ year_id })` — 50 credits
-- `generateSubjectCurriculum({ year_id, grade, subject })` — 25 credits
-- `recalculateSchedule({ year_id, disruption })` — 20 credits
+**Goal:** School admins create teacher accounts and scope them to specific classes/subjects.
 
-Each handler:
-1. `requireSupabaseAuth` middleware.
-2. `requireActiveSubscription(supabase, userId)` → if not ok, return `{ error: "PAID_PLAN_REQUIRED" }`.
-3. Load year + capacity + holidays + subjects from DB (admin client).
-4. Call `consume_ai_credits(_user_id, _cost, _monthly_quota, _check_env)` RPC. If returns NULL → return `{ error: "INSUFFICIENT_CREDITS" }`.
-5. Call Lovable AI Gateway via `generateText` with `Output.object({ schema })` — structured JSON output (Zod schema matches table columns).
-6. Persist to `annual_calendars` / `subject_curricula` (upsert on `year_id` (+ grade/subject)).
-7. Insert `ai_runs` row with `lovable_run_id`.
+**Scope**
+- New table `teacher_assignments(id, school_id, teacher_user_id, grade, section, subject, academic_year_id)` + GRANTs + RLS.
+- New route `/_authenticated/admin` (gated by `has_role('school_admin')`):
+  - Tab 1: Teachers — invite by email (reuses `invitations`), list, deactivate.
+  - Tab 2: Assignments — assign teacher to grade/section/subject.
+  - Tab 3: Roles & permissions.
+- Teacher's existing dashboards filter curricula/plans by `teacher_assignments` (only their classes visible).
+- Server fn `assignTeacher`, `revokeAssignment`, `listSchoolTeachers` (all `requireSupabaseAuth` + role check).
 
-Model: `google/gemini-3-flash-preview` (default). System prompt embeds: never exceed available teaching days, respect difficulty distribution (avoid clustering tough chapters), keep syllabus-completion buffer (30/45/60 days before exams by grade band).
+---
 
-## 4. UI wiring
+## PR 3 — Curriculum Versioning + Permanent Storage
 
-`src/routes/_authenticated/results.$yearId.tsx`:
-- Three buttons: **Generate Annual Calendar**, **Generate Subject Curriculum** (per row), **Recalculate**.
-- Loading state via `useMutation`. Show error toast for `PAID_PLAN_REQUIRED` → link to `/pricing`; for `INSUFFICIENT_CREDITS` → link to AI top-up.
-- Render persisted calendar (month table) and curriculum (chapter list per grade-subject) below capacity stats.
+**Goal:** Every generated/edited curriculum is preserved forever; users can compare versions and re-export old ones.
 
-## 5. Exports with DEMO watermark
+**Scope**
+- New tables: `curricula(id, school_id, grade, subject, academic_year_id, status, current_version_id)`, `curriculum_versions(id, curriculum_id, version_no, payload jsonb, diff_summary, created_by, created_at)`.
+- All AI generations write a new version row (never overwrite).
+- UI: "Version history" drawer on each curriculum — list, view diff summary, restore, export any version.
+- Retention policy enforced in DB: no automatic delete; soft-delete only by school_admin with confirmation + 30-day recycle bin.
 
-`src/lib/exports.functions.ts` — two server fns:
-- `exportYearPdf({ year_id })`
-- `exportYearDocx({ year_id })`
+---
 
-Both:
-1. `requireSupabaseAuth`.
-2. Check `has_active_subscription` — branch `unpaid = true` if false (don't block — watermark instead, per user choice).
-3. Load year + calendar + curricula.
-4. PDF: use `pdf-lib` (Worker-safe, pure JS). Each page rendered with `StandardFonts.Helvetica`; on unpaid, draw `DEMO_WATERMARK_TEXT` rotated 45°, grey 60pt, centred.
-5. DOCX: use `docx` npm package server-side. On unpaid, every page gets a header with watermark text in 48pt grey rotated.
-6. Call `record_export(_user_id)` RPC.
-7. Return `{ filename, base64, mime }`. Client downloads via blob.
+## PR 4 — Reschedule / Disruption Flow (AI Recalibration)
 
-Server route alternative considered; sticking with createServerFn + base64 keeps it simple and same-origin.
+**Goal:** Teachers report a disruption; AI redistributes remaining chapters within the available teaching capacity, honoring the Master School Profile.
 
-## 6. Admin audit log
+**Scope**
+- New table `disruptions(id, school_id, curriculum_id, reason, lost_days, lost_periods, affected_grades, affected_sections, reported_by, created_at, applied_version_id)`.
+- New route `/_authenticated/curriculum/$id/reschedule` — short form (reason dropdown, lost days/periods, affected classes).
+- Server fn `recalibrateCurriculum` (`requireSupabaseAuth`):
+  1. Reads Master School Profile (immutable to teacher).
+  2. Recomputes available teaching days.
+  3. Calls Lovable AI Gateway to redistribute: compress easy chapters, protect tough ones, preserve revision window per syllabus-completion rules (30/45/60 days).
+  4. Writes new `curriculum_versions` row, links to disruption.
+  5. Returns diff summary + warnings if completion target slips.
+- If infeasible → returns the three options (reduce events / add classes / Saturdays) for admin approval.
 
-`src/lib/admin.functions.ts`:
-- Add private `logAdminAction(supabaseAdmin, actor, action, details)` helper.
-- Call it from `promoteToAdmin`, `revokeAdmin`, `updateLeadStage`.
-- New `listAuditLog()` server fn — super_admin only.
+---
 
-`src/routes/_authenticated/admin.tsx` — new "Audit log" tab listing 100 most recent entries (actor email, action, target, timestamp).
+## PR 5 — Subscription Plan Limits Enforcement
 
-## 7. Packages
+**Goal:** Enforce per-tier caps so a Basic school cannot generate 500 curricula on a $X plan.
 
-`bun add pdf-lib docx ai @ai-sdk/openai-compatible zod` (zod already present).
+**Scope**
+- Extend `subscriptions` consumption: per-plan caps (curricula/month, AI generations/month, teacher seats, classes).
+- Server-side guard middleware `enforcePlanLimits(action)` called by: curriculum generation, reschedule, export, teacher invite.
+- On cap hit → structured error `{code:'PLAN_LIMIT', limit, used, upgradeUrl}`.
+- UI: banner in dashboard at 80% usage; modal at 100% with upgrade CTA → Stripe checkout (already connected).
+- Admin usage page shows current month consumption per metric.
 
-## Out of scope
+---
 
-- Lesson plans, teacher training calendar (PRD items, but bigger AI scope — separate turn).
-- Email delivery of PDF/DOCX.
-- Multi-tenant org-scoped sharing of generated plans.
+## PR 6 — Notifications & Alerts
 
-## Technical notes
+**Goal:** Teachers/admins receive in-app + email alerts for syllabus risk, plan changes, training reminders, exam approach.
 
-- `consume_ai_credits` RPC already exists and handles monthly quota + top-up grants atomically.
-- `has_active_subscription` RPC already exists.
-- Lovable AI gateway returns `X-Lovable-AIG-Run-ID` — stored on `ai_runs` for debugging.
-- All AI prompts include school's board (CBSE / IB / etc.) and language; model is asked to use board-standard terminology.
-- PDF/DOCX generation runs in Workers SSR runtime — `pdf-lib` and `docx` are pure JS and known to work there.
+**Scope**
+- New table `notifications(id, user_id, school_id, type, title, body, link, read_at, created_at)` + RLS (user sees own only).
+- Server fn `createNotification` (admin/system only).
+- Scheduled server route `/api/public/cron/notifications-tick` (called by pg_cron every 6h):
+  - Detect curricula <30/45/60 days from exam still incomplete → alert teacher + admin.
+  - Detect upcoming training day in 7 days → reminder.
+  - Detect new disruption applied → notify affected teachers.
+- UI: bell icon in header + `/notifications` page.
+- Email via existing email infra (digest, not per-event spam).
+
+---
+
+## PR 7 — Admin AI Usage Dashboard
+
+**Goal:** School admin sees who's burning credits.
+
+**Scope**
+- Read-only route `/_authenticated/admin/ai-usage` (admin role).
+- Charts (recharts): credits used this month, top 10 teachers by consumption, generation type breakdown (new vs recalibrate vs lesson plan), trend last 6 months.
+- Queries `ai_runs` + `plan_usage` + `ai_credit_grants`; joins to `profiles` for teacher names.
+- Export CSV button.
+
+---
+
+## PR 8 — Monitoring + Threshold Alerts
+
+**Goal:** Founder gets paged before users notice.
+
+**Scope**
+- Internal route `/_authenticated/super-admin/health` (super_admin only).
+- Polls `supabase--db_health` equivalent metrics via server fn every 60s on view; persisted snapshot every 15 min in new table `health_snapshots(captured_at, connections_pct, db_size_mb, p95_latency_ms, error_rate, cache_hit_pct)`.
+- Threshold rules (configurable):
+  - connections > 70% of pool → WARN
+  - p95 latency > 500ms → WARN
+  - error rate > 1% over 5 min → CRITICAL
+  - cache hit rate < 80% → INFO
+- Scheduled `/api/public/cron/health-check` (every 5 min) writes snapshot + emails super_admin on CRITICAL.
+
+---
+
+## PR 9 — Internal CRM (for you, the founder)
+
+**Goal:** A private CRM inside CurriculumOS to manage your sales pipeline: leads, schools, contacts, deals, activities, follow-ups. Only `super_admin` can access.
+
+**Scope**
+
+**Routes** (all under `/_authenticated/crm`, gated by `has_role('super_admin')`):
+- `/crm` — pipeline dashboard: KPIs (open deals, won this month, MRR, leads by stage), upcoming activities.
+- `/crm/leads` — kanban + table view (stages: New → Contacted → Qualified → Demo → Proposal → Won/Lost).
+- `/crm/leads/$id` — lead detail: contact info, activities timeline, notes, linked school, files.
+- `/crm/accounts` — schools you're selling to (separate from platform-tenant `schools`).
+- `/crm/contacts` — people at those accounts (principal, coordinator, IT head).
+- `/crm/deals` — opportunities with amount, close date, probability, stage.
+- `/crm/activities` — calls, meetings, emails, tasks; calendar view.
+- `/crm/import` — CSV import for leads/contacts.
+
+**Tables** (all RLS-restricted to super_admin only):
+- `crm_accounts(id, name, board, city, country, fee_tier, website, owner_user_id, created_at)`
+- `crm_contacts(id, account_id, full_name, role, email, phone, linkedin, notes)`
+- `crm_leads(id, source, account_id, contact_id, stage, score, owner_user_id, created_at, last_touched_at)`
+- `crm_deals(id, account_id, name, amount_inr, probability, expected_close_date, stage, status, owner_user_id)`
+- `crm_activities(id, type, subject, body, due_at, completed_at, account_id, contact_id, lead_id, deal_id, owner_user_id)`
+- `crm_notes(id, parent_type, parent_id, body, created_by, created_at)`
+
+**Features**
+- Pipeline kanban with drag-to-change-stage (server fn updates row + writes activity).
+- Auto-link: if a CRM account converts (deal won), one click provisions a real `schools` row + sends signup invite.
+- Reuse existing `leads` table data as a feed into `crm_leads` (website signups auto-appear in CRM).
+- AI assist: "Draft follow-up email" button uses Lovable AI Gateway with lead context.
+- Activity reminders surface in PR 6's notification system.
+- CSV import + export.
+- Search across accounts/contacts/deals.
+
+**Optional integrations (later, on request):**
+- Email send via connected provider (Gmail/Outlook).
+- Calendar sync.
+- WhatsApp Business API for outreach logging.
+
+---
+
+## Cross-cutting
+
+- Every new public-schema table includes `GRANT` + RLS + policies in the same migration.
+- All AI calls go through Lovable AI Gateway (no extra keys).
+- All server-side writes use `createServerFn` with `requireSupabaseAuth` + explicit role checks for privileged actions.
+- After every PR: run security linter, fix high-severity findings before merging next.
+
+---
+
+## Suggested execution order
+1, 2, 3, 4, 5, 6, 7, 8, 9 — but **PR 9 (CRM)** can run in parallel with PRs 5–8 since it shares no tables with the platform tenant data.
+
+Tell me which PR to start with (I recommend **PR 1**) or whether to begin PR 9 (CRM) in parallel.
