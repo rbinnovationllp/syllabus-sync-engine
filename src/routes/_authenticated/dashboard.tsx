@@ -30,6 +30,9 @@ function DashboardPage() {
           <Button variant="outline" onClick={() => navigate({ to: "/school/profile" })}>
             <BookLock className="h-4 w-4 mr-1" /> School profile
           </Button>
+          <Button variant="outline" onClick={() => navigate({ to: "/assignments" })}>
+            <Users className="h-4 w-4 mr-1" /> Assignments
+          </Button>
           <Button onClick={() => navigate({ to: "/onboarding" })}>
             <Plus className="h-4 w-4 mr-1" /> New academic year
           </Button>
