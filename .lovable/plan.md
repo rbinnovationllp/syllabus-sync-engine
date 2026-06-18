@@ -1,174 +1,151 @@
-# CurriculumOS — Build Roadmap
+# Referral Marketing Program — Build Plan
 
-Nine focused PRs. Each is shippable on its own. Order is chosen so dependencies land before consumers.
-
----
-
-## PR 1 — Master School Profile (read-only view + admin-only edit RLS)
-
-**Goal:** A single trusted source of truth that every other feature reads from (capacity engine, reschedule flow, plan generators, AI prompts).
-
-**Scope**
-- New route `/_authenticated/school/profile` — read-only summary of onboarding data: school info, board, working days/periods, subject allocation, holidays, vacations, events, exams, training days, textbooks.
-- "Edit" button visible only to `school_admin` / `super_admin` (via `has_role`).
-- Tighten RLS on `schools`, `academic_years`, `holidays`, `vacation_breaks`, `events`, `exam_windows`, `training_days`, `grade_subjects`, `subject_curricula`, `textbooks_input`, `annual_calendars`: SELECT for any org member; INSERT/UPDATE/DELETE only for school_admin of that school.
-- Add `audit_log` trigger on every master-data UPDATE (who, what, before/after) → reuses `admin_audit_log`.
-
-**Why first:** every later PR queries this profile; locking permissions now prevents teachers from corrupting masters later.
+Pay 10% of every recurring subscription payment to the partner who brought the school in, for as long as the school stays subscribed — with super-admin enforcement powers to suspend or terminate partners who breach the agreement.
 
 ---
 
-## PR 2 — Teacher Assignments + Admin Panel
+## 1. How attribution works (the rules)
 
-**Goal:** School admins create teacher accounts and scope them to specific classes/subjects.
+- A **partner** is anyone with an account who joined the referral program. They get a unique link like `https://syllabus-sync-engine.lovable.app/?ref=ABC123`.
+- When a visitor lands with `?ref=CODE`, we store the code in a first-party cookie + `localStorage` for **90 days**.
+- When that visitor signs up, we stamp the partner code permanently onto their account (`profiles.referred_by_partner_id`).
+- When the account's school (org) purchases a subscription, the org inherits the partner from its owner. Every successful payment on that subscription accrues 10% commission to that partner — **for the lifetime of the subscription, unless the partner is suspended or terminated** (see §10).
+- One partner per org, set on first paid checkout. Self-referral is blocked.
 
-**Scope**
-- New table `teacher_assignments(id, school_id, teacher_user_id, grade, section, subject, academic_year_id)` + GRANTs + RLS.
-- New route `/_authenticated/admin` (gated by `has_role('school_admin')`):
-  - Tab 1: Teachers — invite by email (reuses `invitations`), list, deactivate.
-  - Tab 2: Assignments — assign teacher to grade/section/subject.
-  - Tab 3: Roles & permissions.
-- Teacher's existing dashboards filter curricula/plans by `teacher_assignments` (only their classes visible).
-- Server fn `assignTeacher`, `revokeAssignment`, `listSchoolTeachers` (all `requireSupabaseAuth` + role check).
+## 2. Database (one migration)
 
----
+```text
+referral_partners
+  id, user_id (unique), code (unique, 8 chars), display_name, payout_method,
+  payout_email, status (active/paused/under_review/suspended/terminated),
+  status_reason, status_changed_at, status_changed_by,
+  terms_accepted_at, nda_accepted_at, created_at
 
-## PR 3 — Curriculum Versioning + Permanent Storage
+referral_attributions
+  id, org_id (unique), partner_id, code_used, attributed_at, source_url
 
-**Goal:** Every generated/edited curriculum is preserved forever; users can compare versions and re-export old ones.
+referral_commissions
+  id, partner_id, org_id, stripe_invoice_id (unique), stripe_charge_id,
+  gross_amount_cents, currency, commission_rate (default 0.10),
+  commission_cents, status (accrued/approved/paid/reversed/forfeited),
+  accrued_at, paid_at, payout_id, notes
 
-**Scope**
-- New tables: `curricula(id, school_id, grade, subject, academic_year_id, status, current_version_id)`, `curriculum_versions(id, curriculum_id, version_no, payload jsonb, diff_summary, created_by, created_at)`.
-- All AI generations write a new version row (never overwrite).
-- UI: "Version history" drawer on each curriculum — list, view diff summary, restore, export any version.
-- Retention policy enforced in DB: no automatic delete; soft-delete only by school_admin with confirmation + 30-day recycle bin.
+referral_payouts
+  id, partner_id, period_start, period_end, total_cents, currency,
+  status (pending/sent/failed), provider, external_ref, paid_at
 
----
+referral_enforcement_actions   (NEW — audit trail for super-admin actions)
+  id, partner_id, action (show_cause_issued/response_received/
+    suspended/reinstated/terminated/forfeited_commissions),
+  reason_category (confidentiality_breach/competitor_engagement/
+    fraud/spam/policy_violation/other),
+  notice_text, evidence_url, response_text, response_due_at,
+  responded_at, decided_by (super_admin user_id), decided_at,
+  forfeited_amount_cents, created_at
+```
+RLS: partners read only their own rows; org admins see nothing; **only super-admins** read/write `referral_enforcement_actions` and can change `referral_partners.status` to suspended/terminated.
 
-## PR 4 — Reschedule / Disruption Flow (AI Recalibration)
+## 3. Capturing the click
 
-**Goal:** Teachers report a disruption; AI redistributes remaining chapters within the available teaching capacity, honoring the Master School Profile.
+Root-route effect: validate `?ref=CODE` format, store `cos_ref` cookie 90 days. On signup, server fn `claimReferral` reads cookie, writes `profiles.referred_by_partner_id`, clears cookie. Self-ref / unknown / suspended-partner code = no-op.
 
-**Scope**
-- New table `disruptions(id, school_id, curriculum_id, reason, lost_days, lost_periods, affected_grades, affected_sections, reported_by, created_at, applied_version_id)`.
-- New route `/_authenticated/curriculum/$id/reschedule` — short form (reason dropdown, lost days/periods, affected classes).
-- Server fn `recalibrateCurriculum` (`requireSupabaseAuth`):
-  1. Reads Master School Profile (immutable to teacher).
-  2. Recomputes available teaching days.
-  3. Calls Lovable AI Gateway to redistribute: compress easy chapters, protect tough ones, preserve revision window per syllabus-completion rules (30/45/60 days).
-  4. Writes new `curriculum_versions` row, links to disruption.
-  5. Returns diff summary + warnings if completion target slips.
-- If infeasible → returns the three options (reduce events / add classes / Saturdays) for admin approval.
+## 4. Locking attribution at first paid checkout
 
----
+In Stripe checkout server fn (subscription mode): read buyer's `referred_by_partner_id`, **verify partner status is `active`**, and if org has no `referral_attributions` row, insert one. Stamp `metadata.partner_id` on Stripe Customer and Subscription.
 
-## PR 5 — Subscription Plan Limits Enforcement
+## 5. Accruing commission on every payment
 
-**Goal:** Enforce per-tier caps so a Basic school cannot generate 500 curricula on a $X plan.
+Stripe webhook on `invoice.payment_succeeded`:
+1. Skip trial-create invoices (no money moved).
+2. Resolve `partner_id` from subscription metadata → customer metadata → `referral_attributions`.
+3. **Check `referral_partners.status`**:
+   - `active` → insert commission row with `status = 'accrued'`.
+   - `paused` → insert with `status = 'accrued'` (still earns, just no payout).
+   - `under_review` → insert with `status = 'accrued'` but flag for hold.
+   - `suspended` → insert with `status = 'forfeited'` (recorded for audit, never paid).
+   - `terminated` → **no commission row created at all**.
+4. `stripe_invoice_id` UNIQUE → idempotent on webhook retries.
+5. On `charge.refunded` / `invoice.voided` → mark matching commission `reversed`.
 
-**Scope**
-- Extend `subscriptions` consumption: per-plan caps (curricula/month, AI generations/month, teacher seats, classes).
-- Server-side guard middleware `enforcePlanLimits(action)` called by: curriculum generation, reschedule, export, teacher invite.
-- On cap hit → structured error `{code:'PLAN_LIMIT', limit, used, upgradeUrl}`.
-- UI: banner in dashboard at 80% usage; modal at 100% with upgrade CTA → Stripe checkout (already connected).
-- Admin usage page shows current month consumption per metric.
+## 6. Partner dashboard `/partner`
 
----
+Public route gated by partner check. Sections:
+- Link + QR + share presets (WhatsApp/email/LinkedIn).
+- Lifetime stats: clicks, signups, paying orgs, lifetime earned, pending payout.
+- Commission ledger (org anonymised as "School #1234"), payout history.
+- Payout settings.
+- **Compliance banner**: if status is `under_review` or `suspended`, show the show-cause notice, evidence summary, response deadline, and a text area to file a response.
 
-## PR 6 — Notifications & Alerts
+## 7. Super-admin enforcement console `/admin/referrals` (CRITICAL — §11 concern)
 
-**Goal:** Teachers/admins receive in-app + email alerts for syllabus risk, plan changes, training reminders, exam approach.
+Super-admin only. Two tabs:
 
-**Scope**
-- New table `notifications(id, user_id, school_id, type, title, body, link, read_at, created_at)` + RLS (user sees own only).
-- Server fn `createNotification` (admin/system only).
-- Scheduled server route `/api/public/cron/notifications-tick` (called by pg_cron every 6h):
-  - Detect curricula <30/45/60 days from exam still incomplete → alert teacher + admin.
-  - Detect upcoming training day in 7 days → reminder.
-  - Detect new disruption applied → notify affected teachers.
-- UI: bell icon in header + `/notifications` page.
-- Email via existing email infra (digest, not per-event spam).
+**Partners tab** — list every partner with status, lifetime earnings, pending balance, last activity. Per-partner actions:
+- **Issue show-cause notice** → opens dialog: pick reason category, write notice text, attach evidence URL (Drive link / screenshots), set response deadline (default 7 days). On submit:
+  - Insert `referral_enforcement_actions` row (`action = 'show_cause_issued'`).
+  - Flip partner status to `under_review`.
+  - Email the partner with the notice + deadline + response link.
+  - **Pause all `accrued` commissions** for that partner (status → `approved` blocked until cleared).
+- **Reinstate** → status back to `active`, log action, release held commissions.
+- **Suspend** → status `suspended`, future commissions forfeit, but reasoned + logged + emailed.
+- **Terminate** → status `terminated`, **forfeit all unpaid accrued commissions** (status → `forfeited`, sum recorded on the enforcement row as `forfeited_amount_cents`). No future accruals. Action requires typing the partner code to confirm.
+- Every status change requires a reason category + free-text reason and is written to `referral_enforcement_actions` — **immutable audit trail**.
 
----
+**Show-cause queue tab** — open notices awaiting response, response received notices awaiting decision, recent decisions.
 
-## PR 7 — Admin AI Usage Dashboard
+## 8. Show-cause flow (the formal process)
 
-**Goal:** School admin sees who's burning credits.
+1. Super-admin spots issue (confidentiality leak, working with competitor, fraud, spam).
+2. Issues show-cause notice → partner status `under_review`, all commissions held, email sent with notice + deadline.
+3. Partner sees compliance banner on `/partner`, files written response.
+4. If no response by deadline → automatic escalation flag (still requires super-admin to act).
+5. Super-admin reviews and decides: **Reinstate** (release holds), **Suspend** (forfeit future), or **Terminate** (forfeit all unpaid + future).
+6. Decision emailed to partner with reasoning. Every step persists in `referral_enforcement_actions`.
 
-**Scope**
-- Read-only route `/_authenticated/admin/ai-usage` (admin role).
-- Charts (recharts): credits used this month, top 10 teachers by consumption, generation type breakdown (new vs recalibrate vs lesson plan), trend last 6 months.
-- Queries `ai_runs` + `plan_usage` + `ai_credit_grants`; joins to `profiles` for teacher names.
-- Export CSV button.
+## 9. Partner agreement (must accept before code is issued)
 
----
+Terms include explicitly:
+- 10% recurring, paid monthly net-30, $50 minimum.
+- Refunds/chargebacks reverse commission.
+- **Confidentiality**: do not share product internals, screenshots of admin views, AI prompts, or any non-public information.
+- **Non-compete during partnership**: cannot simultaneously partner with, build, or actively promote any competing curriculum-planning product.
+- **No misrepresentation**: cannot claim to be the product owner or hide that you are a paid referrer.
+- **Show-cause clause**: CurriculumOS may issue a show-cause notice for any suspected breach; partner has 7 days to respond; CurriculumOS may suspend or terminate at its sole discretion; on termination all unpaid commissions are forfeited.
+- Acceptance writes `terms_accepted_at` and `nda_accepted_at` timestamps — both required.
 
-## PR 8 — Monitoring + Threshold Alerts
+## 10. Become-a-partner flow `/partners` and `/partner/join`
 
-**Goal:** Founder gets paged before users notice.
+Marketing page + signup CTA. On `/partner/join`, show terms (§9) with two separate checkboxes (terms + NDA), then create `referral_partners` row with generated 8-char code and `status = 'active'`.
 
-**Scope**
-- Internal route `/_authenticated/super-admin/health` (super_admin only).
-- Polls `supabase--db_health` equivalent metrics via server fn every 60s on view; persisted snapshot every 15 min in new table `health_snapshots(captured_at, connections_pct, db_size_mb, p95_latency_ms, error_rate, cache_hit_pct)`.
-- Threshold rules (configurable):
-  - connections > 70% of pool → WARN
-  - p95 latency > 500ms → WARN
-  - error rate > 1% over 5 min → CRITICAL
-  - cache hit rate < 80% → INFO
-- Scheduled `/api/public/cron/health-check` (every 5 min) writes snapshot + emails super_admin on CRITICAL.
+## 11. Marketing surfaces
 
----
+- Dashboard banner for paid customers: *"Earn 10% recurring — refer another school"*.
+- Landing-page footer link.
+- Email touchpoint at day 30 of subscription.
+- `/partners` landing page: how it works, FAQ, link to full terms (§9).
 
-## PR 9 — Internal CRM (for you, the founder)
+## 12. Safeguards summary
 
-**Goal:** A private CRM inside CurriculumOS to manage your sales pipeline: leads, schools, contacts, deals, activities, follow-ups. Only `super_admin` can access.
+- Self-referral blocked; org-swap blocked (UNIQUE on `referral_attributions.org_id`).
+- Refunds/chargebacks → reverse commission.
+- Partner status gates everything: only `active` partners attract new attributions and accrue payable commissions.
+- **Suspension and termination are super-admin only** and require a reason category + audit row.
+- **Termination forfeits all unpaid commissions** and is recorded with the forfeited amount.
+- Click throttling per IP/UA to prevent inflated click counts.
+- All enforcement actions immutable — append-only, no UPDATE/DELETE on `referral_enforcement_actions`.
 
-**Scope**
+## 13. Rollout order (4 PRs)
 
-**Routes** (all under `/_authenticated/crm`, gated by `has_role('super_admin')`):
-- `/crm` — pipeline dashboard: KPIs (open deals, won this month, MRR, leads by stage), upcoming activities.
-- `/crm/leads` — kanban + table view (stages: New → Contacted → Qualified → Demo → Proposal → Won/Lost).
-- `/crm/leads/$id` — lead detail: contact info, activities timeline, notes, linked school, files.
-- `/crm/accounts` — schools you're selling to (separate from platform-tenant `schools`).
-- `/crm/contacts` — people at those accounts (principal, coordinator, IT head).
-- `/crm/deals` — opportunities with amount, close date, probability, stage.
-- `/crm/activities` — calls, meetings, emails, tasks; calendar view.
-- `/crm/import` — CSV import for leads/contacts.
+1. **Schema + click capture + attribution stamping** (no money flow yet).
+2. **Webhook commission accrual + partner dashboard ledger**.
+3. **Become-a-partner flow + marketing surfaces + terms with NDA**.
+4. **Super-admin enforcement console + show-cause workflow + email notifications + forfeiture logic**.
 
-**Tables** (all RLS-restricted to super_admin only):
-- `crm_accounts(id, name, board, city, country, fee_tier, website, owner_user_id, created_at)`
-- `crm_contacts(id, account_id, full_name, role, email, phone, linkedin, notes)`
-- `crm_leads(id, source, account_id, contact_id, stage, score, owner_user_id, created_at, last_touched_at)`
-- `crm_deals(id, account_id, name, amount_inr, probability, expected_close_date, stage, status, owner_user_id)`
-- `crm_activities(id, type, subject, body, due_at, completed_at, account_id, contact_id, lead_id, deal_id, owner_user_id)`
-- `crm_notes(id, parent_type, parent_id, body, created_by, created_at)`
+## 14. Open questions (need your call before PR 1)
 
-**Features**
-- Pipeline kanban with drag-to-change-stage (server fn updates row + writes activity).
-- Auto-link: if a CRM account converts (deal won), one click provisions a real `schools` row + sends signup invite.
-- Reuse existing `leads` table data as a feed into `crm_leads` (website signups auto-appear in CRM).
-- AI assist: "Draft follow-up email" button uses Lovable AI Gateway with lead context.
-- Activity reminders surface in PR 6's notification system.
-- CSV import + export.
-- Search across accounts/contacts/deals.
-
-**Optional integrations (later, on request):**
-- Email send via connected provider (Gmail/Outlook).
-- Calendar sync.
-- WhatsApp Business API for outreach logging.
-
----
-
-## Cross-cutting
-
-- Every new public-schema table includes `GRANT` + RLS + policies in the same migration.
-- All AI calls go through Lovable AI Gateway (no extra keys).
-- All server-side writes use `createServerFn` with `requireSupabaseAuth` + explicit role checks for privileged actions.
-- After every PR: run security linter, fix high-severity findings before merging next.
-
----
-
-## Suggested execution order
-1, 2, 3, 4, 5, 6, 7, 8, 9 — but **PR 9 (CRM)** can run in parallel with PRs 5–8 since it shares no tables with the platform tenant data.
-
-Tell me which PR to start with (I recommend **PR 1**) or whether to begin PR 9 (CRM) in parallel.
+- **Commission base**: 10% of gross paid (Stripe collected, ex-tax) — confirm.
+- **Minimum payout**: $50, rolling — confirm.
+- **Payout method v1**: manual bank transfer + CSV export, or Stripe Connect Express from day one?
+- **Show-cause response window**: 7 days default — confirm.
+- **Public program name**: "School Partner Program", "Ambassador Program", or "Affiliate Program"?
+- **Cookie window**: 90 days — confirm.
