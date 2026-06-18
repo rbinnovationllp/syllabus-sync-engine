@@ -387,6 +387,7 @@ function Footer() {
         <div className="space-y-2 sm:col-span-2 lg:col-span-1 lg:text-right">
           <div className="flex flex-wrap gap-5 lg:justify-end">
             <a href="#features" className="hover:text-slate-800">Features</a>
+            <Link to="/partners" className="hover:text-slate-800">Refer & earn</Link>
             <a href="#contact" className="hover:text-slate-800">Contact</a>
             <Link to="/auth" className="hover:text-slate-800">Sign in</Link>
           </div>
