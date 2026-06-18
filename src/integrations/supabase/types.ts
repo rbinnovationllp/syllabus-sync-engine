@@ -875,6 +875,54 @@ export type Database = {
         }
         Relationships: []
       }
+      notifications: {
+        Row: {
+          body: string | null
+          created_at: string
+          dedupe_key: string | null
+          digest_key: string | null
+          email_sent_at: string | null
+          id: string
+          link: string | null
+          read_at: string | null
+          school_id: string | null
+          severity: string
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          dedupe_key?: string | null
+          digest_key?: string | null
+          email_sent_at?: string | null
+          id?: string
+          link?: string | null
+          read_at?: string | null
+          school_id?: string | null
+          severity?: string
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          dedupe_key?: string | null
+          digest_key?: string | null
+          email_sent_at?: string | null
+          id?: string
+          link?: string | null
+          read_at?: string | null
+          school_id?: string | null
+          severity?: string
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       org_members: {
         Row: {
           created_at: string
