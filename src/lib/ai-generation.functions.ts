@@ -237,6 +237,17 @@ Build a 12-month plan covering ${ctx.year.start_date} → ${ctx.year.end_date}.`
         { year_id: data.year_id, user_id: userId, plan: output, meta: { model: MODEL, generated_at: new Date().toISOString() } },
         { onConflict: "year_id" },
       );
+    await supabaseAdmin.rpc("append_curriculum_version", {
+      _year_id: data.year_id,
+      _entity_type: "annual_calendar",
+      _grade: null,
+      _subject: null,
+      _payload: output as any,
+      _meta: { model: MODEL, generated_at: new Date().toISOString() },
+      _diff_summary: "Generated annual calendar",
+      _source: "generation",
+      _created_by: userId,
+    });
     await logRun(supabaseAdmin, { userId, yearId: data.year_id, action: "generate_annual_calendar", creditsSpent: cost, status: "success", runId });
     return { ok: true as const, plan: output };
   });
