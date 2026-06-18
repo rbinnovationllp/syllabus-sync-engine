@@ -161,6 +161,31 @@ function OnboardingWizard({ onSwitchType }: { onSwitchType?: () => void }) {
 
   const progress = (step / 4) * 100;
 
+  // Auto-prefill national / state holidays the first time the admin lands on
+  // step 4 with an empty holiday list. The list stays fully editable — every
+  // row can be removed and new ones can be added at any time.
+  const holidayPrefillRef = useRef(false);
+  useEffect(() => {
+    if (step !== 4 || holidayPrefillRef.current) return;
+    if (s4.holidays.length > 0) { holidayPrefillRef.current = true; return; }
+    const seeded = getDefaultHolidays(s1.country, s1.state_province, s3.start_date, s3.end_date);
+    if (seeded.length > 0) {
+      setS4({ ...s4, holidays: seeded });
+      toast.success(`Prefilled ${seeded.length} default holidays for ${s1.country}${s1.state_province ? `, ${s1.state_province}` : ""}. Edit or remove any that don't apply.`);
+    }
+    holidayPrefillRef.current = true;
+  }, [step]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  function reloadHolidayDefaults() {
+    const seeded = getDefaultHolidays(s1.country, s1.state_province, s3.start_date, s3.end_date);
+    if (seeded.length === 0) {
+      toast.error(`No built-in defaults for "${s1.country || "(country not set)"}". Add holidays manually.`);
+      return;
+    }
+    setS4({ ...s4, holidays: seeded });
+    toast.success(`Reloaded ${seeded.length} default holidays.`);
+  }
+
   function toggleOff(dow: number) {
     setS3((p) => ({
       ...p,
