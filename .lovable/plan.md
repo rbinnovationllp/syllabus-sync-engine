@@ -142,11 +142,73 @@ Marketing page + signup CTA. On `/partner/join`, show terms (§9) with two separ
 3. **Become-a-partner flow + marketing surfaces + terms with NDA**.
 4. **Super-admin enforcement console + show-cause workflow + email notifications + forfeiture logic**.
 
-## 14. Open questions (need your call before PR 1)
+## 14. Teacher curriculum edit + AI review workflow (NEW)
+
+Lets the assigned subject teacher propose additions/deletions to the generated curriculum, runs an AI quality review, and only releases a downloadable final PDF after either (a) AI approves it as excellent, or (b) AI flags faults and the teacher explicitly acknowledges and still requests the amended version. Every step is recorded.
+
+### Tables (one migration)
+
+```text
+curriculum_edit_proposals
+  id, year_id, grade, subject, teacher_id (auth.uid),
+  base_version_id (-> curriculum_versions.id),
+  proposed_payload jsonb,           -- full edited curriculum
+  diff_summary text,                -- additions/deletions list
+  status (draft/under_ai_review/approved_excellent/flagged_low_quality/
+          teacher_acknowledged/finalized/rejected),
+  ai_score numeric(3,2),            -- 0.00–1.00
+  ai_verdict text,                  -- excellent / acceptable / low_quality
+  ai_fault_lines jsonb,             -- [{area, severity, explanation, suggestion}]
+  ai_report text,                   -- full markdown review
+  teacher_ack_at timestamptz,       -- when teacher accepted faults & still proceeded
+  teacher_ack_text text,            -- their written acknowledgement
+  final_pdf_url text,               -- storage path once released
+  finalized_at timestamptz,
+  created_at, updated_at
+```
+
+RLS: teacher reads/writes own proposals for subjects they're assigned to (via `teacher_assignments`); school admin reads all in their org; super-admin reads all. Append-only audit on status changes via trigger into `admin_audit_log`.
+
+### Flow
+
+1. **Edit** — On `/curriculum/$yearId` the assigned teacher gets an "Propose changes" button. Opens an editor pre-filled with the latest `curriculum_versions` payload for their grade+subject. They add/remove chapters, reorder, adjust periods. Saves as `status = draft`.
+2. **Submit for review** — Teacher clicks "Submit for AI review" → server fn `submitProposalForReview` flips status to `under_ai_review`, calls Lovable AI (Gemini) with the base curriculum + proposed payload + the school's academic capacity (available teaching days, periods/week, board, textbook list) and a strict rubric:
+   - Syllabus coverage vs board requirement
+   - Chapter sequencing / cognitive load
+   - Fit within available teaching days (capacity engine numbers)
+   - Assessment readiness windows (§9 of master PRD: 30/45/60-day completion buffers)
+   - Difficulty clustering rule
+3. **AI verdict**:
+   - `ai_score >= 0.85` → `approved_excellent`. System generates final PDF, stores in `curriculum-finals` bucket, sets `final_pdf_url`, status `finalized`. Teacher sees green banner + Download button.
+   - `ai_score < 0.85` → `flagged_low_quality`. Teacher sees the `ai_fault_lines` (red-flag list with severity + suggested fix) and two options:
+     - **Revise** → back to `draft`.
+     - **Proceed anyway** → opens acknowledgement dialog: teacher must type "I accept the noted faults and request the amended version" + free-text reason. On submit → status `teacher_acknowledged`, `teacher_ack_at`/`teacher_ack_text` filled, system generates the PDF with a watermark page *"Released over AI quality warning — see fault report"*, status `finalized`.
+4. **Final PDF** — `generateProposalPdf` server fn renders chapters, weekly breakdown, AI report appendix, and (if acknowledged) the fault report + acknowledgement statement. Stored in private storage bucket; signed URL on demand.
+5. **Record** — Every transition writes to `admin_audit_log` (actor, before/after status, AI score). Super-admin can list all `teacher_acknowledged` proposals on `/admin/curriculum-reviews` for oversight.
+
+### UI
+
+- `/curriculum/$yearId/propose` — editor + submit.
+- `/curriculum/$yearId/proposals/$proposalId` — status, AI report, download (if finalized), acknowledge-and-proceed dialog.
+- `/admin/curriculum-reviews` — super-admin queue: filter by status, see fault lines + ack reason, download finals.
+
+### Guardrails
+
+- Teacher can only propose for grade+subject in their `teacher_assignments`.
+- One open (`draft`/`under_ai_review`/`flagged_low_quality`) proposal per teacher+grade+subject at a time.
+- AI review costs are charged against the school's `ai_credit_grants` quota (same engine as `consume_ai_credits`).
+- Acknowledgement text is permanent — no edits, no deletes; only super-admin can mark a finalized proposal `rejected` post-hoc with a reason.
+
+---
+
+## 15. Open questions (need your call before PR 1)
 
 - **Commission base**: 10% of gross paid (Stripe collected, ex-tax) — confirm.
-- **Minimum payout**: $50, rolling — confirm.
+- **Minimum payout**: $50, rolling — confirm. (House partner: no minimum, internal accounting only.)
 - **Payout method v1**: manual bank transfer + CSV export, or Stripe Connect Express from day one?
 - **Show-cause response window**: 7 days default — confirm.
 - **Public program name**: "School Partner Program", "Ambassador Program", or "Affiliate Program"?
 - **Cookie window**: 90 days — confirm.
+- **AI excellence threshold**: 0.85 default — confirm or set your own cutoff.
+- **House partner email** for Sushma Khare's seeded `referral_partners` row.
+
