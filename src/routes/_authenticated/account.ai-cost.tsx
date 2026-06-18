@@ -55,8 +55,8 @@ function AiCostPage() {
   const modelCompare = useMemo(
     () =>
       ALLOWED_MODELS.map((m) => ({
-        model: m,
-        ...estimateCalendarBundleCost(subjects, m, { revenuePerCredit }),
+        modelName: m,
+        bundle: estimateCalendarBundleCost(subjects, m, { revenuePerCredit }),
       })),
     [subjects, revenuePerCredit],
   );
