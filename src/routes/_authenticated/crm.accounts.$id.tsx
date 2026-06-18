@@ -34,7 +34,7 @@ function AccountDetail() {
   const fn = useServerFn(getCrmAccount);
   const provFn = useServerFn(provisionSchoolFromAccount);
   const qc = useQueryClient();
-  const nav = useNavigate();
+  
   const q = useQuery({ queryKey: ["crm-account", id], queryFn: () => fn({ data: { id } }) });
 
   const provision = useMutation({
