@@ -2,6 +2,12 @@ import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
 import { type StripeEnv, verifyWebhook, createStripeClient } from "@/lib/stripe.server";
 import { creditsForAddOnPrice } from "@/lib/plans";
+import {
+  accrueCommission,
+  ensureAttribution,
+  reverseCommissionForCharge,
+  reverseCommissionForInvoice,
+} from "@/lib/referral-webhook.server";
 
 
 let _supabase: ReturnType<typeof createClient> | null = null;
@@ -44,6 +50,41 @@ async function handleSubscriptionCreated(subscription: any, env: StripeEnv) {
     },
     { onConflict: "stripe_subscription_id" },
   );
+
+  // Referral: lock attribution at subscription creation (house fallback if no referrer).
+  await ensureAttribution({ userId });
+}
+
+async function handleInvoicePaymentSucceeded(invoice: any, env: StripeEnv) {
+  // Resolve the userId from the subscription metadata first, then customer.
+  let userId: string | undefined = invoice.subscription_details?.metadata?.userId;
+  if (!userId && invoice.subscription) {
+    try {
+      const stripe = createStripeClient(env);
+      const sub = await stripe.subscriptions.retrieve(invoice.subscription as string);
+      userId = sub.metadata?.userId;
+    } catch (e) { console.error("[referral] subscription lookup failed", e); }
+  }
+  if (!userId && invoice.customer) {
+    try {
+      const stripe = createStripeClient(env);
+      const cust = await stripe.customers.retrieve(invoice.customer as string);
+      if (cust && !(cust as any).deleted) userId = (cust as any).metadata?.userId;
+    } catch (e) { console.error("[referral] customer lookup failed", e); }
+  }
+  if (!userId) return; // not a user-linked invoice
+
+  const amount = invoice.amount_paid ?? 0;
+  const currency = invoice.currency ?? "usd";
+  const charge = typeof invoice.charge === "string" ? invoice.charge : invoice.charge?.id ?? null;
+  await accrueCommission({
+    userId,
+    invoiceId: invoice.id,
+    chargeId: charge,
+    grossAmountCents: amount,
+    currency,
+    env,
+  });
 }
 
 async function handleSubscriptionUpdated(subscription: any, env: StripeEnv) {
@@ -115,6 +156,16 @@ async function handleWebhook(req: Request, env: StripeEnv) {
       await handleSubscriptionDeleted(event.data.object, env); break;
     case "checkout.session.completed":
       await handleCheckoutCompleted(event.data.object, env); break;
+    case "invoice.payment_succeeded":
+      await handleInvoicePaymentSucceeded(event.data.object, env); break;
+    case "invoice.voided":
+    case "invoice.marked_uncollectible":
+      await reverseCommissionForInvoice((event.data.object as any).id); break;
+    case "charge.refunded": {
+      const obj = event.data.object as any;
+      if (obj?.id) await reverseCommissionForCharge(obj.id);
+      break;
+    }
     default:
       console.log("Unhandled event:", event.type);
   }
