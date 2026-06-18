@@ -255,18 +255,19 @@ Teacher's diff summary: ${proposal.diff_summary ?? "(none provided)"}
 Score the proposal and list fault lines.`;
 
     let result;
+    let modelUsed: AllowedModel = MODEL;
     try {
-      const key = process.env.LOVABLE_API_KEY;
-      if (!key) throw new Error("AI gateway not configured");
-      const { createLovableAiGatewayProvider } = await import("@/lib/ai-gateway.server");
-      const gateway = createLovableAiGatewayProvider(key);
-      const { experimental_output } = await generateText({
-        model: gateway(MODEL),
+      const { runAiWithFallback } = await import("@/lib/ai-policy.server");
+      const r = await runAiWithFallback(supabaseAdmin, {
         system,
         prompt,
-        experimental_output: Output.object({ schema: reviewSchema }),
+        schema: reviewSchema,
+        options: { orgId: (ctx.year as any)?.org_id ?? null },
+        // Only escalate if the reviewer is uncertain.
+        lowConfidence: (o: any) => o?.score >= 0.55 && o?.score < 0.75,
       });
-      result = experimental_output;
+      result = r.output;
+      modelUsed = r.modelUsed;
     } catch (e: any) {
       // Refund credit, mark back to draft, and surface the error.
       await supabaseAdmin.rpc("refund_ai_credits", {
