@@ -772,6 +772,9 @@ function TutorWizard({ onSwitchType }: { onSwitchType?: () => void }) {
     try {
       const result = await submit({ data: parsed.data });
       toast.success(`Plan ready — ${result.breakdown.t_available} teaching days available.`);
+      clearTutorName(); clearGrade(); clearSubject(); clearBook();
+      clearPeriodDuration(); clearPeriodsPerWeek(); clearStartDate(); clearEndDate();
+      clearS4(); clearStep();
       navigate({ to: "/results/$yearId", params: { yearId: result.academic_year_id } });
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Failed to save");
