@@ -26,6 +26,7 @@ import { Route as AuthenticatedResultsYearIdRouteImport } from './routes/_authen
 import { Route as AuthenticatedAccountUsageRouteImport } from './routes/_authenticated/account.usage'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 import { Route as AuthenticatedCurriculumYearIdRescheduleRouteImport } from './routes/_authenticated/curriculum.$yearId.reschedule'
+import { Route as AuthenticatedCurriculumYearIdProposeRouteImport } from './routes/_authenticated/curriculum.$yearId.propose'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
@@ -117,6 +118,12 @@ const AuthenticatedCurriculumYearIdRescheduleRoute =
     path: '/curriculum/$yearId/reschedule',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedCurriculumYearIdProposeRoute =
+  AuthenticatedCurriculumYearIdProposeRouteImport.update({
+    id: '/curriculum/$yearId/propose',
+    path: '/curriculum/$yearId/propose',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -133,6 +140,7 @@ export interface FileRoutesByFullPath {
   '/account/usage': typeof AuthenticatedAccountUsageRoute
   '/results/$yearId': typeof AuthenticatedResultsYearIdRoute
   '/school/profile': typeof AuthenticatedSchoolProfileRoute
+  '/curriculum/$yearId/propose': typeof AuthenticatedCurriculumYearIdProposeRoute
   '/curriculum/$yearId/reschedule': typeof AuthenticatedCurriculumYearIdRescheduleRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
@@ -151,6 +159,7 @@ export interface FileRoutesByTo {
   '/account/usage': typeof AuthenticatedAccountUsageRoute
   '/results/$yearId': typeof AuthenticatedResultsYearIdRoute
   '/school/profile': typeof AuthenticatedSchoolProfileRoute
+  '/curriculum/$yearId/propose': typeof AuthenticatedCurriculumYearIdProposeRoute
   '/curriculum/$yearId/reschedule': typeof AuthenticatedCurriculumYearIdRescheduleRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
@@ -171,6 +180,7 @@ export interface FileRoutesById {
   '/_authenticated/account/usage': typeof AuthenticatedAccountUsageRoute
   '/_authenticated/results/$yearId': typeof AuthenticatedResultsYearIdRoute
   '/_authenticated/school/profile': typeof AuthenticatedSchoolProfileRoute
+  '/_authenticated/curriculum/$yearId/propose': typeof AuthenticatedCurriculumYearIdProposeRoute
   '/_authenticated/curriculum/$yearId/reschedule': typeof AuthenticatedCurriculumYearIdRescheduleRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
@@ -191,6 +201,7 @@ export interface FileRouteTypes {
     | '/account/usage'
     | '/results/$yearId'
     | '/school/profile'
+    | '/curriculum/$yearId/propose'
     | '/curriculum/$yearId/reschedule'
     | '/api/public/payments/webhook'
   fileRoutesByTo: FileRoutesByTo
@@ -209,6 +220,7 @@ export interface FileRouteTypes {
     | '/account/usage'
     | '/results/$yearId'
     | '/school/profile'
+    | '/curriculum/$yearId/propose'
     | '/curriculum/$yearId/reschedule'
     | '/api/public/payments/webhook'
   id:
@@ -228,6 +240,7 @@ export interface FileRouteTypes {
     | '/_authenticated/account/usage'
     | '/_authenticated/results/$yearId'
     | '/_authenticated/school/profile'
+    | '/_authenticated/curriculum/$yearId/propose'
     | '/_authenticated/curriculum/$yearId/reschedule'
     | '/api/public/payments/webhook'
   fileRoutesById: FileRoutesById
@@ -362,6 +375,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCurriculumYearIdRescheduleRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/curriculum/$yearId/propose': {
+      id: '/_authenticated/curriculum/$yearId/propose'
+      path: '/curriculum/$yearId/propose'
+      fullPath: '/curriculum/$yearId/propose'
+      preLoaderRoute: typeof AuthenticatedCurriculumYearIdProposeRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -376,6 +396,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAccountUsageRoute: typeof AuthenticatedAccountUsageRoute
   AuthenticatedResultsYearIdRoute: typeof AuthenticatedResultsYearIdRoute
   AuthenticatedSchoolProfileRoute: typeof AuthenticatedSchoolProfileRoute
+  AuthenticatedCurriculumYearIdProposeRoute: typeof AuthenticatedCurriculumYearIdProposeRoute
   AuthenticatedCurriculumYearIdRescheduleRoute: typeof AuthenticatedCurriculumYearIdRescheduleRoute
 }
 
@@ -390,6 +411,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAccountUsageRoute: AuthenticatedAccountUsageRoute,
   AuthenticatedResultsYearIdRoute: AuthenticatedResultsYearIdRoute,
   AuthenticatedSchoolProfileRoute: AuthenticatedSchoolProfileRoute,
+  AuthenticatedCurriculumYearIdProposeRoute:
+    AuthenticatedCurriculumYearIdProposeRoute,
   AuthenticatedCurriculumYearIdRescheduleRoute:
     AuthenticatedCurriculumYearIdRescheduleRoute,
 }
