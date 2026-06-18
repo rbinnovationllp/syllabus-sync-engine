@@ -21,6 +21,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogT
 import { Badge } from "@/components/ui/badge";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import { Sparkles, RotateCcw, FileDown, FileText, Loader2 } from "lucide-react";
+import { VersionHistoryDialog } from "@/components/VersionHistoryDialog";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/results/$yearId")({
