@@ -22,12 +22,14 @@ import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authen
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedAssignmentsRouteImport } from './routes/_authenticated/assignments'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
+import { Route as AuthenticatedSuperAdminHealthRouteImport } from './routes/_authenticated/super-admin.health'
 import { Route as AuthenticatedSchoolProfileRouteImport } from './routes/_authenticated/school.profile'
 import { Route as AuthenticatedResultsYearIdRouteImport } from './routes/_authenticated/results.$yearId'
 import { Route as AuthenticatedCurriculumProposalsRouteImport } from './routes/_authenticated/curriculum.proposals'
 import { Route as AuthenticatedAccountUsageRouteImport } from './routes/_authenticated/account.usage'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 import { Route as ApiPublicCronNotificationsTickRouteImport } from './routes/api/public/cron/notifications-tick'
+import { Route as ApiPublicCronHealthCheckRouteImport } from './routes/api/public/cron/health-check'
 import { Route as AuthenticatedCurriculumYearIdRescheduleRouteImport } from './routes/_authenticated/curriculum.$yearId.reschedule'
 import { Route as AuthenticatedCurriculumYearIdProposeRouteImport } from './routes/_authenticated/curriculum.$yearId.propose'
 
@@ -97,6 +99,12 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedSuperAdminHealthRoute =
+  AuthenticatedSuperAdminHealthRouteImport.update({
+    id: '/super-admin/health',
+    path: '/super-admin/health',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedSchoolProfileRoute =
   AuthenticatedSchoolProfileRouteImport.update({
     id: '/school/profile',
@@ -133,6 +141,12 @@ const ApiPublicCronNotificationsTickRoute =
     path: '/api/public/cron/notifications-tick',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicCronHealthCheckRoute =
+  ApiPublicCronHealthCheckRouteImport.update({
+    id: '/api/public/cron/health-check',
+    path: '/api/public/cron/health-check',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AuthenticatedCurriculumYearIdRescheduleRoute =
   AuthenticatedCurriculumYearIdRescheduleRouteImport.update({
     id: '/curriculum/$yearId/reschedule',
@@ -163,8 +177,10 @@ export interface FileRoutesByFullPath {
   '/curriculum/proposals': typeof AuthenticatedCurriculumProposalsRoute
   '/results/$yearId': typeof AuthenticatedResultsYearIdRoute
   '/school/profile': typeof AuthenticatedSchoolProfileRoute
+  '/super-admin/health': typeof AuthenticatedSuperAdminHealthRoute
   '/curriculum/$yearId/propose': typeof AuthenticatedCurriculumYearIdProposeRoute
   '/curriculum/$yearId/reschedule': typeof AuthenticatedCurriculumYearIdRescheduleRoute
+  '/api/public/cron/health-check': typeof ApiPublicCronHealthCheckRoute
   '/api/public/cron/notifications-tick': typeof ApiPublicCronNotificationsTickRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
@@ -185,8 +201,10 @@ export interface FileRoutesByTo {
   '/curriculum/proposals': typeof AuthenticatedCurriculumProposalsRoute
   '/results/$yearId': typeof AuthenticatedResultsYearIdRoute
   '/school/profile': typeof AuthenticatedSchoolProfileRoute
+  '/super-admin/health': typeof AuthenticatedSuperAdminHealthRoute
   '/curriculum/$yearId/propose': typeof AuthenticatedCurriculumYearIdProposeRoute
   '/curriculum/$yearId/reschedule': typeof AuthenticatedCurriculumYearIdRescheduleRoute
+  '/api/public/cron/health-check': typeof ApiPublicCronHealthCheckRoute
   '/api/public/cron/notifications-tick': typeof ApiPublicCronNotificationsTickRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
@@ -209,8 +227,10 @@ export interface FileRoutesById {
   '/_authenticated/curriculum/proposals': typeof AuthenticatedCurriculumProposalsRoute
   '/_authenticated/results/$yearId': typeof AuthenticatedResultsYearIdRoute
   '/_authenticated/school/profile': typeof AuthenticatedSchoolProfileRoute
+  '/_authenticated/super-admin/health': typeof AuthenticatedSuperAdminHealthRoute
   '/_authenticated/curriculum/$yearId/propose': typeof AuthenticatedCurriculumYearIdProposeRoute
   '/_authenticated/curriculum/$yearId/reschedule': typeof AuthenticatedCurriculumYearIdRescheduleRoute
+  '/api/public/cron/health-check': typeof ApiPublicCronHealthCheckRoute
   '/api/public/cron/notifications-tick': typeof ApiPublicCronNotificationsTickRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
@@ -233,8 +253,10 @@ export interface FileRouteTypes {
     | '/curriculum/proposals'
     | '/results/$yearId'
     | '/school/profile'
+    | '/super-admin/health'
     | '/curriculum/$yearId/propose'
     | '/curriculum/$yearId/reschedule'
+    | '/api/public/cron/health-check'
     | '/api/public/cron/notifications-tick'
     | '/api/public/payments/webhook'
   fileRoutesByTo: FileRoutesByTo
@@ -255,8 +277,10 @@ export interface FileRouteTypes {
     | '/curriculum/proposals'
     | '/results/$yearId'
     | '/school/profile'
+    | '/super-admin/health'
     | '/curriculum/$yearId/propose'
     | '/curriculum/$yearId/reschedule'
+    | '/api/public/cron/health-check'
     | '/api/public/cron/notifications-tick'
     | '/api/public/payments/webhook'
   id:
@@ -278,8 +302,10 @@ export interface FileRouteTypes {
     | '/_authenticated/curriculum/proposals'
     | '/_authenticated/results/$yearId'
     | '/_authenticated/school/profile'
+    | '/_authenticated/super-admin/health'
     | '/_authenticated/curriculum/$yearId/propose'
     | '/_authenticated/curriculum/$yearId/reschedule'
+    | '/api/public/cron/health-check'
     | '/api/public/cron/notifications-tick'
     | '/api/public/payments/webhook'
   fileRoutesById: FileRoutesById
@@ -290,6 +316,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   PartnersRoute: typeof PartnersRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  ApiPublicCronHealthCheckRoute: typeof ApiPublicCronHealthCheckRoute
   ApiPublicCronNotificationsTickRoute: typeof ApiPublicCronNotificationsTickRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
 }
@@ -387,6 +414,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/super-admin/health': {
+      id: '/_authenticated/super-admin/health'
+      path: '/super-admin/health'
+      fullPath: '/super-admin/health'
+      preLoaderRoute: typeof AuthenticatedSuperAdminHealthRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/school/profile': {
       id: '/_authenticated/school/profile'
       path: '/school/profile'
@@ -429,6 +463,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCronNotificationsTickRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/cron/health-check': {
+      id: '/api/public/cron/health-check'
+      path: '/api/public/cron/health-check'
+      fullPath: '/api/public/cron/health-check'
+      preLoaderRoute: typeof ApiPublicCronHealthCheckRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/curriculum/$yearId/reschedule': {
       id: '/_authenticated/curriculum/$yearId/reschedule'
       path: '/curriculum/$yearId/reschedule'
@@ -459,6 +500,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedCurriculumProposalsRoute: typeof AuthenticatedCurriculumProposalsRoute
   AuthenticatedResultsYearIdRoute: typeof AuthenticatedResultsYearIdRoute
   AuthenticatedSchoolProfileRoute: typeof AuthenticatedSchoolProfileRoute
+  AuthenticatedSuperAdminHealthRoute: typeof AuthenticatedSuperAdminHealthRoute
   AuthenticatedCurriculumYearIdProposeRoute: typeof AuthenticatedCurriculumYearIdProposeRoute
   AuthenticatedCurriculumYearIdRescheduleRoute: typeof AuthenticatedCurriculumYearIdRescheduleRoute
 }
@@ -476,6 +518,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCurriculumProposalsRoute: AuthenticatedCurriculumProposalsRoute,
   AuthenticatedResultsYearIdRoute: AuthenticatedResultsYearIdRoute,
   AuthenticatedSchoolProfileRoute: AuthenticatedSchoolProfileRoute,
+  AuthenticatedSuperAdminHealthRoute: AuthenticatedSuperAdminHealthRoute,
   AuthenticatedCurriculumYearIdProposeRoute:
     AuthenticatedCurriculumYearIdProposeRoute,
   AuthenticatedCurriculumYearIdRescheduleRoute:
@@ -491,6 +534,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   PartnersRoute: PartnersRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  ApiPublicCronHealthCheckRoute: ApiPublicCronHealthCheckRoute,
   ApiPublicCronNotificationsTickRoute: ApiPublicCronNotificationsTickRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
 }
