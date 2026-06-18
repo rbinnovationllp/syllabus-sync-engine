@@ -237,6 +237,17 @@ Build a 12-month plan covering ${ctx.year.start_date} → ${ctx.year.end_date}.`
         { year_id: data.year_id, user_id: userId, plan: output, meta: { model: MODEL, generated_at: new Date().toISOString() } },
         { onConflict: "year_id" },
       );
+    await supabaseAdmin.rpc("append_curriculum_version", {
+      _year_id: data.year_id,
+      _entity_type: "annual_calendar",
+      _grade: null as unknown as string,
+      _subject: null as unknown as string,
+      _payload: output as any,
+      _meta: { model: MODEL, generated_at: new Date().toISOString() },
+      _diff_summary: "Generated annual calendar",
+      _source: "generation",
+      _created_by: userId,
+    });
     await logRun(supabaseAdmin, { userId, yearId: data.year_id, action: "generate_annual_calendar", creditsSpent: cost, status: "success", runId });
     return { ok: true as const, plan: output };
   });
@@ -374,6 +385,17 @@ ${previewClause}`;
         },
         { onConflict: "year_id,grade,subject" },
       );
+    await supabaseAdmin.rpc("append_curriculum_version", {
+      _year_id: data.year_id,
+      _entity_type: "subject_curriculum",
+      _grade: data.grade,
+      _subject: data.subject,
+      _payload: { chapters: output.chapters, summary: output.summary } as any,
+      _meta: { model: MODEL, total_periods: output.total_periods, buffer_periods: output.buffer_periods, preview: isFreePreview },
+      _diff_summary: isFreePreview ? "30-day preview generated" : "Generated subject curriculum",
+      _source: "generation",
+      _created_by: userId,
+    });
     await logRun(supabaseAdmin, { userId, yearId: data.year_id, action: "generate_subject_curriculum", creditsSpent: cost, status: "success", runId, details: { grade: data.grade, subject: data.subject, preview: isFreePreview } });
     return { ok: true as const, preview: isFreePreview, preview_window_days: isFreePreview ? windowDays : null, ...output };
   });
@@ -432,6 +454,17 @@ Output a revised month-by-month plan covering ${ctx.year.start_date} → ${ctx.y
         { year_id: data.year_id, user_id: userId, plan: output, meta: { model: MODEL, recalibrated_at: new Date().toISOString(), disruption: data.disruption } },
         { onConflict: "year_id" },
       );
+    await supabaseAdmin.rpc("append_curriculum_version", {
+      _year_id: data.year_id,
+      _entity_type: "annual_calendar",
+      _grade: null as unknown as string,
+      _subject: null as unknown as string,
+      _payload: output as any,
+      _meta: { model: MODEL, recalibrated_at: new Date().toISOString(), disruption: data.disruption },
+      _diff_summary: `Recalibrated: ${data.disruption.slice(0, 120)}`,
+      _source: "recalibration",
+      _created_by: userId,
+    });
     await logRun(supabaseAdmin, { userId, yearId: data.year_id, action: "recalculate_schedule", creditsSpent: cost, status: "success", runId, details: { disruption: data.disruption } });
     return { ok: true as const, plan: output };
   });
@@ -444,7 +477,7 @@ export const getYearArtifacts = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     const [calendar, curricula] = await Promise.all([
       supabase.from("annual_calendars").select("plan, meta, updated_at").eq("year_id", data.year_id).maybeSingle(),
-      supabase.from("subject_curricula").select("*").eq("year_id", data.year_id).order("grade").order("subject"),
+      supabase.from("subject_curricula").select("*").eq("year_id", data.year_id).is("deleted_at", null).order("grade").order("subject"),
     ]);
     return {
       calendar: calendar.data ?? null,

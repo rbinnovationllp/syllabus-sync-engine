@@ -318,6 +318,69 @@ export type Database = {
           },
         ]
       }
+      curriculum_versions: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          diff_summary: string | null
+          entity_type: string
+          grade: string | null
+          id: string
+          meta: Json
+          org_id: string
+          payload: Json
+          source: string
+          subject: string | null
+          version_no: number
+          year_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          diff_summary?: string | null
+          entity_type: string
+          grade?: string | null
+          id?: string
+          meta?: Json
+          org_id: string
+          payload: Json
+          source?: string
+          subject?: string | null
+          version_no: number
+          year_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          diff_summary?: string | null
+          entity_type?: string
+          grade?: string | null
+          id?: string
+          meta?: Json
+          org_id?: string
+          payload?: Json
+          source?: string
+          subject?: string | null
+          version_no?: number
+          year_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "curriculum_versions_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "curriculum_versions_year_id_fkey"
+            columns: ["year_id"]
+            isOneToOne: false
+            referencedRelation: "academic_years"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       events: {
         Row: {
           academic_year_id: string
@@ -790,6 +853,7 @@ export type Database = {
         Row: {
           chapters: Json
           created_at: string
+          deleted_at: string | null
           grade: string
           id: string
           meta: Json
@@ -801,6 +865,7 @@ export type Database = {
         Insert: {
           chapters?: Json
           created_at?: string
+          deleted_at?: string | null
           grade: string
           id?: string
           meta?: Json
@@ -812,6 +877,7 @@ export type Database = {
         Update: {
           chapters?: Json
           created_at?: string
+          deleted_at?: string | null
           grade?: string
           id?: string
           meta?: Json
@@ -1109,6 +1175,40 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      append_curriculum_version: {
+        Args: {
+          _created_by: string
+          _diff_summary: string
+          _entity_type: string
+          _grade: string
+          _meta: Json
+          _payload: Json
+          _source: string
+          _subject: string
+          _year_id: string
+        }
+        Returns: {
+          created_at: string
+          created_by: string | null
+          diff_summary: string | null
+          entity_type: string
+          grade: string | null
+          id: string
+          meta: Json
+          org_id: string
+          payload: Json
+          source: string
+          subject: string | null
+          version_no: number
+          year_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "curriculum_versions"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       consume_ai_credits: {
         Args: {
           _check_env?: string

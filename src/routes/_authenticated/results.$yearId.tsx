@@ -21,6 +21,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogT
 import { Badge } from "@/components/ui/badge";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import { Sparkles, RotateCcw, FileDown, FileText, Loader2 } from "lucide-react";
+import { VersionHistoryDialog } from "@/components/VersionHistoryDialog";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/results/$yearId")({
@@ -297,8 +298,15 @@ function ResultsPage() {
 
       {calendar?.plan?.months?.length > 0 && (
         <Card className="mb-6">
-          <CardHeader><CardTitle>Annual calendar</CardTitle>
-            <CardDescription>AI-generated month-by-month plan.</CardDescription></CardHeader>
+          <CardHeader>
+            <div className="flex items-start justify-between gap-2">
+              <div>
+                <CardTitle>Annual calendar</CardTitle>
+                <CardDescription>AI-generated month-by-month plan.</CardDescription>
+              </div>
+              <VersionHistoryDialog year_id={yearId} entity_type="annual_calendar" canRestore />
+            </div>
+          </CardHeader>
           <CardContent>
             <div className="grid gap-3 md:grid-cols-2">
               {calendar.plan.months.map((m: any, i: number) => (
@@ -362,19 +370,30 @@ function ResultsPage() {
           {curricula.map((c) => (
             <Card key={c.id}>
               <CardHeader>
-                <CardTitle className="text-base flex items-center gap-2">
-                  Grade {c.grade} · {c.subject}
-                  {c.meta?.preview && <Badge variant="secondary" className="text-[10px]">30-day preview</Badge>}
-                </CardTitle>
-                {c.meta?.summary && <CardDescription>{c.meta.summary}</CardDescription>}
-                {c.meta?.preview && (
-                  <CardDescription className="text-amber-700 dark:text-amber-300">
-                    Preview only — subscribe to your category plan to unlock the full annual curriculum.
-                  </CardDescription>
-                )}
-                {c.meta?.completed_chapters && (
-                  <CardDescription className="text-xs">Resuming after: {c.meta.completed_chapters}</CardDescription>
-                )}
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <CardTitle className="text-base flex items-center gap-2">
+                      Grade {c.grade} · {c.subject}
+                      {c.meta?.preview && <Badge variant="secondary" className="text-[10px]">30-day preview</Badge>}
+                    </CardTitle>
+                    {c.meta?.summary && <CardDescription>{c.meta.summary}</CardDescription>}
+                    {c.meta?.preview && (
+                      <CardDescription className="text-amber-700 dark:text-amber-300">
+                        Preview only — subscribe to your category plan to unlock the full annual curriculum.
+                      </CardDescription>
+                    )}
+                    {c.meta?.completed_chapters && (
+                      <CardDescription className="text-xs">Resuming after: {c.meta.completed_chapters}</CardDescription>
+                    )}
+                  </div>
+                  <VersionHistoryDialog
+                    year_id={yearId}
+                    entity_type="subject_curriculum"
+                    grade={String(c.grade)}
+                    subject={c.subject}
+                    canRestore
+                  />
+                </div>
               </CardHeader>
               <CardContent>
                 <ol className="space-y-2 text-sm">
