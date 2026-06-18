@@ -454,6 +454,17 @@ Output a revised month-by-month plan covering ${ctx.year.start_date} → ${ctx.y
         { year_id: data.year_id, user_id: userId, plan: output, meta: { model: MODEL, recalibrated_at: new Date().toISOString(), disruption: data.disruption } },
         { onConflict: "year_id" },
       );
+    await supabaseAdmin.rpc("append_curriculum_version", {
+      _year_id: data.year_id,
+      _entity_type: "annual_calendar",
+      _grade: null as unknown as string,
+      _subject: null as unknown as string,
+      _payload: output as any,
+      _meta: { model: MODEL, recalibrated_at: new Date().toISOString(), disruption: data.disruption },
+      _diff_summary: `Recalibrated: ${data.disruption.slice(0, 120)}`,
+      _source: "recalibration",
+      _created_by: userId,
+    });
     await logRun(supabaseAdmin, { userId, yearId: data.year_id, action: "recalculate_schedule", creditsSpent: cost, status: "success", runId, details: { disruption: data.disruption } });
     return { ok: true as const, plan: output };
   });
