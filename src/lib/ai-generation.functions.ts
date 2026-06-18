@@ -112,18 +112,18 @@ async function runAi<T>(
   prompt: string,
   system: string,
   schema: z.ZodSchema<T>,
-): Promise<{ output: T; runId?: string }> {
-  const key = process.env.LOVABLE_API_KEY;
-  if (!key) throw new Error("AI gateway not configured");
-  const { createLovableAiGatewayProvider } = await import("@/lib/ai-gateway.server");
-  const gateway = createLovableAiGatewayProvider(key);
-  const { experimental_output } = await generateText({
-    model: gateway(MODEL),
+  opts: { orgId?: string | null; lowConfidence?: (out: T) => boolean } = {},
+): Promise<{ output: T; runId?: string; modelUsed: AllowedModel; escalated: boolean }> {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { runAiWithFallback } = await import("@/lib/ai-policy.server");
+  const r = await runAiWithFallback(supabaseAdmin, {
     system,
     prompt,
-    experimental_output: Output.object({ schema }),
+    schema,
+    options: { orgId: opts.orgId ?? null },
+    lowConfidence: opts.lowConfidence,
   });
-  return { output: experimental_output, runId: gateway.getRunId() };
+  return { output: r.output, runId: r.runId, modelUsed: r.modelUsed, escalated: r.escalated };
 }
 
 async function logRun(
