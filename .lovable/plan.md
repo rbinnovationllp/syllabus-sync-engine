@@ -11,6 +11,7 @@ Pay 10% of every recurring subscription payment to the partner who brought the s
 - When that visitor signs up, we stamp the partner code permanently onto their account (`profiles.referred_by_partner_id`).
 - When the account's school (org) purchases a subscription, the org inherits the partner from its owner. Every successful payment on that subscription accrues 10% commission to that partner — **for the lifetime of the subscription, unless the partner is suspended or terminated** (see §10).
 - One partner per org, set on first paid checkout. Self-referral is blocked.
+- **House partner fallback**: if a school subscribes with no referral cookie and no `referred_by_partner_id` on the buyer, attribution defaults to the **house partner "Sushma Khare"** (seeded `referral_partners` row, code `HOUSE`, `is_house = true`, owned by the company). The 10% still accrues — it just goes to the house account so every paid subscription is attributed to someone. House partner cannot be suspended/terminated through the normal flow and is excluded from public leaderboards.
 
 ## 2. Database (one migration)
 
