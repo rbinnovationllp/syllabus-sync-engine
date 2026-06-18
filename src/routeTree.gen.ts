@@ -20,6 +20,7 @@ import { Route as AuthenticatedPartnerRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedCrmRouteImport } from './routes/_authenticated/crm'
 import { Route as AuthenticatedAssignmentsRouteImport } from './routes/_authenticated/assignments'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedSuperAdminHealthRouteImport } from './routes/_authenticated/super-admin.health'
@@ -32,6 +33,7 @@ import { Route as ApiPublicCronNotificationsTickRouteImport } from './routes/api
 import { Route as ApiPublicCronHealthCheckRouteImport } from './routes/api/public/cron/health-check'
 import { Route as AuthenticatedCurriculumYearIdRescheduleRouteImport } from './routes/_authenticated/curriculum.$yearId.reschedule'
 import { Route as AuthenticatedCurriculumYearIdProposeRouteImport } from './routes/_authenticated/curriculum.$yearId.propose'
+import { Route as AuthenticatedCrmAccountsIdRouteImport } from './routes/_authenticated/crm.accounts.$id'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
@@ -86,6 +88,11 @@ const AuthenticatedNotificationsRoute =
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedCrmRoute = AuthenticatedCrmRouteImport.update({
+  id: '/crm',
+  path: '/crm',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedAssignmentsRoute =
@@ -159,6 +166,12 @@ const AuthenticatedCurriculumYearIdProposeRoute =
     path: '/curriculum/$yearId/propose',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedCrmAccountsIdRoute =
+  AuthenticatedCrmAccountsIdRouteImport.update({
+    id: '/accounts/$id',
+    path: '/accounts/$id',
+    getParentRoute: () => AuthenticatedCrmRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -167,6 +180,7 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/assignments': typeof AuthenticatedAssignmentsRoute
+  '/crm': typeof AuthenticatedCrmRouteWithChildren
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
@@ -178,6 +192,7 @@ export interface FileRoutesByFullPath {
   '/results/$yearId': typeof AuthenticatedResultsYearIdRoute
   '/school/profile': typeof AuthenticatedSchoolProfileRoute
   '/super-admin/health': typeof AuthenticatedSuperAdminHealthRoute
+  '/crm/accounts/$id': typeof AuthenticatedCrmAccountsIdRoute
   '/curriculum/$yearId/propose': typeof AuthenticatedCurriculumYearIdProposeRoute
   '/curriculum/$yearId/reschedule': typeof AuthenticatedCurriculumYearIdRescheduleRoute
   '/api/public/cron/health-check': typeof ApiPublicCronHealthCheckRoute
@@ -191,6 +206,7 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/assignments': typeof AuthenticatedAssignmentsRoute
+  '/crm': typeof AuthenticatedCrmRouteWithChildren
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
@@ -202,6 +218,7 @@ export interface FileRoutesByTo {
   '/results/$yearId': typeof AuthenticatedResultsYearIdRoute
   '/school/profile': typeof AuthenticatedSchoolProfileRoute
   '/super-admin/health': typeof AuthenticatedSuperAdminHealthRoute
+  '/crm/accounts/$id': typeof AuthenticatedCrmAccountsIdRoute
   '/curriculum/$yearId/propose': typeof AuthenticatedCurriculumYearIdProposeRoute
   '/curriculum/$yearId/reschedule': typeof AuthenticatedCurriculumYearIdRescheduleRoute
   '/api/public/cron/health-check': typeof ApiPublicCronHealthCheckRoute
@@ -217,6 +234,7 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/assignments': typeof AuthenticatedAssignmentsRoute
+  '/_authenticated/crm': typeof AuthenticatedCrmRouteWithChildren
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
@@ -228,6 +246,7 @@ export interface FileRoutesById {
   '/_authenticated/results/$yearId': typeof AuthenticatedResultsYearIdRoute
   '/_authenticated/school/profile': typeof AuthenticatedSchoolProfileRoute
   '/_authenticated/super-admin/health': typeof AuthenticatedSuperAdminHealthRoute
+  '/_authenticated/crm/accounts/$id': typeof AuthenticatedCrmAccountsIdRoute
   '/_authenticated/curriculum/$yearId/propose': typeof AuthenticatedCurriculumYearIdProposeRoute
   '/_authenticated/curriculum/$yearId/reschedule': typeof AuthenticatedCurriculumYearIdRescheduleRoute
   '/api/public/cron/health-check': typeof ApiPublicCronHealthCheckRoute
@@ -243,6 +262,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/admin'
     | '/assignments'
+    | '/crm'
     | '/dashboard'
     | '/notifications'
     | '/onboarding'
@@ -254,6 +274,7 @@ export interface FileRouteTypes {
     | '/results/$yearId'
     | '/school/profile'
     | '/super-admin/health'
+    | '/crm/accounts/$id'
     | '/curriculum/$yearId/propose'
     | '/curriculum/$yearId/reschedule'
     | '/api/public/cron/health-check'
@@ -267,6 +288,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/admin'
     | '/assignments'
+    | '/crm'
     | '/dashboard'
     | '/notifications'
     | '/onboarding'
@@ -278,6 +300,7 @@ export interface FileRouteTypes {
     | '/results/$yearId'
     | '/school/profile'
     | '/super-admin/health'
+    | '/crm/accounts/$id'
     | '/curriculum/$yearId/propose'
     | '/curriculum/$yearId/reschedule'
     | '/api/public/cron/health-check'
@@ -292,6 +315,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/_authenticated/admin'
     | '/_authenticated/assignments'
+    | '/_authenticated/crm'
     | '/_authenticated/dashboard'
     | '/_authenticated/notifications'
     | '/_authenticated/onboarding'
@@ -303,6 +327,7 @@ export interface FileRouteTypes {
     | '/_authenticated/results/$yearId'
     | '/_authenticated/school/profile'
     | '/_authenticated/super-admin/health'
+    | '/_authenticated/crm/accounts/$id'
     | '/_authenticated/curriculum/$yearId/propose'
     | '/_authenticated/curriculum/$yearId/reschedule'
     | '/api/public/cron/health-check'
@@ -400,6 +425,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/crm': {
+      id: '/_authenticated/crm'
+      path: '/crm'
+      fullPath: '/crm'
+      preLoaderRoute: typeof AuthenticatedCrmRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/assignments': {
       id: '/_authenticated/assignments'
       path: '/assignments'
@@ -484,12 +516,31 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCurriculumYearIdProposeRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/crm/accounts/$id': {
+      id: '/_authenticated/crm/accounts/$id'
+      path: '/accounts/$id'
+      fullPath: '/crm/accounts/$id'
+      preLoaderRoute: typeof AuthenticatedCrmAccountsIdRouteImport
+      parentRoute: typeof AuthenticatedCrmRoute
+    }
   }
 }
+
+interface AuthenticatedCrmRouteChildren {
+  AuthenticatedCrmAccountsIdRoute: typeof AuthenticatedCrmAccountsIdRoute
+}
+
+const AuthenticatedCrmRouteChildren: AuthenticatedCrmRouteChildren = {
+  AuthenticatedCrmAccountsIdRoute: AuthenticatedCrmAccountsIdRoute,
+}
+
+const AuthenticatedCrmRouteWithChildren =
+  AuthenticatedCrmRoute._addFileChildren(AuthenticatedCrmRouteChildren)
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedAssignmentsRoute: typeof AuthenticatedAssignmentsRoute
+  AuthenticatedCrmRoute: typeof AuthenticatedCrmRouteWithChildren
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
@@ -508,6 +559,7 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   AuthenticatedAssignmentsRoute: AuthenticatedAssignmentsRoute,
+  AuthenticatedCrmRoute: AuthenticatedCrmRouteWithChildren,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,

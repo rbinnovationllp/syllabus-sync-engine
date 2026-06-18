@@ -121,6 +121,9 @@ function AdminDashboard({ isSuperAdmin }: { isSuperAdmin: boolean }) {
         {isSuperAdmin && (
           <div className="flex items-center gap-2">
             <Button asChild variant="outline" size="sm">
+              <Link to="/crm">Sales CRM</Link>
+            </Button>
+            <Button asChild variant="outline" size="sm">
               <Link to="/super-admin/health">Platform health</Link>
             </Button>
             <Badge className="bg-gradient-to-r from-fuchsia-500 to-amber-500 text-white">
