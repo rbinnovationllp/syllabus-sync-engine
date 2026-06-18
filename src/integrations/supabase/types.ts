@@ -881,6 +881,70 @@ export type Database = {
         }
         Relationships: []
       }
+      teacher_assignments: {
+        Row: {
+          academic_year_id: string
+          created_at: string
+          created_by: string | null
+          grade: string
+          id: string
+          org_id: string
+          school_id: string
+          section: string | null
+          subject: string
+          teacher_user_id: string
+          updated_at: string
+        }
+        Insert: {
+          academic_year_id: string
+          created_at?: string
+          created_by?: string | null
+          grade: string
+          id?: string
+          org_id: string
+          school_id: string
+          section?: string | null
+          subject: string
+          teacher_user_id: string
+          updated_at?: string
+        }
+        Update: {
+          academic_year_id?: string
+          created_at?: string
+          created_by?: string | null
+          grade?: string
+          id?: string
+          org_id?: string
+          school_id?: string
+          section?: string | null
+          subject?: string
+          teacher_user_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "teacher_assignments_academic_year_id_fkey"
+            columns: ["academic_year_id"]
+            isOneToOne: false
+            referencedRelation: "academic_years"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "teacher_assignments_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "teacher_assignments_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       textbooks_input: {
         Row: {
           ai_recommended: boolean
