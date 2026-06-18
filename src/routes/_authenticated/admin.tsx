@@ -44,6 +44,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { EnforcementTab } from "@/components/admin/EnforcementTab";
+import { CurriculumReviewsTab } from "@/components/admin/CurriculumReviewsTab";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({ meta: [{ title: "Admin & CRM — CurriculumOS" }] }),
@@ -139,6 +140,7 @@ function AdminDashboard({ isSuperAdmin }: { isSuperAdmin: boolean }) {
           <TabsTrigger value="schools">Schools</TabsTrigger>
           {isSuperAdmin && <TabsTrigger value="access">Admin access</TabsTrigger>}
           {isSuperAdmin && <TabsTrigger value="partners">Partners</TabsTrigger>}
+          {isSuperAdmin && <TabsTrigger value="proposals">Proposals</TabsTrigger>}
           {isSuperAdmin && <TabsTrigger value="audit">Audit log</TabsTrigger>}
         </TabsList>
 
@@ -149,6 +151,7 @@ function AdminDashboard({ isSuperAdmin }: { isSuperAdmin: boolean }) {
         <TabsContent value="schools"><SchoolsTab schools={d.schools} /></TabsContent>
         {isSuperAdmin && <TabsContent value="access"><AccessTab /></TabsContent>}
         {isSuperAdmin && <TabsContent value="partners"><EnforcementTab /></TabsContent>}
+        {isSuperAdmin && <TabsContent value="proposals"><CurriculumReviewsTab /></TabsContent>}
         {isSuperAdmin && <TabsContent value="audit"><AuditTab /></TabsContent>}
       </Tabs>
     </div>
