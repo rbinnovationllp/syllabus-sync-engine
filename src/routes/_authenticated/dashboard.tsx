@@ -5,7 +5,7 @@ import { listMyAcademicYears } from "@/lib/onboarding.functions";
 import { AppShell } from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, Plus, BookLock, Users, Gauge, Share2 } from "lucide-react";
+import { Calendar, Plus, BookLock, Users, Gauge, Share2, FileText } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   component: DashboardPage,
