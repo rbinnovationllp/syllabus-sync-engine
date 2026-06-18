@@ -40,6 +40,7 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
             <Button asChild variant="ghost" size="sm">
               <Link to="/pricing"><CreditCard className="h-4 w-4 mr-1" /> Plans</Link>
             </Button>
+            <NotificationBell />
             <Button variant="ghost" size="sm" onClick={handleSignOut}>
               <LogOut className="h-4 w-4 mr-1" /> Sign out
             </Button>
