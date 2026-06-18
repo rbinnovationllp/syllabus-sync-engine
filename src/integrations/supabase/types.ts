@@ -861,6 +861,7 @@ export type Database = {
           display_name: string | null
           email: string | null
           id: string
+          referred_by_partner_id: string | null
           updated_at: string
         }
         Insert: {
@@ -868,6 +869,7 @@ export type Database = {
           display_name?: string | null
           email?: string | null
           id: string
+          referred_by_partner_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -875,9 +877,281 @@ export type Database = {
           display_name?: string | null
           email?: string | null
           id?: string
+          referred_by_partner_id?: string | null
           updated_at?: string
         }
         Relationships: []
+      }
+      referral_attributions: {
+        Row: {
+          attributed_at: string
+          code_used: string
+          id: string
+          is_house_fallback: boolean
+          org_id: string
+          partner_id: string
+          source_url: string | null
+        }
+        Insert: {
+          attributed_at?: string
+          code_used: string
+          id?: string
+          is_house_fallback?: boolean
+          org_id: string
+          partner_id: string
+          source_url?: string | null
+        }
+        Update: {
+          attributed_at?: string
+          code_used?: string
+          id?: string
+          is_house_fallback?: boolean
+          org_id?: string
+          partner_id?: string
+          source_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referral_attributions_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: true
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "referral_attributions_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "referral_partners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      referral_commissions: {
+        Row: {
+          accrued_at: string
+          commission_cents: number
+          commission_rate: number
+          currency: string
+          gross_amount_cents: number
+          id: string
+          notes: string | null
+          org_id: string
+          paid_at: string | null
+          partner_id: string
+          payout_id: string | null
+          status: string
+          stripe_charge_id: string | null
+          stripe_invoice_id: string
+        }
+        Insert: {
+          accrued_at?: string
+          commission_cents: number
+          commission_rate?: number
+          currency?: string
+          gross_amount_cents: number
+          id?: string
+          notes?: string | null
+          org_id: string
+          paid_at?: string | null
+          partner_id: string
+          payout_id?: string | null
+          status?: string
+          stripe_charge_id?: string | null
+          stripe_invoice_id: string
+        }
+        Update: {
+          accrued_at?: string
+          commission_cents?: number
+          commission_rate?: number
+          currency?: string
+          gross_amount_cents?: number
+          id?: string
+          notes?: string | null
+          org_id?: string
+          paid_at?: string | null
+          partner_id?: string
+          payout_id?: string | null
+          status?: string
+          stripe_charge_id?: string | null
+          stripe_invoice_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referral_commissions_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "referral_commissions_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "referral_partners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      referral_enforcement_actions: {
+        Row: {
+          action: string
+          created_at: string
+          decided_at: string | null
+          decided_by: string | null
+          evidence_url: string | null
+          forfeited_amount_cents: number | null
+          id: string
+          notice_text: string | null
+          partner_id: string
+          reason_category: string
+          responded_at: string | null
+          response_due_at: string | null
+          response_text: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          evidence_url?: string | null
+          forfeited_amount_cents?: number | null
+          id?: string
+          notice_text?: string | null
+          partner_id: string
+          reason_category: string
+          responded_at?: string | null
+          response_due_at?: string | null
+          response_text?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          evidence_url?: string | null
+          forfeited_amount_cents?: number | null
+          id?: string
+          notice_text?: string | null
+          partner_id?: string
+          reason_category?: string
+          responded_at?: string | null
+          response_due_at?: string | null
+          response_text?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referral_enforcement_actions_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "referral_partners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      referral_partners: {
+        Row: {
+          code: string
+          created_at: string
+          display_name: string
+          id: string
+          is_house: boolean
+          nda_accepted_at: string | null
+          payout_email: string | null
+          payout_method: string
+          status: string
+          status_changed_at: string | null
+          status_changed_by: string | null
+          status_reason: string | null
+          terms_accepted_at: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          display_name: string
+          id?: string
+          is_house?: boolean
+          nda_accepted_at?: string | null
+          payout_email?: string | null
+          payout_method?: string
+          status?: string
+          status_changed_at?: string | null
+          status_changed_by?: string | null
+          status_reason?: string | null
+          terms_accepted_at?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          display_name?: string
+          id?: string
+          is_house?: boolean
+          nda_accepted_at?: string | null
+          payout_email?: string | null
+          payout_method?: string
+          status?: string
+          status_changed_at?: string | null
+          status_changed_by?: string | null
+          status_reason?: string | null
+          terms_accepted_at?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      referral_payouts: {
+        Row: {
+          created_at: string
+          currency: string
+          external_ref: string | null
+          id: string
+          paid_at: string | null
+          partner_id: string
+          period_end: string
+          period_start: string
+          provider: string
+          status: string
+          total_cents: number
+        }
+        Insert: {
+          created_at?: string
+          currency?: string
+          external_ref?: string | null
+          id?: string
+          paid_at?: string | null
+          partner_id: string
+          period_end: string
+          period_start: string
+          provider?: string
+          status?: string
+          total_cents: number
+        }
+        Update: {
+          created_at?: string
+          currency?: string
+          external_ref?: string | null
+          id?: string
+          paid_at?: string | null
+          partner_id?: string
+          period_end?: string
+          period_start?: string
+          provider?: string
+          status?: string
+          total_cents?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referral_payouts_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "referral_partners"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       schools: {
         Row: {

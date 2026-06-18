@@ -10,6 +10,12 @@ import {
 import { useEffect, type ReactNode } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  captureReferralFromUrl,
+  clearStoredReferralCode,
+  getStoredReferralCode,
+} from "@/lib/referral";
+import { claimReferral } from "@/lib/referral.functions";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -123,10 +129,27 @@ function RootComponent() {
   const router = useRouter();
 
   useEffect(() => {
+    // Capture ?ref=CODE on first landing (90-day cookie + localStorage)
+    captureReferralFromUrl();
+
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
       if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
       router.invalidate();
       if (event !== "SIGNED_OUT") queryClient.invalidateQueries();
+
+      // On sign-in, try to attach the stored referral code to the new profile.
+      if (event === "SIGNED_IN") {
+        const code = getStoredReferralCode();
+        if (code) {
+          void claimReferral({ data: { code } })
+            .then((res) => {
+              if (res?.claimed) clearStoredReferralCode();
+            })
+            .catch(() => {
+              /* non-fatal: leave cookie for next attempt */
+            });
+        }
+      }
     });
     return () => sub.subscription.unsubscribe();
   }, [router, queryClient]);
