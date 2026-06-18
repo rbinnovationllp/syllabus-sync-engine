@@ -164,6 +164,41 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_model_settings: {
+        Row: {
+          active_model: string
+          allow_fallback_escalation: boolean
+          created_at: string
+          org_id: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          active_model?: string
+          allow_fallback_escalation?: boolean
+          created_at?: string
+          org_id: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          active_model?: string
+          allow_fallback_escalation?: boolean
+          created_at?: string
+          org_id?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_model_settings_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: true
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ai_runs: {
         Row: {
           action: string
