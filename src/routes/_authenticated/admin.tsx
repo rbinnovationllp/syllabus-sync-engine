@@ -148,6 +148,7 @@ function AdminDashboard({ isSuperAdmin }: { isSuperAdmin: boolean }) {
           <TabsTrigger value="subscriptions">Subscriptions</TabsTrigger>
           <TabsTrigger value="usage">Usage</TabsTrigger>
           <TabsTrigger value="ai-usage">AI usage</TabsTrigger>
+          <TabsTrigger value="ai-models">AI models</TabsTrigger>
           <TabsTrigger value="schools">Schools</TabsTrigger>
           {isSuperAdmin && <TabsTrigger value="access">Admin access</TabsTrigger>}
           {isSuperAdmin && <TabsTrigger value="partners">Partners</TabsTrigger>}
