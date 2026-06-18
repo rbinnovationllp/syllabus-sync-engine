@@ -161,6 +161,7 @@ function AdminDashboard({ isSuperAdmin }: { isSuperAdmin: boolean }) {
         <TabsContent value="subscriptions"><SubscriptionsTab subs={d.subscriptions} clients={d.clients} /></TabsContent>
         <TabsContent value="usage"><UsageTab usage={d.usage} clients={d.clients} /></TabsContent>
         <TabsContent value="ai-usage"><AiUsageTab /></TabsContent>
+        <TabsContent value="ai-models"><AiModelSettingsTab /></TabsContent>
         <TabsContent value="schools"><SchoolsTab schools={d.schools} /></TabsContent>
         {isSuperAdmin && <TabsContent value="access"><AccessTab /></TabsContent>}
         {isSuperAdmin && <TabsContent value="partners"><EnforcementTab /></TabsContent>}
