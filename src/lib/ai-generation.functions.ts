@@ -223,10 +223,18 @@ Build a 12-month plan covering ${ctx.year.start_date} → ${ctx.year.end_date}.`
 
     let output;
     let runId: string | undefined;
+    let modelUsed: AllowedModel = MODEL;
+    let escalated = false;
     try {
-      const r = await runAi(prompt, system, calendarSchema);
+      const r = await runAi(prompt, system, calendarSchema, {
+        orgId: ctx.year.org_id,
+        // Escalate when AI emitted >=3 warnings, suggesting confidence is low.
+        lowConfidence: (o: any) => Array.isArray(o?.warnings) && o.warnings.length >= 3,
+      });
       output = r.output;
       runId = r.runId;
+      modelUsed = r.modelUsed;
+      escalated = r.escalated;
     } catch (e: any) {
       await logRun(supabaseAdmin, { userId, yearId: data.year_id, action: "generate_annual_calendar", creditsSpent: cost, status: "error", error: e.message, runId });
       await refundCredits(supabaseAdmin, userId, cost);
@@ -236,7 +244,7 @@ Build a 12-month plan covering ${ctx.year.start_date} → ${ctx.year.end_date}.`
     await supabaseAdmin
       .from("annual_calendars")
       .upsert(
-        { year_id: data.year_id, user_id: userId, plan: output, meta: { model: MODEL, generated_at: new Date().toISOString() } },
+        { year_id: data.year_id, user_id: userId, plan: output, meta: { model: modelUsed, escalated, generated_at: new Date().toISOString() } },
         { onConflict: "year_id" },
       );
     await supabaseAdmin.rpc("append_curriculum_version", {
@@ -245,13 +253,13 @@ Build a 12-month plan covering ${ctx.year.start_date} → ${ctx.year.end_date}.`
       _grade: null as unknown as string,
       _subject: null as unknown as string,
       _payload: output as any,
-      _meta: { model: MODEL, generated_at: new Date().toISOString() },
+      _meta: { model: modelUsed, escalated, generated_at: new Date().toISOString() },
       _diff_summary: "Generated annual calendar",
       _source: "generation",
       _created_by: userId,
     });
-    await logRun(supabaseAdmin, { userId, yearId: data.year_id, action: "generate_annual_calendar", creditsSpent: cost, status: "success", runId });
-    return { ok: true as const, plan: output };
+    await logRun(supabaseAdmin, { userId, yearId: data.year_id, action: "generate_annual_calendar", creditsSpent: cost, status: "success", runId, details: { model: modelUsed, escalated } });
+    return { ok: true as const, plan: output, model: modelUsed, escalated };
   });
 
 const subjectInput = z.object({
