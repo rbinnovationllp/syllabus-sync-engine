@@ -686,23 +686,23 @@ const PERIOD_DURATION_OPTIONS = [60, 90, 120];
 function TutorWizard({ onSwitchType }: { onSwitchType?: () => void }) {
   const submit = useServerFn(submitOnboarding);
   const navigate = useNavigate();
-  const [step, setStep] = useState(1);
+  const [step, setStep, clearStep] = useDraftState<number>("curriculumos.tutor.step", 1);
   const [saving, setSaving] = useState(false);
 
   const today = new Date();
   const initialStart = today.toISOString().slice(0, 10);
   const initialEnd = sessionEndForStart(initialStart, "", "custom");
 
-  const [tutorName, setTutorName] = useState("");
-  const [grade, setGrade] = useState("8");
-  const [subject, setSubject] = useState("Mathematics");
-  const [book, setBook] = useState({ title: "", author: "", publisher: "", edition_year: "" });
-  const [periodDuration, setPeriodDuration] = useState(60);
-  const [periodsPerWeek, setPeriodsPerWeek] = useState(3);
-  const [startDate, setStartDate] = useState(initialStart);
-  const [endDate, setEndDate] = useState(initialEnd);
+  const [tutorName, setTutorName, clearTutorName] = useDraftState("curriculumos.tutor.name", "");
+  const [grade, setGrade, clearGrade] = useDraftState("curriculumos.tutor.grade", "8");
+  const [subject, setSubject, clearSubject] = useDraftState("curriculumos.tutor.subject", "Mathematics");
+  const [book, setBook, clearBook] = useDraftState("curriculumos.tutor.book", { title: "", author: "", publisher: "", edition_year: "" });
+  const [periodDuration, setPeriodDuration, clearPeriodDuration] = useDraftState("curriculumos.tutor.periodDuration", 60);
+  const [periodsPerWeek, setPeriodsPerWeek, clearPeriodsPerWeek] = useDraftState("curriculumos.tutor.periodsPerWeek", 3);
+  const [startDate, setStartDate, clearStartDate] = useDraftState("curriculumos.tutor.startDate", initialStart);
+  const [endDate, setEndDate, clearEndDate] = useDraftState("curriculumos.tutor.endDate", initialEnd);
 
-  const [s4, setS4] = useState<Step4>({
+  const [s4, setS4, clearS4] = useDraftState<Step4>("curriculumos.tutor.s4", {
     holidays: [], vacation_breaks: [], events: [], exam_windows: [], training_days: [],
   });
 
