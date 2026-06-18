@@ -729,6 +729,57 @@ export type Database = {
           },
         ]
       }
+      health_snapshots: {
+        Row: {
+          cache_hit_pct: number | null
+          captured_at: string
+          connections_active: number | null
+          connections_max: number | null
+          connections_pct: number | null
+          db_size_mb: number | null
+          deadlocks: number | null
+          error_rate_pct: number | null
+          errors_5m: number | null
+          id: string
+          notes: Json
+          rollbacks: number | null
+          severity: string
+          total_runs_5m: number | null
+        }
+        Insert: {
+          cache_hit_pct?: number | null
+          captured_at?: string
+          connections_active?: number | null
+          connections_max?: number | null
+          connections_pct?: number | null
+          db_size_mb?: number | null
+          deadlocks?: number | null
+          error_rate_pct?: number | null
+          errors_5m?: number | null
+          id?: string
+          notes?: Json
+          rollbacks?: number | null
+          severity?: string
+          total_runs_5m?: number | null
+        }
+        Update: {
+          cache_hit_pct?: number | null
+          captured_at?: string
+          connections_active?: number | null
+          connections_max?: number | null
+          connections_pct?: number | null
+          db_size_mb?: number | null
+          deadlocks?: number | null
+          error_rate_pct?: number | null
+          errors_5m?: number | null
+          id?: string
+          notes?: Json
+          rollbacks?: number | null
+          severity?: string
+          total_runs_5m?: number | null
+        }
+        Relationships: []
+      }
       holidays: {
         Row: {
           academic_year_id: string
@@ -1739,6 +1790,7 @@ export type Database = {
         Args: { _check_env?: string; _monthly_quota: number; _user_id: string }
         Returns: Json
       }
+      get_health_metrics: { Args: never; Returns: Json }
       has_active_subscription: {
         Args: { check_env?: string; user_uuid: string }
         Returns: boolean
