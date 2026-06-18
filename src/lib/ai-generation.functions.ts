@@ -240,8 +240,8 @@ Build a 12-month plan covering ${ctx.year.start_date} → ${ctx.year.end_date}.`
     await supabaseAdmin.rpc("append_curriculum_version", {
       _year_id: data.year_id,
       _entity_type: "annual_calendar",
-      _grade: null,
-      _subject: null,
+      _grade: null as unknown as string,
+      _subject: null as unknown as string,
       _payload: output as any,
       _meta: { model: MODEL, generated_at: new Date().toISOString() },
       _diff_summary: "Generated annual calendar",
