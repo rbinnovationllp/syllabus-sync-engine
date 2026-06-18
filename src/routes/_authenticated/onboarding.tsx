@@ -117,19 +117,19 @@ function makeGS(grade: string, stream: string, subject: string, periods = 5): im
 function OnboardingWizard({ onSwitchType }: { onSwitchType?: () => void }) {
   const submit = useServerFn(submitOnboarding);
   const navigate = useNavigate();
-  const [step, setStep] = useState(1);
+  const [step, setStep, clearStep] = useDraftState<number>("curriculumos.onboarding.step", 1);
   const [saving, setSaving] = useState(false);
 
-  const [s1, setS1] = useState<Step1>({
+  const [s1, setS1, clearS1] = useDraftState<Step1>("curriculumos.onboarding.s1", {
     school_name: "", region: "", country: "", state_province: "", city: "", board: "cbse",
   });
-  const [s2, setS2] = useState<Step2>({
+  const [s2, setS2, clearS2] = useDraftState<Step2>("curriculumos.onboarding.s2", {
     monthly_fee_per_student: undefined, currency: "USD", fee_tier: "mid", textbooks: [],
   });
   const today = new Date();
   const initialStart = today.toISOString().slice(0, 10);
   const initialEnd = sessionEndForStart(initialStart, "", "cbse");
-  const [s3, setS3] = useState<Step3>({
+  const [s3, setS3, clearS3] = useDraftState<Step3>("curriculumos.onboarding.s3", {
     label: sessionLabel(initialStart, initialEnd),
     start_date: initialStart,
     end_date: initialEnd,
@@ -154,7 +154,7 @@ function OnboardingWizard({ onSwitchType }: { onSwitchType?: () => void }) {
       makeGS("8", "", "Art & Craft", 1),
     ],
   });
-  const [s4, setS4] = useState<Step4>({
+  const [s4, setS4, clearS4] = useDraftState<Step4>("curriculumos.onboarding.s4", {
     holidays: [], vacation_breaks: [], events: [], exam_windows: [], training_days: [],
   });
 
