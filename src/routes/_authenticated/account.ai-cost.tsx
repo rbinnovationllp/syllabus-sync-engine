@@ -181,24 +181,24 @@ function AiCostPage() {
             </TableHeader>
             <TableBody>
               {(() => {
-                const cheapest = Math.min(...modelCompare.map((r) => r.providerUsd));
+                const cheapest = Math.min(...modelCompare.map((r) => r.bundle.providerUsd));
                 return modelCompare
                   .slice()
-                  .sort((a, b) => a.providerUsd - b.providerUsd)
+                  .sort((a, b) => a.bundle.providerUsd - b.bundle.providerUsd)
                   .map((r) => (
-                    <TableRow key={r.model} className={r.model === model ? "bg-muted/50" : ""}>
-                      <TableCell className="font-medium">{r.model}</TableCell>
-                      <TableCell><Badge variant="outline">{MODEL_PRICING[r.model as AllowedModel].tier}</Badge></TableCell>
-                      <TableCell className="text-right">{fmtUsd(r.providerUsd)}</TableCell>
-                      <TableCell className="text-right">{fmtUsd(r.revenueUsd, 2)}</TableCell>
-                      <TableCell className="text-right">{fmtUsd(r.grossUsd, 2)}</TableCell>
+                    <TableRow key={r.modelName} className={r.modelName === model ? "bg-muted/50" : ""}>
+                      <TableCell className="font-medium">{r.modelName}</TableCell>
+                      <TableCell><Badge variant="outline">{MODEL_PRICING[r.modelName].tier}</Badge></TableCell>
+                      <TableCell className="text-right">{fmtUsd(r.bundle.providerUsd)}</TableCell>
+                      <TableCell className="text-right">{fmtUsd(r.bundle.revenueUsd, 2)}</TableCell>
+                      <TableCell className="text-right">{fmtUsd(r.bundle.grossUsd, 2)}</TableCell>
                       <TableCell className="text-right">
-                        <Badge variant={r.marginPct >= 60 ? "default" : "secondary"}>
-                          {r.marginPct.toFixed(0)}%
+                        <Badge variant={r.bundle.marginPct >= 60 ? "default" : "secondary"}>
+                          {r.bundle.marginPct.toFixed(0)}%
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right text-xs text-muted-foreground">
-                        {r.providerUsd === cheapest ? "—" : `+${(((r.providerUsd - cheapest) / cheapest) * 100).toFixed(0)}%`}
+                        {r.bundle.providerUsd === cheapest ? "—" : `+${(((r.bundle.providerUsd - cheapest) / cheapest) * 100).toFixed(0)}%`}
                       </TableCell>
                     </TableRow>
                   ));
