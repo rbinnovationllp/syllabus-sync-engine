@@ -22,6 +22,7 @@ import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedSchoolProfileRouteImport } from './routes/_authenticated/school.profile'
 import { Route as AuthenticatedResultsYearIdRouteImport } from './routes/_authenticated/results.$yearId'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
+import { Route as AuthenticatedCurriculumYearIdRescheduleRouteImport } from './routes/_authenticated/curriculum.$yearId.reschedule'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
@@ -91,6 +92,12 @@ const ApiPublicPaymentsWebhookRoute =
     path: '/api/public/payments/webhook',
     getParentRoute: () => rootRouteImport,
   } as any)
+const AuthenticatedCurriculumYearIdRescheduleRoute =
+  AuthenticatedCurriculumYearIdRescheduleRouteImport.update({
+    id: '/curriculum/$yearId/reschedule',
+    path: '/curriculum/$yearId/reschedule',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -104,6 +111,7 @@ export interface FileRoutesByFullPath {
   '/seats': typeof AuthenticatedSeatsRoute
   '/results/$yearId': typeof AuthenticatedResultsYearIdRoute
   '/school/profile': typeof AuthenticatedSchoolProfileRoute
+  '/curriculum/$yearId/reschedule': typeof AuthenticatedCurriculumYearIdRescheduleRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRoutesByTo {
@@ -118,6 +126,7 @@ export interface FileRoutesByTo {
   '/seats': typeof AuthenticatedSeatsRoute
   '/results/$yearId': typeof AuthenticatedResultsYearIdRoute
   '/school/profile': typeof AuthenticatedSchoolProfileRoute
+  '/curriculum/$yearId/reschedule': typeof AuthenticatedCurriculumYearIdRescheduleRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRoutesById {
@@ -134,6 +143,7 @@ export interface FileRoutesById {
   '/_authenticated/seats': typeof AuthenticatedSeatsRoute
   '/_authenticated/results/$yearId': typeof AuthenticatedResultsYearIdRoute
   '/_authenticated/school/profile': typeof AuthenticatedSchoolProfileRoute
+  '/_authenticated/curriculum/$yearId/reschedule': typeof AuthenticatedCurriculumYearIdRescheduleRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRouteTypes {
@@ -150,6 +160,7 @@ export interface FileRouteTypes {
     | '/seats'
     | '/results/$yearId'
     | '/school/profile'
+    | '/curriculum/$yearId/reschedule'
     | '/api/public/payments/webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -164,6 +175,7 @@ export interface FileRouteTypes {
     | '/seats'
     | '/results/$yearId'
     | '/school/profile'
+    | '/curriculum/$yearId/reschedule'
     | '/api/public/payments/webhook'
   id:
     | '__root__'
@@ -179,6 +191,7 @@ export interface FileRouteTypes {
     | '/_authenticated/seats'
     | '/_authenticated/results/$yearId'
     | '/_authenticated/school/profile'
+    | '/_authenticated/curriculum/$yearId/reschedule'
     | '/api/public/payments/webhook'
   fileRoutesById: FileRoutesById
 }
@@ -283,6 +296,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicPaymentsWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/curriculum/$yearId/reschedule': {
+      id: '/_authenticated/curriculum/$yearId/reschedule'
+      path: '/curriculum/$yearId/reschedule'
+      fullPath: '/curriculum/$yearId/reschedule'
+      preLoaderRoute: typeof AuthenticatedCurriculumYearIdRescheduleRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -295,6 +315,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSeatsRoute: typeof AuthenticatedSeatsRoute
   AuthenticatedResultsYearIdRoute: typeof AuthenticatedResultsYearIdRoute
   AuthenticatedSchoolProfileRoute: typeof AuthenticatedSchoolProfileRoute
+  AuthenticatedCurriculumYearIdRescheduleRoute: typeof AuthenticatedCurriculumYearIdRescheduleRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -306,6 +327,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSeatsRoute: AuthenticatedSeatsRoute,
   AuthenticatedResultsYearIdRoute: AuthenticatedResultsYearIdRoute,
   AuthenticatedSchoolProfileRoute: AuthenticatedSchoolProfileRoute,
+  AuthenticatedCurriculumYearIdRescheduleRoute:
+    AuthenticatedCurriculumYearIdRescheduleRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
