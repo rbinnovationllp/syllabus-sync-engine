@@ -318,6 +318,328 @@ export type Database = {
           },
         ]
       }
+      crm_accounts: {
+        Row: {
+          board: string | null
+          city: string | null
+          country: string | null
+          created_at: string
+          fee_tier: string | null
+          id: string
+          name: string
+          notes: string | null
+          owner_user_id: string | null
+          updated_at: string
+          website: string | null
+        }
+        Insert: {
+          board?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          fee_tier?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          owner_user_id?: string | null
+          updated_at?: string
+          website?: string | null
+        }
+        Update: {
+          board?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          fee_tier?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          owner_user_id?: string | null
+          updated_at?: string
+          website?: string | null
+        }
+        Relationships: []
+      }
+      crm_activities: {
+        Row: {
+          account_id: string | null
+          body: string | null
+          completed_at: string | null
+          contact_id: string | null
+          created_at: string
+          deal_id: string | null
+          due_at: string | null
+          id: string
+          lead_id: string | null
+          owner_user_id: string | null
+          subject: string | null
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          account_id?: string | null
+          body?: string | null
+          completed_at?: string | null
+          contact_id?: string | null
+          created_at?: string
+          deal_id?: string | null
+          due_at?: string | null
+          id?: string
+          lead_id?: string | null
+          owner_user_id?: string | null
+          subject?: string | null
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          account_id?: string | null
+          body?: string | null
+          completed_at?: string | null
+          contact_id?: string | null
+          created_at?: string
+          deal_id?: string | null
+          due_at?: string | null
+          id?: string
+          lead_id?: string | null
+          owner_user_id?: string | null
+          subject?: string | null
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_activities_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "crm_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_activities_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "crm_contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_activities_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "crm_deals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_activities_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "crm_leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_contacts: {
+        Row: {
+          account_id: string | null
+          created_at: string
+          email: string | null
+          full_name: string
+          id: string
+          linkedin: string | null
+          notes: string | null
+          phone: string | null
+          role: string | null
+          updated_at: string
+        }
+        Insert: {
+          account_id?: string | null
+          created_at?: string
+          email?: string | null
+          full_name: string
+          id?: string
+          linkedin?: string | null
+          notes?: string | null
+          phone?: string | null
+          role?: string | null
+          updated_at?: string
+        }
+        Update: {
+          account_id?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string
+          id?: string
+          linkedin?: string | null
+          notes?: string | null
+          phone?: string | null
+          role?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_contacts_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "crm_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_deals: {
+        Row: {
+          account_id: string | null
+          amount_inr: number | null
+          created_at: string
+          expected_close_date: string | null
+          id: string
+          name: string
+          notes: string | null
+          owner_user_id: string | null
+          probability: number | null
+          stage: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          account_id?: string | null
+          amount_inr?: number | null
+          created_at?: string
+          expected_close_date?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          owner_user_id?: string | null
+          probability?: number | null
+          stage?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          account_id?: string | null
+          amount_inr?: number | null
+          created_at?: string
+          expected_close_date?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          owner_user_id?: string | null
+          probability?: number | null
+          stage?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_deals_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "crm_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_leads: {
+        Row: {
+          account_id: string | null
+          contact_id: string | null
+          created_at: string
+          email: string | null
+          external_lead_id: string | null
+          id: string
+          last_touched_at: string | null
+          name: string | null
+          notes: string | null
+          owner_user_id: string | null
+          phone: string | null
+          score: number
+          source: string | null
+          stage: string
+          updated_at: string
+        }
+        Insert: {
+          account_id?: string | null
+          contact_id?: string | null
+          created_at?: string
+          email?: string | null
+          external_lead_id?: string | null
+          id?: string
+          last_touched_at?: string | null
+          name?: string | null
+          notes?: string | null
+          owner_user_id?: string | null
+          phone?: string | null
+          score?: number
+          source?: string | null
+          stage?: string
+          updated_at?: string
+        }
+        Update: {
+          account_id?: string | null
+          contact_id?: string | null
+          created_at?: string
+          email?: string | null
+          external_lead_id?: string | null
+          id?: string
+          last_touched_at?: string | null
+          name?: string | null
+          notes?: string | null
+          owner_user_id?: string | null
+          phone?: string | null
+          score?: number
+          source?: string | null
+          stage?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_leads_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "crm_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_leads_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "crm_contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_leads_external_lead_id_fkey"
+            columns: ["external_lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_notes: {
+        Row: {
+          body: string
+          created_at: string
+          created_by: string | null
+          id: string
+          parent_id: string
+          parent_type: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          parent_id: string
+          parent_type: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          parent_id?: string
+          parent_type?: string
+        }
+        Relationships: []
+      }
       curriculum_edit_proposals: {
         Row: {
           ai_fault_lines: Json
