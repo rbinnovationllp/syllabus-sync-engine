@@ -203,9 +203,9 @@ export const PLANS: Plan[] = [
     },
     prices: [
       { priceId: "bundle_middle_monthly_usd", amount: 3900, currency: "usd", display: "$39/mo", interval: "monthly" },
-      { priceId: "bundle_middle_monthly_inr", amount: 299900, currency: "inr", display: "₹2,999/mo", interval: "monthly" },
+      { priceId: "bundle_middle_monthly_inr", amount: 499900, currency: "inr", display: "₹4,999/mo", interval: "monthly" },
       { priceId: "bundle_middle_annual_usd", amount: 39000, currency: "usd", display: "$390/yr", interval: "annual" },
-      { priceId: "bundle_middle_annual_inr", amount: 2999000, currency: "inr", display: "₹29,990/yr", interval: "annual" },
+      { priceId: "bundle_middle_annual_inr", amount: 4999000, currency: "inr", display: "₹49,990/yr", interval: "annual" },
     ],
   },
   {
