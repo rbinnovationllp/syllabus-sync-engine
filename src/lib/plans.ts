@@ -21,20 +21,21 @@ export interface PlanPrice {
 }
 
 /**
- * Annual rebate eligibility — pay for 10 months, get 12.
+ * Annual rebate eligibility — pay for 10 months, get 2 free.
  *
- * Rule (per product spec): the rebate aligns with the country's academic
- * session. India's session runs April → March, so the 2-months-free offer
- * applies ONLY when the subscriber starts on or before April. Subscribers
- * who join from May onward pay full annual (12×) — no rebate.
- *
- * For non-India / USD customers we treat any month as eligible (global
- * sessions vary; honoring annual rebate year-round keeps the offer simple).
+ * Policy:
+ * - India (INR): rebate is offered ONLY during the pre-session enrollment
+ *   window (Feb–May), before the April-start academic session. Outside that
+ *   window, the annual plan is still shown ("soft" gating) but checkout is
+ *   disabled and schools subscribe monthly instead.
+ * - Overseas (USD): the overseas window spans 2 months before to 1 month
+ *   after session start (varies by country). To keep the offer simple
+ *   globally we honor it year-round for USD.
  */
 export function annualRebateEligible(currency: Currency, now: Date = new Date()): boolean {
   if (currency !== "inr") return true;
-  // JS months are 0-indexed: Jan=0 ... Apr=3.
-  return now.getMonth() <= 3;
+  const m = now.getMonth(); // 0-indexed
+  return m >= 1 && m <= 4; // Feb (1) – May (4)
 }
 
 /** Hard per-plan limits enforced server-side. */
@@ -164,9 +165,9 @@ export const PLANS: Plan[] = [
     },
     prices: [
       { priceId: "bundle_primary_monthly_usd", amount: 2900, currency: "usd", display: "$29/mo", interval: "monthly" },
-      { priceId: "bundle_primary_monthly_inr", amount: 199900, currency: "inr", display: "₹1,999/mo", interval: "monthly" },
+      { priceId: "bundle_primary_monthly_inr", amount: 299900, currency: "inr", display: "₹2,999/mo", interval: "monthly" },
       { priceId: "bundle_primary_annual_usd", amount: 29000, currency: "usd", display: "$290/yr", interval: "annual" },
-      { priceId: "bundle_primary_annual_inr", amount: 1999000, currency: "inr", display: "₹19,990/yr", interval: "annual" },
+      { priceId: "bundle_primary_annual_inr", amount: 2999000, currency: "inr", display: "₹29,990/yr", interval: "annual" },
     ],
   },
   {
@@ -202,9 +203,9 @@ export const PLANS: Plan[] = [
     },
     prices: [
       { priceId: "bundle_middle_monthly_usd", amount: 3900, currency: "usd", display: "$39/mo", interval: "monthly" },
-      { priceId: "bundle_middle_monthly_inr", amount: 299900, currency: "inr", display: "₹2,999/mo", interval: "monthly" },
+      { priceId: "bundle_middle_monthly_inr", amount: 499900, currency: "inr", display: "₹4,999/mo", interval: "monthly" },
       { priceId: "bundle_middle_annual_usd", amount: 39000, currency: "usd", display: "$390/yr", interval: "annual" },
-      { priceId: "bundle_middle_annual_inr", amount: 2999000, currency: "inr", display: "₹29,990/yr", interval: "annual" },
+      { priceId: "bundle_middle_annual_inr", amount: 4999000, currency: "inr", display: "₹49,990/yr", interval: "annual" },
     ],
   },
   {
@@ -241,9 +242,9 @@ export const PLANS: Plan[] = [
     },
     prices: [
       { priceId: "bundle_high_monthly_usd", amount: 5900, currency: "usd", display: "$59/mo", interval: "monthly" },
-      { priceId: "bundle_high_monthly_inr", amount: 499900, currency: "inr", display: "₹4,999/mo", interval: "monthly" },
+      { priceId: "bundle_high_monthly_inr", amount: 699900, currency: "inr", display: "₹6,999/mo", interval: "monthly" },
       { priceId: "bundle_high_annual_usd", amount: 59000, currency: "usd", display: "$590/yr", interval: "annual" },
-      { priceId: "bundle_high_annual_inr", amount: 4999000, currency: "inr", display: "₹49,990/yr", interval: "annual" },
+      { priceId: "bundle_high_annual_inr", amount: 6999000, currency: "inr", display: "₹69,990/yr", interval: "annual" },
     ],
   },
   {
@@ -298,7 +299,7 @@ export const PLANS: Plan[] = [
 // Add-ons (one-time AI credit packs + per-campus recurring seat)
 // ---------------------------------------------------------------------------
 
-export type AddOnId = "ai_credits_500" | "ai_credits_2k" | "extra_campus" | "extra_user";
+export type AddOnId = "ai_credits_500" | "ai_credits_2k" | "ai_credits_10k" | "extra_campus" | "extra_user";
 
 export interface AddOn {
   id: AddOnId;
@@ -353,6 +354,17 @@ export const ADD_ONS: AddOn[] = [
     prices: [
       { priceId: "ai_credits_2k_usd", amount: 2399, currency: "usd", display: "$23.99 one-time" },
       { priceId: "ai_credits_2k_inr", amount: 199900, currency: "inr", display: "₹1,999 one-time" },
+    ],
+  },
+  {
+    id: "ai_credits_10k",
+    name: "AI Credits — 10,000",
+    description: "Top-up pack: 10,000 additional AI credits, never expires. Best value.",
+    creditsGranted: 10000,
+    recurring: false,
+    prices: [
+      { priceId: "ai_credits_10k_usd", amount: 8999, currency: "usd", display: "$89.99 one-time" },
+      { priceId: "ai_credits_10k_inr", amount: 699900, currency: "inr", display: "₹6,999 one-time" },
     ],
   },
 ];
