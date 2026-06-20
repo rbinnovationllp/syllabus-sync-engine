@@ -356,6 +356,17 @@ export const ADD_ONS: AddOn[] = [
       { priceId: "ai_credits_2k_inr", amount: 199900, currency: "inr", display: "₹1,999 one-time" },
     ],
   },
+  {
+    id: "ai_credits_10k",
+    name: "AI Credits — 10,000",
+    description: "Top-up pack: 10,000 additional AI credits, never expires. Best value.",
+    creditsGranted: 10000,
+    recurring: false,
+    prices: [
+      { priceId: "ai_credits_10k_usd", amount: 8999, currency: "usd", display: "$89.99 one-time" },
+      { priceId: "ai_credits_10k_inr", amount: 699900, currency: "inr", display: "₹6,999 one-time" },
+    ],
+  },
 ];
 
 const ADDON_PRICE_TO_CREDITS: Record<string, number> = Object.fromEntries(
