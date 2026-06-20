@@ -21,20 +21,21 @@ export interface PlanPrice {
 }
 
 /**
- * Annual rebate eligibility — pay for 10 months, get 12.
+ * Annual rebate eligibility — pay for 10 months, get 2 free.
  *
- * Rule (per product spec): the rebate aligns with the country's academic
- * session. India's session runs April → March, so the 2-months-free offer
- * applies ONLY when the subscriber starts on or before April. Subscribers
- * who join from May onward pay full annual (12×) — no rebate.
- *
- * For non-India / USD customers we treat any month as eligible (global
- * sessions vary; honoring annual rebate year-round keeps the offer simple).
+ * Policy:
+ * - India (INR): rebate is offered ONLY during the pre-session enrollment
+ *   window (Feb–May), before the April-start academic session. Outside that
+ *   window, the annual plan is still shown ("soft" gating) but checkout is
+ *   disabled and schools subscribe monthly instead.
+ * - Overseas (USD): the overseas window spans 2 months before to 1 month
+ *   after session start (varies by country). To keep the offer simple
+ *   globally we honor it year-round for USD.
  */
 export function annualRebateEligible(currency: Currency, now: Date = new Date()): boolean {
   if (currency !== "inr") return true;
-  // JS months are 0-indexed: Jan=0 ... Apr=3.
-  return now.getMonth() <= 3;
+  const m = now.getMonth(); // 0-indexed
+  return m >= 1 && m <= 4; // Feb (1) – May (4)
 }
 
 /** Hard per-plan limits enforced server-side. */
