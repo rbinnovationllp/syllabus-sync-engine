@@ -299,7 +299,7 @@ export const PLANS: Plan[] = [
 // Add-ons (one-time AI credit packs + per-campus recurring seat)
 // ---------------------------------------------------------------------------
 
-export type AddOnId = "ai_credits_500" | "ai_credits_2k" | "extra_campus" | "extra_user";
+export type AddOnId = "ai_credits_500" | "ai_credits_2k" | "ai_credits_10k" | "extra_campus" | "extra_user";
 
 export interface AddOn {
   id: AddOnId;
