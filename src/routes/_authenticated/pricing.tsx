@@ -92,7 +92,19 @@ function PricingPage() {
       return;
     }
     setAcknowledged(false);
-    setPending({ plan, priceId: price.priceId, priceDisplay: price.display, interval: effectiveInterval });
+    setPending({
+      plan,
+      priceId: price.priceId,
+      priceDisplay: price.display,
+      interval: effectiveInterval,
+      amount: price.amount,
+    });
+  }
+
+  function startUpiPayment() {
+    if (!pending || !acknowledged) return;
+    setUpiPayment(pending);
+    setPending(null);
   }
 
   function confirmCheckout() {
