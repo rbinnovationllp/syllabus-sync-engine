@@ -55,6 +55,7 @@ function PricingPage() {
   const [pending, setPending] = useState<PendingCheckout | null>(null);
   const [acknowledged, setAcknowledged] = useState(false);
   const [checkoutPriceId, setCheckoutPriceId] = useState<string | null>(null);
+  const [upiPayment, setUpiPayment] = useState<PendingCheckout | null>(null);
   const [portalLoading, setPortalLoading] = useState(false);
   const { subscription, plan: currentPlan, isActive } = useSubscription();
   const portalFn = useServerFn(createPortalSession);
