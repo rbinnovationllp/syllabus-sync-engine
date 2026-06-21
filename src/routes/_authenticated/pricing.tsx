@@ -23,9 +23,11 @@ import {
 } from "@/lib/plans";
 import { useSubscription } from "@/hooks/useSubscription";
 import { StripeEmbeddedCheckout } from "@/components/StripeEmbeddedCheckout";
+import { UpiPaymentPanel } from "@/components/UpiPaymentPanel";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { createPortalSession } from "@/lib/payments.functions";
 import { getStripeEnvironment } from "@/lib/stripe";
+import { UPI_CONFIG } from "@/lib/upi";
 
 export const Route = createFileRoute("/_authenticated/pricing")({
   component: PricingPage,
@@ -44,6 +46,7 @@ interface PendingCheckout {
   priceId: string;
   priceDisplay: string;
   interval: BillingInterval;
+  amount: number;
 }
 
 function PricingPage() {
@@ -52,6 +55,7 @@ function PricingPage() {
   const [pending, setPending] = useState<PendingCheckout | null>(null);
   const [acknowledged, setAcknowledged] = useState(false);
   const [checkoutPriceId, setCheckoutPriceId] = useState<string | null>(null);
+  const [upiPayment, setUpiPayment] = useState<PendingCheckout | null>(null);
   const [portalLoading, setPortalLoading] = useState(false);
   const { subscription, plan: currentPlan, isActive } = useSubscription();
   const portalFn = useServerFn(createPortalSession);
@@ -88,7 +92,19 @@ function PricingPage() {
       return;
     }
     setAcknowledged(false);
-    setPending({ plan, priceId: price.priceId, priceDisplay: price.display, interval: effectiveInterval });
+    setPending({
+      plan,
+      priceId: price.priceId,
+      priceDisplay: price.display,
+      interval: effectiveInterval,
+      amount: price.amount,
+    });
+  }
+
+  function startUpiPayment() {
+    if (!pending || !acknowledged) return;
+    setUpiPayment(pending);
+    setPending(null);
   }
 
   function confirmCheckout() {
@@ -420,14 +436,37 @@ function PricingPage() {
             </div>
           )}
 
-          <DialogFooter>
+          <DialogFooter className="flex-col sm:flex-row gap-2">
             <Button variant="outline" onClick={() => setPending(null)}>
               Cancel
             </Button>
+            {currency === "inr" && UPI_CONFIG.enabled && (
+              <Button variant="secondary" onClick={startUpiPayment} disabled={!acknowledged}>
+                Pay via UPI
+              </Button>
+            )}
             <Button onClick={confirmCheckout} disabled={!acknowledged}>
-              Agree &amp; continue to payment
+              Pay with Stripe
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!upiPayment} onOpenChange={(o) => !o && setUpiPayment(null)}>
+        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Pay via UPI</DialogTitle>
+            <DialogDescription>
+              {upiPayment?.plan.name} · {upiPayment?.priceDisplay}
+            </DialogDescription>
+          </DialogHeader>
+          {upiPayment && (
+            <UpiPaymentPanel
+              amountInCents={upiPayment.amount}
+              currency="inr"
+              planName={upiPayment.plan.name}
+            />
+          )}
         </DialogContent>
       </Dialog>
 
