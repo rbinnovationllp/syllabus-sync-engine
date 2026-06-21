@@ -436,14 +436,37 @@ function PricingPage() {
             </div>
           )}
 
-          <DialogFooter>
+          <DialogFooter className="flex-col sm:flex-row gap-2">
             <Button variant="outline" onClick={() => setPending(null)}>
               Cancel
             </Button>
+            {currency === "inr" && UPI_CONFIG.enabled && (
+              <Button variant="secondary" onClick={startUpiPayment} disabled={!acknowledged}>
+                Pay via UPI
+              </Button>
+            )}
             <Button onClick={confirmCheckout} disabled={!acknowledged}>
-              Agree &amp; continue to payment
+              Pay with Stripe
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!upiPayment} onOpenChange={(o) => !o && setUpiPayment(null)}>
+        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Pay via UPI</DialogTitle>
+            <DialogDescription>
+              {upiPayment?.plan.name} · {upiPayment?.priceDisplay}
+            </DialogDescription>
+          </DialogHeader>
+          {upiPayment && (
+            <UpiPaymentPanel
+              amountInCents={upiPayment.amount}
+              currency="inr"
+              planName={upiPayment.plan.name}
+            />
+          )}
         </DialogContent>
       </Dialog>
 
