@@ -23,9 +23,11 @@ import {
 } from "@/lib/plans";
 import { useSubscription } from "@/hooks/useSubscription";
 import { StripeEmbeddedCheckout } from "@/components/StripeEmbeddedCheckout";
+import { UpiPaymentPanel } from "@/components/UpiPaymentPanel";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { createPortalSession } from "@/lib/payments.functions";
 import { getStripeEnvironment } from "@/lib/stripe";
+import { UPI_CONFIG } from "@/lib/upi";
 
 export const Route = createFileRoute("/_authenticated/pricing")({
   component: PricingPage,
@@ -44,6 +46,7 @@ interface PendingCheckout {
   priceId: string;
   priceDisplay: string;
   interval: BillingInterval;
+  amount: number;
 }
 
 function PricingPage() {
