@@ -1,0 +1,452 @@
+// Single source of truth for subscription tiers, grade entitlements, limits,
+// AI credit costs, and add-on pricing. price_id is stable across sandbox and
+// live (resolved via Stripe lookup_key).
+
+export type TierId =
+  | "retail_single_access"
+  | "bundle_primary_access"
+  | "bundle_middle_access"
+  | "bundle_high_access"
+  | "enterprise_global_access";
+
+export type Currency = "usd" | "inr";
+export type BillingInterval = "monthly" | "annual";
+
+export interface PlanPrice {
+  priceId: string;
+  amount: number;
+  currency: Currency;
+  display: string;
+  interval?: BillingInterval;
+}
+
+/**
+ * Annual rebate eligibility — pay for 10 months, get 2 free.
+ *
+ * Policy:
+ * - India (INR): rebate is offered ONLY during the pre-session enrollment
+ *   window (Feb–May), before the April-start academic session. Outside that
+ *   window, the annual plan is still shown ("soft" gating) but checkout is
+ *   disabled and schools subscribe monthly instead.
+ * - Overseas (USD): the overseas window spans 2 months before to 1 month
+ *   after session start (varies by country). To keep the offer simple
+ *   globally we honor it year-round for USD.
+ */
+export function annualRebateEligible(currency: Currency, now: Date = new Date()): boolean {
+  if (currency !== "inr") return true;
+  const m = now.getMonth(); // 0-indexed
+  return m >= 1 && m <= 4; // Feb (1) – May (4)
+}
+
+/** Hard per-plan limits enforced server-side. */
+export interface PlanLimits {
+  /** Max distinct grades the tenant can plan for. */
+  maxGrades: number;
+  /** Max subjects per grade. -1 = unlimited. */
+  maxSubjectsPerGrade: number;
+  /** Seat cap (teacher / staff logins). */
+  maxUsers: number;
+  /** Annual plan cap. */
+  maxAcademicYears: number;
+  /** Monthly AI credit allowance. Top-ups extend beyond this. */
+  aiCreditsPerMonth: number;
+  /** Monthly export cap (PDF / DOCX / XLSX / Google). */
+  exportsPerMonth: number;
+  /** Storage cap in gigabytes. */
+  storageGb: number;
+  /** Campus cap. Extra campuses are billed via the `extra_campus` add-on. */
+  maxCampuses: number;
+  teacherTraining: boolean;
+  curriculumRecalibration: "none" | "monthly" | "standard" | "advanced";
+  whiteLabel: boolean;
+  apiAccess: boolean;
+  dedicatedOnboarding: boolean;
+  /** Human-readable support SLA string. */
+  support: string;
+}
+
+export interface Plan {
+  id: TierId;
+  name: string;
+  tagline: string;
+  features: string[];
+  /** Plain-language restrictions surfaced on the pricing page. */
+  restrictions: string[];
+  grades: string[] | "all";
+  rank: number;
+  limits: PlanLimits;
+  prices: PlanPrice[];
+}
+
+export const ALL_GRADES = [
+  "Pre-K", "K", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12",
+];
+
+/** AI credit cost per action. Source of truth for fair-use accounting. */
+export const AI_ACTION_COSTS = {
+  generate_annual_calendar: 50,
+  generate_subject_curriculum: 25,
+  recalculate_schedule: 20,
+  generate_lesson_plan: 5,
+  generate_teacher_training: 10,
+} as const;
+
+export type AiAction = keyof typeof AI_ACTION_COSTS;
+
+export const PLANS: Plan[] = [
+  {
+    id: "retail_single_access",
+    name: "Retail Single Access",
+    tagline: "Individual teachers, tutors, coaching faculty",
+    features: ["1 class, 1 subject", "Capacity engine", "All export formats", "500 AI credits/mo"],
+    restrictions: [
+      "1 user login (no sharing)",
+      "1 class, 1 subject",
+      "500 AI credits / month",
+      "1 GB storage",
+      "Email support",
+      "No additional users",
+    ],
+    grades: [],
+    rank: 1,
+    limits: {
+      maxGrades: 1,
+      maxSubjectsPerGrade: 1,
+      maxUsers: 1,
+      maxAcademicYears: 1,
+      aiCreditsPerMonth: 500,
+      exportsPerMonth: 100,
+      storageGb: 1,
+      maxCampuses: 1,
+      teacherTraining: false,
+      curriculumRecalibration: "none",
+      whiteLabel: false,
+      apiAccess: false,
+      dedicatedOnboarding: false,
+      support: "Email only",
+    },
+    prices: [
+      { priceId: "retail_single_monthly_usd", amount: 900, currency: "usd", display: "$9/mo", interval: "monthly" },
+      { priceId: "retail_single_monthly_inr", amount: 49900, currency: "inr", display: "₹499/mo", interval: "monthly" },
+      { priceId: "retail_single_annual_usd", amount: 9000, currency: "usd", display: "$90/yr", interval: "annual" },
+      { priceId: "retail_single_annual_inr", amount: 499000, currency: "inr", display: "₹4,990/yr", interval: "annual" },
+    ],
+  },
+  {
+    id: "bundle_primary_access",
+    name: "Primary Bundle",
+    tagline: "Pre-K to Grade 5, single school",
+    features: ["Pre-K–Grade 5, all subjects", "Up to 6 users", "2,000 AI credits/mo", "10 GB storage"],
+    restrictions: [
+      "Single school",
+      "Maximum 6 users (extra user: {extra_user_price})",
+      "2,000 AI credits / month",
+      "10 GB storage",
+      "Email support (48 hrs)",
+      "Monthly recalibration",
+    ],
+    grades: ["Pre-K", "K", "1", "2", "3", "4", "5"],
+    rank: 2,
+    limits: {
+      maxGrades: 7,
+      maxSubjectsPerGrade: -1,
+      maxUsers: 6,
+      maxAcademicYears: 3,
+      aiCreditsPerMonth: 2000,
+      exportsPerMonth: 1000,
+      storageGb: 10,
+      maxCampuses: 1,
+      teacherTraining: false,
+      curriculumRecalibration: "monthly",
+      whiteLabel: false,
+      apiAccess: false,
+      dedicatedOnboarding: false,
+      support: "Email (48 hrs)",
+    },
+    prices: [
+      { priceId: "bundle_primary_monthly_usd", amount: 2900, currency: "usd", display: "$29/mo", interval: "monthly" },
+      { priceId: "bundle_primary_monthly_inr", amount: 299900, currency: "inr", display: "₹2,999/mo", interval: "monthly" },
+      { priceId: "bundle_primary_annual_usd", amount: 29000, currency: "usd", display: "$290/yr", interval: "annual" },
+      { priceId: "bundle_primary_annual_inr", amount: 2999000, currency: "inr", display: "₹29,990/yr", interval: "annual" },
+    ],
+  },
+  {
+    id: "bundle_middle_access",
+    name: "Middle School Bundle",
+    tagline: "Grades 6 – 8, single school",
+    features: ["Grades 6–8, all subjects", "Up to 10 users", "3,000 AI credits/mo", "20 GB storage"],
+    restrictions: [
+      "Single school",
+      "Maximum 10 users (extra user: {extra_user_price})",
+      "3,000 AI credits / month",
+      "20 GB storage",
+      "Priority email support",
+      "Standard recalibration",
+    ],
+    grades: ["6", "7", "8"],
+    rank: 3,
+    limits: {
+      maxGrades: 3,
+      maxSubjectsPerGrade: -1,
+      maxUsers: 10,
+      maxAcademicYears: 3,
+      aiCreditsPerMonth: 3000,
+      exportsPerMonth: 2000,
+      storageGb: 20,
+      maxCampuses: 1,
+      teacherTraining: true,
+      curriculumRecalibration: "standard",
+      whiteLabel: false,
+      apiAccess: false,
+      dedicatedOnboarding: false,
+      support: "Priority Email",
+    },
+    prices: [
+      { priceId: "bundle_middle_monthly_usd", amount: 3900, currency: "usd", display: "$39/mo", interval: "monthly" },
+      { priceId: "bundle_middle_monthly_inr", amount: 499900, currency: "inr", display: "₹4,999/mo", interval: "monthly" },
+      { priceId: "bundle_middle_annual_usd", amount: 39000, currency: "usd", display: "$390/yr", interval: "annual" },
+      { priceId: "bundle_middle_annual_inr", amount: 4999000, currency: "inr", display: "₹49,990/yr", interval: "annual" },
+    ],
+  },
+  {
+    id: "bundle_high_access",
+    name: "High School Bundle",
+    tagline: "Grades 9 – 12, single school",
+    features: ["Grades 9–12, all subjects", "Up to 18 users", "5,000 AI credits/mo", "50 GB storage"],
+    restrictions: [
+      "Single school",
+      "Maximum 18 users (extra user: {extra_user_price})",
+      "5,000 AI credits / month",
+      "50 GB storage",
+      "Phone + Email support",
+      "Board exam planning",
+      "Advanced recalibration",
+    ],
+    grades: ["9", "10", "11", "12"],
+    rank: 4,
+    limits: {
+      maxGrades: 4,
+      maxSubjectsPerGrade: -1,
+      maxUsers: 18,
+      maxAcademicYears: 4,
+      aiCreditsPerMonth: 5000,
+      exportsPerMonth: 5000,
+      storageGb: 50,
+      maxCampuses: 1,
+      teacherTraining: true,
+      curriculumRecalibration: "advanced",
+      whiteLabel: false,
+      apiAccess: false,
+      dedicatedOnboarding: false,
+      support: "Phone + Email",
+    },
+    prices: [
+      { priceId: "bundle_high_monthly_usd", amount: 5900, currency: "usd", display: "$59/mo", interval: "monthly" },
+      { priceId: "bundle_high_monthly_inr", amount: 699900, currency: "inr", display: "₹6,999/mo", interval: "monthly" },
+      { priceId: "bundle_high_annual_usd", amount: 59000, currency: "usd", display: "$590/yr", interval: "annual" },
+      { priceId: "bundle_high_annual_inr", amount: 6999000, currency: "inr", display: "₹69,990/yr", interval: "annual" },
+    ],
+  },
+  {
+    id: "enterprise_global_access",
+    name: "Enterprise",
+    tagline: "Single campus, full K–12",
+    features: [
+      "All grades, all subjects",
+      "Up to 60 users",
+      "20,000 AI credits/mo",
+      "200 GB storage",
+      "Dedicated account manager",
+    ],
+    restrictions: [
+      "1 campus only (extra campus: {extra_campus_price})",
+      "Maximum 60 users (extra user: {extra_user_price})",
+      "20,000 AI credits / month",
+      "200 GB storage",
+      "Dedicated account manager",
+      "White-label branding",
+      "API access",
+      "Dedicated onboarding",
+    ],
+    grades: "all",
+    rank: 5,
+    limits: {
+      maxGrades: ALL_GRADES.length,
+      maxSubjectsPerGrade: -1,
+      maxUsers: 60,
+      maxAcademicYears: 10,
+      aiCreditsPerMonth: 20000,
+      exportsPerMonth: 50000,
+      storageGb: 200,
+      maxCampuses: 1,
+      teacherTraining: true,
+      curriculumRecalibration: "advanced",
+      whiteLabel: true,
+      apiAccess: true,
+      dedicatedOnboarding: true,
+      support: "Dedicated Account Manager",
+    },
+    prices: [
+      { priceId: "enterprise_global_monthly_usd", amount: 17900, currency: "usd", display: "$179/mo", interval: "monthly" },
+      { priceId: "enterprise_global_monthly_inr", amount: 1499900, currency: "inr", display: "₹14,999/mo", interval: "monthly" },
+      { priceId: "enterprise_global_annual_usd", amount: 179000, currency: "usd", display: "$1,790/yr", interval: "annual" },
+      { priceId: "enterprise_global_annual_inr", amount: 14999000, currency: "inr", display: "₹1,49,990/yr", interval: "annual" },
+    ],
+  },
+];
+
+// ---------------------------------------------------------------------------
+// Add-ons (one-time AI credit packs + per-campus recurring seat)
+// ---------------------------------------------------------------------------
+
+export type AddOnId = "ai_credits_500" | "ai_credits_2k" | "ai_credits_10k" | "extra_campus" | "extra_user";
+
+export interface AddOn {
+  id: AddOnId;
+  name: string;
+  description: string;
+  /** Credits granted per purchase, or 0 for recurring seat add-ons. */
+  creditsGranted: number;
+  recurring: boolean;
+  prices: PlanPrice[];
+}
+
+export const ADD_ONS: AddOn[] = [
+  {
+    id: "extra_user",
+    name: "Additional User Seat",
+    description: "Add one extra user seat beyond your plan's base seat count. Recurring monthly.",
+    creditsGranted: 0,
+    recurring: true,
+    prices: [
+      { priceId: "extra_user_monthly_usd", amount: 250, currency: "usd", display: "$2.50 / mo per seat" },
+      { priceId: "extra_user_monthly_inr", amount: 19900, currency: "inr", display: "₹199 / mo per seat" },
+    ],
+  },
+  {
+    id: "extra_campus",
+    name: "Additional Campus",
+    description: "Add one extra campus to your Enterprise subscription.",
+    creditsGranted: 0,
+    recurring: true,
+    prices: [
+      { priceId: "extra_campus_monthly_usd", amount: 5900, currency: "usd", display: "$59 / mo" },
+      { priceId: "extra_campus_monthly_inr", amount: 499900, currency: "inr", display: "₹4,999 / mo" },
+    ],
+  },
+  {
+    id: "ai_credits_500",
+    name: "AI Credits — 500",
+    description: "Top-up pack: 500 additional AI credits, never expires.",
+    creditsGranted: 500,
+    recurring: false,
+    prices: [
+      { priceId: "ai_credits_500_usd", amount: 599, currency: "usd", display: "$5.99 one-time" },
+      { priceId: "ai_credits_500_inr", amount: 49900, currency: "inr", display: "₹499 one-time" },
+    ],
+  },
+  {
+    id: "ai_credits_2k",
+    name: "AI Credits — 2,000",
+    description: "Top-up pack: 2,000 additional AI credits, never expires.",
+    creditsGranted: 2000,
+    recurring: false,
+    prices: [
+      { priceId: "ai_credits_2k_usd", amount: 2399, currency: "usd", display: "$23.99 one-time" },
+      { priceId: "ai_credits_2k_inr", amount: 199900, currency: "inr", display: "₹1,999 one-time" },
+    ],
+  },
+  {
+    id: "ai_credits_10k",
+    name: "AI Credits — 10,000",
+    description: "Top-up pack: 10,000 additional AI credits, never expires. Best value.",
+    creditsGranted: 10000,
+    recurring: false,
+    prices: [
+      { priceId: "ai_credits_10k_usd", amount: 8999, currency: "usd", display: "$89.99 one-time" },
+      { priceId: "ai_credits_10k_inr", amount: 699900, currency: "inr", display: "₹6,999 one-time" },
+    ],
+  },
+];
+
+const ADDON_PRICE_TO_CREDITS: Record<string, number> = Object.fromEntries(
+  ADD_ONS.flatMap((a) => a.prices.map((pr) => [pr.priceId, a.creditsGranted] as const)),
+);
+
+/** Returns credits granted for a one-time top-up price, or null. */
+export function creditsForAddOnPrice(priceId: string | null | undefined): number | null {
+  if (!priceId) return null;
+  const v = ADDON_PRICE_TO_CREDITS[priceId];
+  return v && v > 0 ? v : null;
+}
+
+// ---------------------------------------------------------------------------
+// Paid services (NOT included in any plan — separate quotation)
+// ---------------------------------------------------------------------------
+
+export const PAID_SERVICES = [
+  { name: "Teacher training workshop", price: "₹10,000 – 25,000 / session" },
+  { name: "Curriculum consulting", price: "₹2,000 – 5,000 / hour" },
+  { name: "Board compliance audit", price: "₹25,000 – 1,00,000" },
+  { name: "Custom reports", price: "₹10,000+" },
+  { name: "Custom software feature", price: "Separate quotation" },
+  { name: "On-site visit", price: "Travel + consulting fee" },
+  { name: "Data migration", price: "₹10,000 – 50,000" },
+] as const;
+
+// ---------------------------------------------------------------------------
+// Lookups
+// ---------------------------------------------------------------------------
+
+const PRICE_TO_TIER: Record<string, TierId> = Object.fromEntries(
+  PLANS.flatMap((p) => p.prices.map((pr) => [pr.priceId, p.id] as const)),
+);
+
+export function tierForPriceId(priceId: string | null | undefined): TierId | null {
+  if (!priceId) return null;
+  return PRICE_TO_TIER[priceId] ?? null;
+}
+
+export function planForTier(tier: TierId | null): Plan | null {
+  if (!tier) return null;
+  return PLANS.find((p) => p.id === tier) ?? null;
+}
+
+export function gradesEntitled(tier: TierId | null): string[] {
+  const plan = planForTier(tier);
+  if (!plan) return [];
+  return plan.grades === "all" ? ALL_GRADES : plan.grades;
+}
+
+export function hasGradeAccess(tier: TierId | null, grade: string): boolean {
+  const plan = planForTier(tier);
+  if (!plan) return false;
+  if (plan.grades === "all") return true;
+  if (plan.id === "retail_single_access") return true;
+  return plan.grades.includes(grade);
+}
+
+export function limitsForTier(tier: TierId | null): PlanLimits | null {
+  return planForTier(tier)?.limits ?? null;
+}
+
+export function aiCostForAction(action: AiAction): number {
+  return AI_ACTION_COSTS[action];
+}
+
+/** Resolve currency-aware add-on display price. */
+export function addOnPriceDisplay(addOnId: AddOnId, currency: Currency): string {
+  const addon = ADD_ONS.find((a) => a.id === addOnId);
+  if (!addon) return "";
+  const price = addon.prices.find((p) => p.currency === currency);
+  return price?.display ?? "";
+}
+
+/** Replace {extra_user_price} / {extra_campus_price} placeholders in plan restrictions. */
+export function planDisplayRestrictions(plan: Plan, currency: Currency): string[] {
+  const extraUser = addOnPriceDisplay("extra_user", currency);
+  const extraCampus = addOnPriceDisplay("extra_campus", currency);
+  return plan.restrictions.map((r) =>
+    r.replace("{extra_user_price}", extraUser).replace("{extra_campus_price}", extraCampus),
+  );
+}

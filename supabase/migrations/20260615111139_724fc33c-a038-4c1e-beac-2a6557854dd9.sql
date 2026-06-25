@@ -1,0 +1,1 @@
+ALTER TABLE public.grade_subjects ADD COLUMN IF NOT EXISTS completed_chapters text;

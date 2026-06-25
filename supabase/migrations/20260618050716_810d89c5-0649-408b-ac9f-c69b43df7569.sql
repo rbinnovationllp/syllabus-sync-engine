@@ -1,0 +1,10 @@
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.referral_partners TO authenticated;
+GRANT ALL ON public.referral_partners TO service_role;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.referral_attributions TO authenticated;
+GRANT ALL ON public.referral_attributions TO service_role;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.referral_commissions TO authenticated;
+GRANT ALL ON public.referral_commissions TO service_role;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.referral_enforcement_actions TO authenticated;
+GRANT ALL ON public.referral_enforcement_actions TO service_role;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.referral_payouts TO authenticated;
+GRANT ALL ON public.referral_payouts TO service_role;
