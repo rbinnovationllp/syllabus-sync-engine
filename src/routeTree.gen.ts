@@ -12,23 +12,35 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as PartnersRouteImport } from './routes/partners'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AiLeadershipSuiteRouteImport } from './routes/ai-leadership-suite'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedSeatsRouteImport } from './routes/_authenticated/seats'
+import { Route as AuthenticatedSchoolCrmRouteImport } from './routes/_authenticated/school-crm'
 import { Route as AuthenticatedPricingRouteImport } from './routes/_authenticated/pricing'
 import { Route as AuthenticatedPartnerRouteImport } from './routes/_authenticated/partner'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedCrmRouteImport } from './routes/_authenticated/crm'
+import { Route as AuthenticatedCompanyCrmRouteImport } from './routes/_authenticated/company-crm'
 import { Route as AuthenticatedAssignmentsRouteImport } from './routes/_authenticated/assignments'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
+import { Route as AuthenticatedV2TeacherIntelligenceRouteImport } from './routes/_authenticated/v2.teacher-intelligence'
+import { Route as AuthenticatedV2StudentIntelligenceRouteImport } from './routes/_authenticated/v2.student-intelligence'
+import { Route as AuthenticatedV2PrincipalRouteImport } from './routes/_authenticated/v2.principal'
+import { Route as AuthenticatedV2ParentHubRouteImport } from './routes/_authenticated/v2.parent-hub'
+import { Route as AuthenticatedV2DigitalTwinRouteImport } from './routes/_authenticated/v2.digital-twin'
+import { Route as AuthenticatedV2CopilotRouteImport } from './routes/_authenticated/v2.copilot'
+import { Route as AuthenticatedV2ContentStudioRouteImport } from './routes/_authenticated/v2.content-studio'
+import { Route as AuthenticatedV2AssessmentsRouteImport } from './routes/_authenticated/v2.assessments'
 import { Route as AuthenticatedSuperAdminHealthRouteImport } from './routes/_authenticated/super-admin.health'
 import { Route as AuthenticatedSchoolProfileRouteImport } from './routes/_authenticated/school.profile'
 import { Route as AuthenticatedResultsYearIdRouteImport } from './routes/_authenticated/results.$yearId'
 import { Route as AuthenticatedCurriculumProposalsRouteImport } from './routes/_authenticated/curriculum.proposals'
 import { Route as AuthenticatedAccountUsageRouteImport } from './routes/_authenticated/account.usage'
 import { Route as AuthenticatedAccountAiCostRouteImport } from './routes/_authenticated/account.ai-cost'
+import { Route as ApiPublicRazorpayWebhookRouteImport } from './routes/api/public/razorpay/webhook'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 import { Route as ApiPublicCronNotificationsTickRouteImport } from './routes/api/public/cron/notifications-tick'
 import { Route as ApiPublicCronHealthCheckRouteImport } from './routes/api/public/cron/health-check'
@@ -51,6 +63,11 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AiLeadershipSuiteRoute = AiLeadershipSuiteRouteImport.update({
+  id: '/ai-leadership-suite',
+  path: '/ai-leadership-suite',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
@@ -63,6 +80,11 @@ const IndexRoute = IndexRouteImport.update({
 const AuthenticatedSeatsRoute = AuthenticatedSeatsRouteImport.update({
   id: '/seats',
   path: '/seats',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedSchoolCrmRoute = AuthenticatedSchoolCrmRouteImport.update({
+  id: '/school-crm',
+  path: '/school-crm',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedPricingRoute = AuthenticatedPricingRouteImport.update({
@@ -96,6 +118,11 @@ const AuthenticatedCrmRoute = AuthenticatedCrmRouteImport.update({
   path: '/crm',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedCompanyCrmRoute = AuthenticatedCompanyCrmRouteImport.update({
+  id: '/company-crm',
+  path: '/company-crm',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedAssignmentsRoute =
   AuthenticatedAssignmentsRouteImport.update({
     id: '/assignments',
@@ -107,6 +134,53 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedV2TeacherIntelligenceRoute =
+  AuthenticatedV2TeacherIntelligenceRouteImport.update({
+    id: '/v2/teacher-intelligence',
+    path: '/v2/teacher-intelligence',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedV2StudentIntelligenceRoute =
+  AuthenticatedV2StudentIntelligenceRouteImport.update({
+    id: '/v2/student-intelligence',
+    path: '/v2/student-intelligence',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedV2PrincipalRoute =
+  AuthenticatedV2PrincipalRouteImport.update({
+    id: '/v2/principal',
+    path: '/v2/principal',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedV2ParentHubRoute =
+  AuthenticatedV2ParentHubRouteImport.update({
+    id: '/v2/parent-hub',
+    path: '/v2/parent-hub',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedV2DigitalTwinRoute =
+  AuthenticatedV2DigitalTwinRouteImport.update({
+    id: '/v2/digital-twin',
+    path: '/v2/digital-twin',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedV2CopilotRoute = AuthenticatedV2CopilotRouteImport.update({
+  id: '/v2/copilot',
+  path: '/v2/copilot',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedV2ContentStudioRoute =
+  AuthenticatedV2ContentStudioRouteImport.update({
+    id: '/v2/content-studio',
+    path: '/v2/content-studio',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedV2AssessmentsRoute =
+  AuthenticatedV2AssessmentsRouteImport.update({
+    id: '/v2/assessments',
+    path: '/v2/assessments',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedSuperAdminHealthRoute =
   AuthenticatedSuperAdminHealthRouteImport.update({
     id: '/super-admin/health',
@@ -142,6 +216,12 @@ const AuthenticatedAccountAiCostRoute =
     id: '/account/ai-cost',
     path: '/account/ai-cost',
     getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const ApiPublicRazorpayWebhookRoute =
+  ApiPublicRazorpayWebhookRouteImport.update({
+    id: '/api/public/razorpay/webhook',
+    path: '/api/public/razorpay/webhook',
+    getParentRoute: () => rootRouteImport,
   } as any)
 const ApiPublicPaymentsWebhookRoute =
   ApiPublicPaymentsWebhookRouteImport.update({
@@ -182,17 +262,20 @@ const AuthenticatedCrmAccountsIdRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/ai-leadership-suite': typeof AiLeadershipSuiteRoute
   '/auth': typeof AuthRoute
   '/partners': typeof PartnersRoute
   '/reset-password': typeof ResetPasswordRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/assignments': typeof AuthenticatedAssignmentsRoute
+  '/company-crm': typeof AuthenticatedCompanyCrmRoute
   '/crm': typeof AuthenticatedCrmRouteWithChildren
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/partner': typeof AuthenticatedPartnerRoute
   '/pricing': typeof AuthenticatedPricingRoute
+  '/school-crm': typeof AuthenticatedSchoolCrmRoute
   '/seats': typeof AuthenticatedSeatsRoute
   '/account/ai-cost': typeof AuthenticatedAccountAiCostRoute
   '/account/usage': typeof AuthenticatedAccountUsageRoute
@@ -200,26 +283,38 @@ export interface FileRoutesByFullPath {
   '/results/$yearId': typeof AuthenticatedResultsYearIdRoute
   '/school/profile': typeof AuthenticatedSchoolProfileRoute
   '/super-admin/health': typeof AuthenticatedSuperAdminHealthRoute
+  '/v2/assessments': typeof AuthenticatedV2AssessmentsRoute
+  '/v2/content-studio': typeof AuthenticatedV2ContentStudioRoute
+  '/v2/copilot': typeof AuthenticatedV2CopilotRoute
+  '/v2/digital-twin': typeof AuthenticatedV2DigitalTwinRoute
+  '/v2/parent-hub': typeof AuthenticatedV2ParentHubRoute
+  '/v2/principal': typeof AuthenticatedV2PrincipalRoute
+  '/v2/student-intelligence': typeof AuthenticatedV2StudentIntelligenceRoute
+  '/v2/teacher-intelligence': typeof AuthenticatedV2TeacherIntelligenceRoute
   '/crm/accounts/$id': typeof AuthenticatedCrmAccountsIdRoute
   '/curriculum/$yearId/propose': typeof AuthenticatedCurriculumYearIdProposeRoute
   '/curriculum/$yearId/reschedule': typeof AuthenticatedCurriculumYearIdRescheduleRoute
   '/api/public/cron/health-check': typeof ApiPublicCronHealthCheckRoute
   '/api/public/cron/notifications-tick': typeof ApiPublicCronNotificationsTickRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
+  '/api/public/razorpay/webhook': typeof ApiPublicRazorpayWebhookRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/ai-leadership-suite': typeof AiLeadershipSuiteRoute
   '/auth': typeof AuthRoute
   '/partners': typeof PartnersRoute
   '/reset-password': typeof ResetPasswordRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/assignments': typeof AuthenticatedAssignmentsRoute
+  '/company-crm': typeof AuthenticatedCompanyCrmRoute
   '/crm': typeof AuthenticatedCrmRouteWithChildren
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/partner': typeof AuthenticatedPartnerRoute
   '/pricing': typeof AuthenticatedPricingRoute
+  '/school-crm': typeof AuthenticatedSchoolCrmRoute
   '/seats': typeof AuthenticatedSeatsRoute
   '/account/ai-cost': typeof AuthenticatedAccountAiCostRoute
   '/account/usage': typeof AuthenticatedAccountUsageRoute
@@ -227,28 +322,40 @@ export interface FileRoutesByTo {
   '/results/$yearId': typeof AuthenticatedResultsYearIdRoute
   '/school/profile': typeof AuthenticatedSchoolProfileRoute
   '/super-admin/health': typeof AuthenticatedSuperAdminHealthRoute
+  '/v2/assessments': typeof AuthenticatedV2AssessmentsRoute
+  '/v2/content-studio': typeof AuthenticatedV2ContentStudioRoute
+  '/v2/copilot': typeof AuthenticatedV2CopilotRoute
+  '/v2/digital-twin': typeof AuthenticatedV2DigitalTwinRoute
+  '/v2/parent-hub': typeof AuthenticatedV2ParentHubRoute
+  '/v2/principal': typeof AuthenticatedV2PrincipalRoute
+  '/v2/student-intelligence': typeof AuthenticatedV2StudentIntelligenceRoute
+  '/v2/teacher-intelligence': typeof AuthenticatedV2TeacherIntelligenceRoute
   '/crm/accounts/$id': typeof AuthenticatedCrmAccountsIdRoute
   '/curriculum/$yearId/propose': typeof AuthenticatedCurriculumYearIdProposeRoute
   '/curriculum/$yearId/reschedule': typeof AuthenticatedCurriculumYearIdRescheduleRoute
   '/api/public/cron/health-check': typeof ApiPublicCronHealthCheckRoute
   '/api/public/cron/notifications-tick': typeof ApiPublicCronNotificationsTickRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
+  '/api/public/razorpay/webhook': typeof ApiPublicRazorpayWebhookRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/ai-leadership-suite': typeof AiLeadershipSuiteRoute
   '/auth': typeof AuthRoute
   '/partners': typeof PartnersRoute
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/assignments': typeof AuthenticatedAssignmentsRoute
+  '/_authenticated/company-crm': typeof AuthenticatedCompanyCrmRoute
   '/_authenticated/crm': typeof AuthenticatedCrmRouteWithChildren
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/partner': typeof AuthenticatedPartnerRoute
   '/_authenticated/pricing': typeof AuthenticatedPricingRoute
+  '/_authenticated/school-crm': typeof AuthenticatedSchoolCrmRoute
   '/_authenticated/seats': typeof AuthenticatedSeatsRoute
   '/_authenticated/account/ai-cost': typeof AuthenticatedAccountAiCostRoute
   '/_authenticated/account/usage': typeof AuthenticatedAccountUsageRoute
@@ -256,28 +363,40 @@ export interface FileRoutesById {
   '/_authenticated/results/$yearId': typeof AuthenticatedResultsYearIdRoute
   '/_authenticated/school/profile': typeof AuthenticatedSchoolProfileRoute
   '/_authenticated/super-admin/health': typeof AuthenticatedSuperAdminHealthRoute
+  '/_authenticated/v2/assessments': typeof AuthenticatedV2AssessmentsRoute
+  '/_authenticated/v2/content-studio': typeof AuthenticatedV2ContentStudioRoute
+  '/_authenticated/v2/copilot': typeof AuthenticatedV2CopilotRoute
+  '/_authenticated/v2/digital-twin': typeof AuthenticatedV2DigitalTwinRoute
+  '/_authenticated/v2/parent-hub': typeof AuthenticatedV2ParentHubRoute
+  '/_authenticated/v2/principal': typeof AuthenticatedV2PrincipalRoute
+  '/_authenticated/v2/student-intelligence': typeof AuthenticatedV2StudentIntelligenceRoute
+  '/_authenticated/v2/teacher-intelligence': typeof AuthenticatedV2TeacherIntelligenceRoute
   '/_authenticated/crm/accounts/$id': typeof AuthenticatedCrmAccountsIdRoute
   '/_authenticated/curriculum/$yearId/propose': typeof AuthenticatedCurriculumYearIdProposeRoute
   '/_authenticated/curriculum/$yearId/reschedule': typeof AuthenticatedCurriculumYearIdRescheduleRoute
   '/api/public/cron/health-check': typeof ApiPublicCronHealthCheckRoute
   '/api/public/cron/notifications-tick': typeof ApiPublicCronNotificationsTickRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
+  '/api/public/razorpay/webhook': typeof ApiPublicRazorpayWebhookRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/ai-leadership-suite'
     | '/auth'
     | '/partners'
     | '/reset-password'
     | '/admin'
     | '/assignments'
+    | '/company-crm'
     | '/crm'
     | '/dashboard'
     | '/notifications'
     | '/onboarding'
     | '/partner'
     | '/pricing'
+    | '/school-crm'
     | '/seats'
     | '/account/ai-cost'
     | '/account/usage'
@@ -285,26 +404,38 @@ export interface FileRouteTypes {
     | '/results/$yearId'
     | '/school/profile'
     | '/super-admin/health'
+    | '/v2/assessments'
+    | '/v2/content-studio'
+    | '/v2/copilot'
+    | '/v2/digital-twin'
+    | '/v2/parent-hub'
+    | '/v2/principal'
+    | '/v2/student-intelligence'
+    | '/v2/teacher-intelligence'
     | '/crm/accounts/$id'
     | '/curriculum/$yearId/propose'
     | '/curriculum/$yearId/reschedule'
     | '/api/public/cron/health-check'
     | '/api/public/cron/notifications-tick'
     | '/api/public/payments/webhook'
+    | '/api/public/razorpay/webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/ai-leadership-suite'
     | '/auth'
     | '/partners'
     | '/reset-password'
     | '/admin'
     | '/assignments'
+    | '/company-crm'
     | '/crm'
     | '/dashboard'
     | '/notifications'
     | '/onboarding'
     | '/partner'
     | '/pricing'
+    | '/school-crm'
     | '/seats'
     | '/account/ai-cost'
     | '/account/usage'
@@ -312,27 +443,39 @@ export interface FileRouteTypes {
     | '/results/$yearId'
     | '/school/profile'
     | '/super-admin/health'
+    | '/v2/assessments'
+    | '/v2/content-studio'
+    | '/v2/copilot'
+    | '/v2/digital-twin'
+    | '/v2/parent-hub'
+    | '/v2/principal'
+    | '/v2/student-intelligence'
+    | '/v2/teacher-intelligence'
     | '/crm/accounts/$id'
     | '/curriculum/$yearId/propose'
     | '/curriculum/$yearId/reschedule'
     | '/api/public/cron/health-check'
     | '/api/public/cron/notifications-tick'
     | '/api/public/payments/webhook'
+    | '/api/public/razorpay/webhook'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/ai-leadership-suite'
     | '/auth'
     | '/partners'
     | '/reset-password'
     | '/_authenticated/admin'
     | '/_authenticated/assignments'
+    | '/_authenticated/company-crm'
     | '/_authenticated/crm'
     | '/_authenticated/dashboard'
     | '/_authenticated/notifications'
     | '/_authenticated/onboarding'
     | '/_authenticated/partner'
     | '/_authenticated/pricing'
+    | '/_authenticated/school-crm'
     | '/_authenticated/seats'
     | '/_authenticated/account/ai-cost'
     | '/_authenticated/account/usage'
@@ -340,23 +483,34 @@ export interface FileRouteTypes {
     | '/_authenticated/results/$yearId'
     | '/_authenticated/school/profile'
     | '/_authenticated/super-admin/health'
+    | '/_authenticated/v2/assessments'
+    | '/_authenticated/v2/content-studio'
+    | '/_authenticated/v2/copilot'
+    | '/_authenticated/v2/digital-twin'
+    | '/_authenticated/v2/parent-hub'
+    | '/_authenticated/v2/principal'
+    | '/_authenticated/v2/student-intelligence'
+    | '/_authenticated/v2/teacher-intelligence'
     | '/_authenticated/crm/accounts/$id'
     | '/_authenticated/curriculum/$yearId/propose'
     | '/_authenticated/curriculum/$yearId/reschedule'
     | '/api/public/cron/health-check'
     | '/api/public/cron/notifications-tick'
     | '/api/public/payments/webhook'
+    | '/api/public/razorpay/webhook'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AiLeadershipSuiteRoute: typeof AiLeadershipSuiteRoute
   AuthRoute: typeof AuthRoute
   PartnersRoute: typeof PartnersRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   ApiPublicCronHealthCheckRoute: typeof ApiPublicCronHealthCheckRoute
   ApiPublicCronNotificationsTickRoute: typeof ApiPublicCronNotificationsTickRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
+  ApiPublicRazorpayWebhookRoute: typeof ApiPublicRazorpayWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -382,6 +536,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/ai-leadership-suite': {
+      id: '/ai-leadership-suite'
+      path: '/ai-leadership-suite'
+      fullPath: '/ai-leadership-suite'
+      preLoaderRoute: typeof AiLeadershipSuiteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated': {
       id: '/_authenticated'
       path: ''
@@ -401,6 +562,13 @@ declare module '@tanstack/react-router' {
       path: '/seats'
       fullPath: '/seats'
       preLoaderRoute: typeof AuthenticatedSeatsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/school-crm': {
+      id: '/_authenticated/school-crm'
+      path: '/school-crm'
+      fullPath: '/school-crm'
+      preLoaderRoute: typeof AuthenticatedSchoolCrmRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/pricing': {
@@ -445,6 +613,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCrmRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/company-crm': {
+      id: '/_authenticated/company-crm'
+      path: '/company-crm'
+      fullPath: '/company-crm'
+      preLoaderRoute: typeof AuthenticatedCompanyCrmRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/assignments': {
       id: '/_authenticated/assignments'
       path: '/assignments'
@@ -457,6 +632,62 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/v2/teacher-intelligence': {
+      id: '/_authenticated/v2/teacher-intelligence'
+      path: '/v2/teacher-intelligence'
+      fullPath: '/v2/teacher-intelligence'
+      preLoaderRoute: typeof AuthenticatedV2TeacherIntelligenceRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/v2/student-intelligence': {
+      id: '/_authenticated/v2/student-intelligence'
+      path: '/v2/student-intelligence'
+      fullPath: '/v2/student-intelligence'
+      preLoaderRoute: typeof AuthenticatedV2StudentIntelligenceRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/v2/principal': {
+      id: '/_authenticated/v2/principal'
+      path: '/v2/principal'
+      fullPath: '/v2/principal'
+      preLoaderRoute: typeof AuthenticatedV2PrincipalRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/v2/parent-hub': {
+      id: '/_authenticated/v2/parent-hub'
+      path: '/v2/parent-hub'
+      fullPath: '/v2/parent-hub'
+      preLoaderRoute: typeof AuthenticatedV2ParentHubRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/v2/digital-twin': {
+      id: '/_authenticated/v2/digital-twin'
+      path: '/v2/digital-twin'
+      fullPath: '/v2/digital-twin'
+      preLoaderRoute: typeof AuthenticatedV2DigitalTwinRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/v2/copilot': {
+      id: '/_authenticated/v2/copilot'
+      path: '/v2/copilot'
+      fullPath: '/v2/copilot'
+      preLoaderRoute: typeof AuthenticatedV2CopilotRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/v2/content-studio': {
+      id: '/_authenticated/v2/content-studio'
+      path: '/v2/content-studio'
+      fullPath: '/v2/content-studio'
+      preLoaderRoute: typeof AuthenticatedV2ContentStudioRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/v2/assessments': {
+      id: '/_authenticated/v2/assessments'
+      path: '/v2/assessments'
+      fullPath: '/v2/assessments'
+      preLoaderRoute: typeof AuthenticatedV2AssessmentsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/super-admin/health': {
@@ -500,6 +731,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/account/ai-cost'
       preLoaderRoute: typeof AuthenticatedAccountAiCostRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/api/public/razorpay/webhook': {
+      id: '/api/public/razorpay/webhook'
+      path: '/api/public/razorpay/webhook'
+      fullPath: '/api/public/razorpay/webhook'
+      preLoaderRoute: typeof ApiPublicRazorpayWebhookRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/public/payments/webhook': {
       id: '/api/public/payments/webhook'
@@ -560,12 +798,14 @@ const AuthenticatedCrmRouteWithChildren =
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedAssignmentsRoute: typeof AuthenticatedAssignmentsRoute
+  AuthenticatedCompanyCrmRoute: typeof AuthenticatedCompanyCrmRoute
   AuthenticatedCrmRoute: typeof AuthenticatedCrmRouteWithChildren
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
   AuthenticatedPartnerRoute: typeof AuthenticatedPartnerRoute
   AuthenticatedPricingRoute: typeof AuthenticatedPricingRoute
+  AuthenticatedSchoolCrmRoute: typeof AuthenticatedSchoolCrmRoute
   AuthenticatedSeatsRoute: typeof AuthenticatedSeatsRoute
   AuthenticatedAccountAiCostRoute: typeof AuthenticatedAccountAiCostRoute
   AuthenticatedAccountUsageRoute: typeof AuthenticatedAccountUsageRoute
@@ -573,6 +813,14 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedResultsYearIdRoute: typeof AuthenticatedResultsYearIdRoute
   AuthenticatedSchoolProfileRoute: typeof AuthenticatedSchoolProfileRoute
   AuthenticatedSuperAdminHealthRoute: typeof AuthenticatedSuperAdminHealthRoute
+  AuthenticatedV2AssessmentsRoute: typeof AuthenticatedV2AssessmentsRoute
+  AuthenticatedV2ContentStudioRoute: typeof AuthenticatedV2ContentStudioRoute
+  AuthenticatedV2CopilotRoute: typeof AuthenticatedV2CopilotRoute
+  AuthenticatedV2DigitalTwinRoute: typeof AuthenticatedV2DigitalTwinRoute
+  AuthenticatedV2ParentHubRoute: typeof AuthenticatedV2ParentHubRoute
+  AuthenticatedV2PrincipalRoute: typeof AuthenticatedV2PrincipalRoute
+  AuthenticatedV2StudentIntelligenceRoute: typeof AuthenticatedV2StudentIntelligenceRoute
+  AuthenticatedV2TeacherIntelligenceRoute: typeof AuthenticatedV2TeacherIntelligenceRoute
   AuthenticatedCurriculumYearIdProposeRoute: typeof AuthenticatedCurriculumYearIdProposeRoute
   AuthenticatedCurriculumYearIdRescheduleRoute: typeof AuthenticatedCurriculumYearIdRescheduleRoute
 }
@@ -580,12 +828,14 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   AuthenticatedAssignmentsRoute: AuthenticatedAssignmentsRoute,
+  AuthenticatedCompanyCrmRoute: AuthenticatedCompanyCrmRoute,
   AuthenticatedCrmRoute: AuthenticatedCrmRouteWithChildren,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
   AuthenticatedPartnerRoute: AuthenticatedPartnerRoute,
   AuthenticatedPricingRoute: AuthenticatedPricingRoute,
+  AuthenticatedSchoolCrmRoute: AuthenticatedSchoolCrmRoute,
   AuthenticatedSeatsRoute: AuthenticatedSeatsRoute,
   AuthenticatedAccountAiCostRoute: AuthenticatedAccountAiCostRoute,
   AuthenticatedAccountUsageRoute: AuthenticatedAccountUsageRoute,
@@ -593,6 +843,16 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedResultsYearIdRoute: AuthenticatedResultsYearIdRoute,
   AuthenticatedSchoolProfileRoute: AuthenticatedSchoolProfileRoute,
   AuthenticatedSuperAdminHealthRoute: AuthenticatedSuperAdminHealthRoute,
+  AuthenticatedV2AssessmentsRoute: AuthenticatedV2AssessmentsRoute,
+  AuthenticatedV2ContentStudioRoute: AuthenticatedV2ContentStudioRoute,
+  AuthenticatedV2CopilotRoute: AuthenticatedV2CopilotRoute,
+  AuthenticatedV2DigitalTwinRoute: AuthenticatedV2DigitalTwinRoute,
+  AuthenticatedV2ParentHubRoute: AuthenticatedV2ParentHubRoute,
+  AuthenticatedV2PrincipalRoute: AuthenticatedV2PrincipalRoute,
+  AuthenticatedV2StudentIntelligenceRoute:
+    AuthenticatedV2StudentIntelligenceRoute,
+  AuthenticatedV2TeacherIntelligenceRoute:
+    AuthenticatedV2TeacherIntelligenceRoute,
   AuthenticatedCurriculumYearIdProposeRoute:
     AuthenticatedCurriculumYearIdProposeRoute,
   AuthenticatedCurriculumYearIdRescheduleRoute:
@@ -605,12 +865,14 @@ const AuthenticatedRouteRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AiLeadershipSuiteRoute: AiLeadershipSuiteRoute,
   AuthRoute: AuthRoute,
   PartnersRoute: PartnersRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   ApiPublicCronHealthCheckRoute: ApiPublicCronHealthCheckRoute,
   ApiPublicCronNotificationsTickRoute: ApiPublicCronNotificationsTickRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
+  ApiPublicRazorpayWebhookRoute: ApiPublicRazorpayWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

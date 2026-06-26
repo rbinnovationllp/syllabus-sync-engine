@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { getStripeEnvironment } from "@/lib/stripe";
@@ -18,9 +18,8 @@ async function fetchSubscription(userId: string): Promise<SubscriptionRow | null
   const env = getStripeEnvironment();
   const { data, error } = await supabase
     .from("subscriptions")
-    .select("id,status,price_id,product_id,current_period_end,cancel_at_period_end,stripe_customer_id")
+    .select("id,status,price_id,product_id,current_period_end,cancel_at_period_end,stripe_customer_id,provider,razorpay_subscription_id")
     .eq("user_id", userId)
-    .eq("environment", env)
     .order("created_at", { ascending: false })
     .limit(1)
     .maybeSingle();
@@ -69,3 +68,4 @@ export function useSubscription() {
 
   return { subscription: row, tier, plan, isActive, isLoading: query.isLoading, userId };
 }
+

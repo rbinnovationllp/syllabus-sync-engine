@@ -1,10 +1,10 @@
-import { Link, useNavigate } from "@tanstack/react-router";
+﻿import { Link, useNavigate } from "@tanstack/react-router";
 import { ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { LogOut, CreditCard, Shield, Users } from "lucide-react";
+import { Brain, LogOut, CreditCard, Shield, Users, Briefcase, Building2 } from "lucide-react";
 import { getMyAdminStatus } from "@/lib/admin.functions";
 import { NotificationBell } from "@/components/NotificationBell";
 
@@ -25,13 +25,24 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b sticky top-0 z-10 bg-background/95 backdrop-blur">
-        <div className="container mx-auto px-4 h-14 flex items-center justify-between">
+        <div className="mx-auto flex h-14 w-full max-w-screen-2xl items-center justify-between px-4 sm:px-6">
           <Link to="/dashboard" className="font-semibold tracking-tight">CurriculumOS</Link>
           <div className="flex items-center gap-3">
             {title && <span className="text-sm text-muted-foreground hidden sm:inline">{title}</span>}
+            <Button asChild variant="ghost" size="sm">
+              <Link to={"/v2/principal" as any}><Brain className="h-4 w-4 mr-1" /> AI Suite</Link>
+            </Button>
+            <Button asChild variant="ghost" size="sm">
+              <Link to="/school-crm"><Building2 className="h-4 w-4 mr-1" /> School CRM</Link>
+            </Button>
             {status?.isAdmin && (
               <Button asChild variant="ghost" size="sm">
                 <Link to="/admin"><Shield className="h-4 w-4 mr-1" /> Admin</Link>
+              </Button>
+            )}
+            {status?.isSuperAdmin && (
+              <Button asChild variant="ghost" size="sm">
+                <Link to="/company-crm"><Briefcase className="h-4 w-4 mr-1" /> Company CRM</Link>
               </Button>
             )}
             <Button asChild variant="ghost" size="sm">
@@ -47,8 +58,11 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
           </div>
         </div>
       </header>
-      <main className="container mx-auto px-4 py-6">{children}</main>
+      <main className="mx-auto w-full max-w-screen-2xl px-4 py-6 sm:px-6">{children}</main>
     </div>
   );
 }
+
+
+
 

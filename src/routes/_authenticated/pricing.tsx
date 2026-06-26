@@ -1,5 +1,5 @@
-import { useState, useMemo } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+﻿import { useState, useMemo } from "react";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { AppShell } from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
@@ -24,6 +24,7 @@ import {
 import { useSubscription } from "@/hooks/useSubscription";
 import { StripeEmbeddedCheckout } from "@/components/StripeEmbeddedCheckout";
 import { UpiPaymentPanel } from "@/components/UpiPaymentPanel";
+import { RazorpaySubscriptionButton } from "@/components/RazorpaySubscriptionButton";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { createPortalSession } from "@/lib/payments.functions";
 import { getStripeEnvironment } from "@/lib/stripe";
@@ -164,7 +165,7 @@ function PricingPage() {
               <CalendarClock className="h-4 w-4" />
               <AlertTitle>Annual rebate unavailable right now</AlertTitle>
               <AlertDescription>
-                India's academic session runs <strong>April – March</strong>. The
+                India's academic session runs <strong>April â€“ March</strong>. The
                 &ldquo;pay-for-10, get-12&rdquo; annual rebate is only offered to
                 subscribers who join <strong>on or before April</strong>. You can
                 subscribe monthly today and switch to the annual plan in April when
@@ -174,7 +175,7 @@ function PricingPage() {
           )}
           {effectiveInterval === "annual" && (
             <p className="text-xs text-muted-foreground mt-3">
-              Annual plans are billed as <strong>10 × monthly price</strong> once a year — 2 months free.
+              Annual plans are billed as <strong>10 Ã— monthly price</strong> once a year â€” 2 months free.
             </p>
           )}
         </div>
@@ -184,7 +185,7 @@ function PricingPage() {
             <CardContent className="flex items-center justify-between py-4">
               <div className="text-sm">
                 <span className="font-medium">{currentPlan.name}</span>
-                <span className="text-muted-foreground"> · {subscription?.status}</span>
+                <span className="text-muted-foreground"> Â· {subscription?.status}</span>
                 {subscription?.cancel_at_period_end && (
                   <Badge variant="secondary" className="ml-2">Cancels at period end</Badge>
                 )}
@@ -198,7 +199,7 @@ function PricingPage() {
         )}
 
         {/* Plans grid */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {PLANS.map((p) => {
             const monthly = p.prices.find((x) => x.currency === currency && (x.interval ?? "monthly") === "monthly")!;
             const price =
@@ -215,7 +216,7 @@ function PricingPage() {
                   <div className="text-2xl font-bold pt-2">{price.display}</div>
                   {effectiveInterval === "annual" && (
                     <p className="text-[11px] text-muted-foreground">
-                      vs {monthly.display} × 12 — saves 2 months
+                      vs {monthly.display} Ã— 12 â€” saves 2 months
                     </p>
                   )}
                 </CardHeader>
@@ -230,7 +231,13 @@ function PricingPage() {
                           ) : (
                             <Check className="h-3.5 w-3.5 text-primary mt-0.5 flex-shrink-0" />
                           )}
-                          <span className={negative ? "text-muted-foreground" : ""}>{r}</span>
+                          {r.includes("AI Leadership Suite") ? (
+                            <Link to="/ai-leadership-suite" className="font-semibold text-blue-700 underline underline-offset-4 hover:text-blue-900">
+                              {r}
+                            </Link>
+                          ) : (
+                            <span className={negative ? "text-muted-foreground" : ""}>{r}</span>
+                          )}
                         </li>
                       );
                     })}
@@ -353,8 +360,8 @@ function PricingPage() {
                 billed separately from any subscription.
               </p>
               <p className="text-muted-foreground">
-                <strong>Annual rebate:</strong> Annual plans are billed at 10× the monthly price
-                (2 months free). In India, the academic session runs April–March; the rebate is
+                <strong>Annual rebate:</strong> Annual plans are billed at 10Ã— the monthly price
+                (2 months free). In India, the academic session runs Aprilâ€“March; the rebate is
                 only available to subscribers who join on or before April. Subscribers starting
                 May or later pay full annual or remain monthly.
               </p>
@@ -369,11 +376,11 @@ function PricingPage() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <AlertTriangle className="h-5 w-5 text-amber-500" />
-              Before you subscribe — please review the limits
+              Before you subscribe â€” please review the limits
             </DialogTitle>
             <DialogDescription>
-              {pending?.plan.name} · <strong>{pending?.priceDisplay}</strong>
-              {pending?.interval === "annual" && " · billed yearly (2 months free)"}
+              {pending?.plan.name} Â· <strong>{pending?.priceDisplay}</strong>
+              {pending?.interval === "annual" && " Â· billed yearly (2 months free)"}
             </DialogDescription>
           </DialogHeader>
 
@@ -406,7 +413,7 @@ function PricingPage() {
                 </p>
                 <p>
                   <strong className="text-foreground">Exports, seats, storage and campuses</strong>{" "}
-                  are hard-capped — additional capacity requires upgrading or buying an add-on.
+                  are hard-capped â€” additional capacity requires upgrading or buying an add-on.
                 </p>
                 <p>
                   <strong className="text-foreground">Consulting, training, audits, custom
@@ -457,7 +464,7 @@ function PricingPage() {
           <DialogHeader>
             <DialogTitle>Pay via UPI</DialogTitle>
             <DialogDescription>
-              {upiPayment?.plan.name} · {upiPayment?.priceDisplay}
+              {upiPayment?.plan.name} Â· {upiPayment?.priceDisplay}
             </DialogDescription>
           </DialogHeader>
           {upiPayment && (
@@ -485,3 +492,8 @@ function PricingPage() {
     </AppShell>
   );
 }
+
+
+
+
+
