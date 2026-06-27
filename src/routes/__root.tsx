@@ -96,7 +96,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: "CurriculumOS â€” AI Curriculum Planning for K-12 Schools" },
       { name: "twitter:description", content: "From holiday calendar to lesson plan in minutes. Built for school leaders worldwide." },
-      { property: "og:url", content: "https://syllabus-sync-engine.lovable.app/" },
+      { property: "og:url", content: "https://syllabus-synk.in/" },
       { property: "og:site_name", content: "CurriculumOS" },
     ],
     links: [
@@ -165,6 +165,7 @@ function RootComponent() {
     </QueryClientProvider>
   );
 }
+
 
 
 

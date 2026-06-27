@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate, useSearch } from "@tanstack/react-router";
+﻿import { createFileRoute, Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -16,12 +16,17 @@ export const Route = createFileRoute("/auth")({
   }),
   head: () => ({
     meta: [
-      { title: "Sign in — CurriculumOS" },
+      { title: "Sign in â€” CurriculumOS" },
       { name: "description", content: "Sign in to plan your school's academic year with CurriculumOS." },
     ],
   }),
   component: AuthPage,
 });
+
+function authRedirectUrl(path: string) {
+  if (typeof window === "undefined") return path;
+  return `${window.location.origin}${path}`;
+}
 
 function AuthPage() {
   const navigate = useNavigate();
@@ -76,8 +81,8 @@ function AuthPage() {
     if (error) {
       setLoading(false);
       const m = error.message.toLowerCase();
-      if (m.includes("invalid")) return toast.error("Wrong email or password. Use ‘Forgot password?’ if you don't remember it.");
-      if (m.includes("not confirmed")) return toast.error("Please confirm your email first — check your inbox.");
+      if (m.includes("invalid")) return toast.error("Wrong email or password. Use â€˜Forgot password?â€™ if you don't remember it.");
+      if (m.includes("not confirmed")) return toast.error("Please confirm your email first â€” check your inbox.");
       return toast.error(error.message);
     }
     await tryAcceptInvite();
@@ -113,7 +118,7 @@ function AuthPage() {
       return;
     }
     await tryAcceptInvite();
-    toast.success("Account created — you're signed in.");
+    toast.success("Account created â€” you're signed in.");
     navigate({ to: "/dashboard" });
   }
 
@@ -121,7 +126,7 @@ function AuthPage() {
     if (!email) return toast.error("Enter your email above first, then click Forgot password.");
     setLoading(true);
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: window.location.origin + "/reset-password",
+      redirectTo: authRedirectUrl("/reset-password"),
     });
     setLoading(false);
     if (error) return toast.error(error.message);
@@ -130,7 +135,7 @@ function AuthPage() {
 
   async function handleGoogle() {
     setLoading(true);
-    const redirectTo = window.location.origin + "/auth" + (invite ? `?invite=${encodeURIComponent(invite)}` : "");
+    const redirectTo = authRedirectUrl("/auth" + (invite ? `?invite=${encodeURIComponent(invite)}` : ""));
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: { redirectTo },
@@ -226,4 +231,5 @@ function AuthPage() {
     </div>
   );
 }
+
 

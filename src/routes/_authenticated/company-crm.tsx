@@ -4,6 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { getCompanyCrmOperations, createCompanySupportTicket, updateCompanySupportTicketStatus } from "@/lib/company-crm.functions";
+import { getVisitorConversionReport } from "@/lib/site-analytics.functions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -64,6 +65,8 @@ function CompanyCrmPage() {
           <Metric icon={IndianRupee} label="Open pipeline" value={`Rs ${Math.round(d.metrics.openPipelineInr).toLocaleString()}`} />
         </div>
 
+        <ConversionReportPanel report={conversion.data} isLoading={conversion.isLoading} />
+
         <Tabs defaultValue="subscriptions" className="space-y-4">
           <TabsList className="grid w-full max-w-4xl grid-cols-4">
             <TabsTrigger value="subscriptions">Subscriptions</TabsTrigger>
@@ -81,6 +84,51 @@ function CompanyCrmPage() {
   );
 }
 
+
+function ConversionReportPanel({ report, isLoading }: any) {
+  if (isLoading) {
+    return (
+      <Card>
+        <CardContent className="flex items-center gap-3 p-5 text-sm text-muted-foreground">
+          <Loader2 className="h-4 w-4 animate-spin" /> Loading visitor conversion report...
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const all = report?.allTime ?? {};
+  const week = report?.last7Days ?? {};
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Visitor acceptance and conversion</CardTitle>
+      </CardHeader>
+      <CardContent className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <div className="rounded-lg border p-4">
+          <p className="text-xs uppercase tracking-wide text-muted-foreground">All-time visitors</p>
+          <p className="mt-1 text-2xl font-bold">{(all.visitors ?? 0).toLocaleString()}</p>
+          <p className="text-xs text-muted-foreground">{(all.visits ?? 0).toLocaleString()} total page visits</p>
+        </div>
+        <div className="rounded-lg border p-4">
+          <p className="text-xs uppercase tracking-wide text-muted-foreground">Visitor to lead</p>
+          <p className="mt-1 text-2xl font-bold">{all.visitorToLead ?? 0}%</p>
+          <p className="text-xs text-muted-foreground">{(all.leads ?? 0).toLocaleString()} lead enquiries</p>
+        </div>
+        <div className="rounded-lg border p-4">
+          <p className="text-xs uppercase tracking-wide text-muted-foreground">Visitor to client</p>
+          <p className="mt-1 text-2xl font-bold">{all.visitorToSubscription ?? 0}%</p>
+          <p className="text-xs text-muted-foreground">{(all.activeSubscriptions ?? 0).toLocaleString()} active subscriptions</p>
+        </div>
+        <div className="rounded-lg border p-4">
+          <p className="text-xs uppercase tracking-wide text-muted-foreground">Last 7 days</p>
+          <p className="mt-1 text-2xl font-bold">{(week.visitors ?? 0).toLocaleString()}</p>
+          <p className="text-xs text-muted-foreground">{week.visitorToLead ?? 0}% lead rate, {week.visitorToSubscription ?? 0}% client rate</p>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
 function Metric({ icon: Icon, label, value }: any) {
   return (
     <Card>
@@ -283,4 +331,5 @@ function CatalogPanel({ rows }: any) {
     </Card>
   );
 }
+
 

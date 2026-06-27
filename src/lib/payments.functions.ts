@@ -1,4 +1,4 @@
-import { createServerFn } from "@tanstack/react-start";
+﻿import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { type StripeEnv, createStripeClient, getStripeErrorMessage } from "@/lib/stripe.server";
 
@@ -99,8 +99,8 @@ export const createPortalSession = createServerFn({ method: "POST" })
         const host = parsed.hostname;
         if (
           allowed.has(parsed.origin) ||
-          host === "syllabus-sync.in" ||
-          host.endsWith(".syllabus-sync.in") ||
+          host === "syllabus-synk.in" ||
+          host.endsWith(".syllabus-synk.in") ||
           host.endsWith(".lovable.app") ||
           host.endsWith(".lovableproject.com") ||
           host === "localhost"
@@ -123,3 +123,4 @@ export const createPortalSession = createServerFn({ method: "POST" })
       return { error: getStripeErrorMessage(error) };
     }
   });
+

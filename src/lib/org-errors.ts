@@ -1,4 +1,4 @@
-// Shared helpers for org membership errors and audit logging.
+﻿// Shared helpers for org membership errors and audit logging.
 // Kept framework-free so it is unit-testable with `bun test`.
 
 export function friendlyOrgMemberError(rawMessage: string | null | undefined): string {
@@ -7,13 +7,13 @@ export function friendlyOrgMemberError(rawMessage: string | null | undefined): s
     msg.includes("row-level security") &&
     msg.includes("org_members")
   ) {
-    return "We couldn't add you to your school workspace. This usually means your invitation has already been used, was sent to a different email, or your account isn't authorized. Please sign in with the invited email or contact support@syllabus-sync.in.";
+    return "We couldn't add you to your school workspace. This usually means your invitation has already been used, was sent to a different email, or your account isn't authorized. Please sign in with the invited email or contact support@syllabus-synk.in.";
   }
   if (msg.includes("duplicate key") && msg.includes("org_members")) {
     return "You're already a member of this workspace.";
   }
   if (msg.includes("violates row-level security")) {
-    return "You don't have permission to perform this action on this workspace. Please contact your school admin or support@syllabus-sync.in.";
+    return "You don't have permission to perform this action on this workspace. Please contact your school admin or support@syllabus-synk.in.";
   }
   return rawMessage || "Unknown error joining workspace.";
 }
@@ -52,3 +52,4 @@ export async function logOrgMemberBootstrap(
     // Audit logging must never break the user flow.
   }
 }
+
