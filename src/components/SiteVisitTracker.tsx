@@ -28,10 +28,6 @@ export function SiteVisitTracker() {
     const path = `${location.pathname}${location.searchStr ?? ""}`;
     if (!path || path.startsWith("/api/")) return;
 
-    const sessionKey = `site_visit_recorded:${path}`;
-    if (window.sessionStorage.getItem(sessionKey)) return;
-    window.sessionStorage.setItem(sessionKey, "1");
-
     const visitorId = getVisitorId();
 
     window.setTimeout(() => {
@@ -53,3 +49,5 @@ export function SiteVisitTracker() {
 
   return null;
 }
+
+

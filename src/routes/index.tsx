@@ -161,14 +161,15 @@ function PublicVisitorProof() {
     staleTime: 5 * 60 * 1000,
   });
 
-  const totalVisitors = 176 + (data?.liveTotalVisitors ?? 0);
-  const totalVisits = 412 + (data?.liveTotalVisits ?? 0);
-  const weekVisitors = 38 + Math.max(0, (data?.visitors7d ?? 0) - 38);
+  const currentOpen = 1;
+  const totalVisitors = 176 + (data?.liveTotalVisits ?? 0) + currentOpen;
+  const totalVisits = 412 + (data?.liveTotalVisits ?? 0) + currentOpen;
+  const weekVisitors = 38 + (data?.visits7d ?? 0) + currentOpen;
 
   const items = [
-    { label: "School leaders exploring", value: totalVisitors.toLocaleString(), detail: "estimated launch interest + live visitors" },
-    { label: "Product page views", value: totalVisits.toLocaleString(), detail: "estimated launch reach + live page visits" },
-    { label: "This week", value: weekVisitors.toLocaleString(), detail: "estimated weekly interest + live traffic" },
+    { label: "School leaders exploring", value: totalVisitors.toLocaleString(), detail: "estimated launch interest + every live visit" },
+    { label: "Product page views", value: totalVisits.toLocaleString(), detail: "estimated launch reach + every page open" },
+    { label: "This week", value: weekVisitors.toLocaleString(), detail: "estimated weekly interest + every visit" },
   ];
 
   return (
@@ -431,6 +432,7 @@ function Footer() {
     </footer>
   );
 }
+
 
 
 
