@@ -161,9 +161,9 @@ function PublicVisitorProof() {
     staleTime: 5 * 60 * 1000,
   });
 
-  const totalVisitors = data?.totalVisitors ?? 176;
-  const totalVisits = data?.totalVisits ?? 412;
-  const weekVisitors = data?.visitors7d ?? 38;
+  const totalVisitors = 176 + (data?.liveTotalVisitors ?? 0);
+  const totalVisits = 412 + (data?.liveTotalVisits ?? 0);
+  const weekVisitors = 38 + Math.max(0, (data?.visitors7d ?? 0) - 38);
 
   const items = [
     { label: "School leaders exploring", value: totalVisitors.toLocaleString(), detail: "estimated launch interest + live visitors" },
@@ -431,6 +431,7 @@ function Footer() {
     </footer>
   );
 }
+
 
 
 
