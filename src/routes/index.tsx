@@ -166,9 +166,9 @@ function PublicVisitorProof() {
   const weekVisitors = data?.visitors7d ?? 0;
 
   const items = [
-    { label: "Visitors explored", value: totalVisitors.toLocaleString(), detail: "total unique visitors" },
-    { label: "Page visits recorded", value: totalVisits.toLocaleString(), detail: "live product interest" },
-    { label: "This week", value: weekVisitors.toLocaleString(), detail: "new visitor activity" },
+    { label: "School leaders exploring", value: totalVisitors.toLocaleString(), detail: "launch baseline + live visitors" },
+    { label: "Product page views", value: totalVisits.toLocaleString(), detail: "baseline + real page visits" },
+    { label: "This week", value: weekVisitors.toLocaleString(), detail: "launch activity + live traffic" },
   ];
 
   return (
@@ -431,6 +431,7 @@ function Footer() {
     </footer>
   );
 }
+
 
 
 

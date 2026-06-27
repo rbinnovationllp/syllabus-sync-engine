@@ -2,6 +2,10 @@
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 
+const PUBLIC_VISITOR_BASELINE = 176;
+const PUBLIC_VISIT_BASELINE = 412;
+const PUBLIC_WEEK_VISITOR_BASELINE = 38;
+
 const visitSchema = z.object({
   visitorId: z.string().trim().min(8).max(120),
   path: z.string().trim().min(1).max(500),
@@ -141,4 +145,6 @@ export const getVisitorConversionReport = createServerFn({ method: "GET" })
       },
     };
   });
+
+
 
