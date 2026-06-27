@@ -50,9 +50,9 @@ export function AiHelpAssistantWidget() {
   }
 
   return (
-    <div className="fixed bottom-4 right-4 z-50">
+    <div className="fixed right-3 bottom-[calc(env(safe-area-inset-bottom,0px)+1rem)] z-[9999] pointer-events-none sm:right-4 sm:bottom-4">
       {open && (
-        <div className="mb-3 flex h-[560px] max-h-[calc(100vh-120px)] w-[380px] max-w-[calc(100vw-32px)] flex-col overflow-hidden rounded-xl border bg-background shadow-2xl">
+        <div className="pointer-events-auto mb-3 flex h-[min(560px,calc(100vh-96px))] w-[calc(100vw-24px)] max-w-[420px] flex-col overflow-hidden rounded-xl border bg-background shadow-2xl sm:w-[380px]">
           <div className="flex items-center justify-between border-b bg-slate-950 px-4 py-3 text-white">
             <div className="flex items-center gap-2">
               <div className="rounded-lg bg-white/10 p-2"><Bot className="h-4 w-4" /></div>
@@ -126,12 +126,14 @@ export function AiHelpAssistantWidget() {
       )}
 
       <Button
-        className="h-14 rounded-full px-5 shadow-xl"
+        className="pointer-events-auto h-14 min-w-14 rounded-full px-4 shadow-xl sm:px-5"
         onClick={() => setOpen((v) => !v)}
       >
-        <MessageCircle className="mr-2 h-5 w-5" />
-        Help
+        <MessageCircle className="h-5 w-5 sm:mr-2" />
+        <span className="hidden sm:inline">Help</span>
+        <span className="sr-only sm:hidden">Open help assistant</span>
       </Button>
     </div>
   );
 }
+

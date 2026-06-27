@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Briefcase, Building2, Headphones, IndianRupee, Loader2, Plus, ShieldCheck } from "lucide-react";
+import { Briefcase, Building2, Eye, Headphones, IndianRupee, Loader2, Plus, ShieldCheck, UsersRound } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/company-crm")({
@@ -95,6 +95,48 @@ function Metric({ icon: Icon, label, value }: any) {
   );
 }
 
+function SiteAnalyticsPanel({ data }: any) {
+  return (
+    <div className="grid gap-4 xl:grid-cols-2">
+      <Card>
+        <CardHeader><CardTitle>Most viewed pages, last 7 days</CardTitle></CardHeader>
+        <CardContent className="space-y-3">
+          {(data?.topPages ?? []).length === 0 ? (
+            <p className="text-sm text-muted-foreground">No visits recorded yet. New visits will appear after the site is used.</p>
+          ) : (
+            data.topPages.map((p: any) => (
+              <div key={p.path} className="flex items-center justify-between gap-4 rounded-lg border p-3">
+                <div className="min-w-0">
+                  <p className="truncate font-medium">{p.path}</p>
+                  <p className="text-xs text-muted-foreground">{p.visitors} unique visitors</p>
+                </div>
+                <Badge>{p.views} views</Badge>
+              </div>
+            ))
+          )}
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader><CardTitle>Recent visits</CardTitle></CardHeader>
+        <CardContent className="space-y-3">
+          {(data?.recent ?? []).length === 0 ? (
+            <p className="text-sm text-muted-foreground">No recent visits yet.</p>
+          ) : (
+            data.recent.map((v: any) => (
+              <div key={`${v.created_at}-${v.path}`} className="rounded-lg border p-3">
+                <div className="flex items-center justify-between gap-3">
+                  <p className="truncate font-medium">{v.path}</p>
+                  <span className="text-xs text-muted-foreground">{new Date(v.created_at).toLocaleString()}</span>
+                </div>
+                {v.referrer && <p className="mt-1 truncate text-xs text-muted-foreground">From {v.referrer}</p>}
+              </div>
+            ))
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
 function SubscriptionPanel({ data }: any) {
   const plans = Object.entries(data.byPlan ?? {});
   return (
@@ -241,3 +283,4 @@ function CatalogPanel({ rows }: any) {
     </Card>
   );
 }
+

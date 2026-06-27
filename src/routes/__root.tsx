@@ -10,6 +10,7 @@ import {
 import { useEffect, type ReactNode } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { AiHelpAssistantWidget } from "@/components/AiHelpAssistantWidget";
+import { SiteVisitTracker } from "@/components/SiteVisitTracker";
 import { supabase } from "@/integrations/supabase/client";
 import {
   captureReferralFromUrl,
@@ -164,5 +165,6 @@ function RootComponent() {
     </QueryClientProvider>
   );
 }
+
 
 

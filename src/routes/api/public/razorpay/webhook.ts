@@ -1,5 +1,5 @@
 ﻿import { createFileRoute } from "@tanstack/react-router";
-import { upsertRazorpaySubscriptionFromEvent, verifyRazorpaySignature } from "@/lib/razorpay.functions";
+import { upsertRazorpaySubscriptionFromEvent, verifyRazorpaySignature } from "@/lib/razorpay.webhook.server";
 
 export const Route = createFileRoute("/api/public/razorpay/webhook")({
   server: {
@@ -29,3 +29,4 @@ export const Route = createFileRoute("/api/public/razorpay/webhook")({
     },
   },
 });
+
