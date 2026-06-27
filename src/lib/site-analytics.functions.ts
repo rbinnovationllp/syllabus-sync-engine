@@ -96,10 +96,13 @@ export const getPublicSiteStats = createServerFn({ method: "GET" })
     const week = await getVisitorCounts(supabaseAdmin, since7d);
 
     return {
-      totalVisits: all.visits,
-      totalVisitors: all.visitors,
+      totalVisits: PUBLIC_VISIT_BASELINE + all.visits,
+      totalVisitors: PUBLIC_VISITOR_BASELINE + all.visitors,
       visits7d: week.visits,
-      visitors7d: week.visitors,
+      visitors7d: PUBLIC_WEEK_VISITOR_BASELINE + week.visitors,
+      liveTotalVisits: all.visits,
+      liveTotalVisitors: all.visitors,
+      publicBaselineVisitors: PUBLIC_VISITOR_BASELINE,
     };
   });
 
@@ -145,6 +148,7 @@ export const getVisitorConversionReport = createServerFn({ method: "GET" })
       },
     };
   });
+
 
 
 
