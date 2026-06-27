@@ -87,14 +87,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "CurriculumOS â€” AI Curriculum Planning for K-12 Schools" },
-      { name: "description", content: "Plan an entire academic year in minutes. Capacity-aware scheduling, textbook alignment, multi-teacher balance, and exam-ready syllabus completion â€” for CBSE, ICSE, IB, Cambridge, Common Core and more." },
+      { title: "CurriculumOS - AI Curriculum Planning for K-12 Schools" },
+      { name: "description", content: "Plan an entire academic year in minutes. Capacity-aware scheduling, textbook alignment, multi-teacher balance, and exam-ready syllabus completion - for CBSE, ICSE, IB, Cambridge, Common Core and more." },
       { name: "author", content: "Rashi Bhartiya Innovation LLP" },
-      { property: "og:title", content: "CurriculumOS â€” AI Curriculum Planning for K-12 Schools" },
+      { property: "og:title", content: "CurriculumOS - AI Curriculum Planning for K-12 Schools" },
       { property: "og:description", content: "From holiday calendar to lesson plan in minutes. Built for school leaders worldwide." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "CurriculumOS â€” AI Curriculum Planning for K-12 Schools" },
+      { name: "twitter:title", content: "CurriculumOS - AI Curriculum Planning for K-12 Schools" },
       { name: "twitter:description", content: "From holiday calendar to lesson plan in minutes. Built for school leaders worldwide." },
       { property: "og:url", content: "https://syllabus-synk.in/" },
       { property: "og:site_name", content: "CurriculumOS" },
@@ -165,6 +165,7 @@ function RootComponent() {
     </QueryClientProvider>
   );
 }
+
 
 
 

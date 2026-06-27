@@ -16,7 +16,7 @@ export const Route = createFileRoute("/auth")({
   }),
   head: () => ({
     meta: [
-      { title: "Sign in â€” CurriculumOS" },
+      { title: "Sign in - CurriculumOS" },
       { name: "description", content: "Sign in to plan your school's academic year with CurriculumOS." },
     ],
   }),
@@ -81,8 +81,8 @@ function AuthPage() {
     if (error) {
       setLoading(false);
       const m = error.message.toLowerCase();
-      if (m.includes("invalid")) return toast.error("Wrong email or password. Use â€˜Forgot password?â€™ if you don't remember it.");
-      if (m.includes("not confirmed")) return toast.error("Please confirm your email first â€” check your inbox.");
+      if (m.includes("invalid")) return toast.error("Wrong email or password. Use 'Forgot password?' if you don't remember it.");
+      if (m.includes("not confirmed")) return toast.error("Please confirm your email first - check your inbox.");
       return toast.error(error.message);
     }
     await tryAcceptInvite();
@@ -118,7 +118,7 @@ function AuthPage() {
       return;
     }
     await tryAcceptInvite();
-    toast.success("Account created â€” you're signed in.");
+    toast.success("Account created - you're signed in.");
     navigate({ to: "/dashboard" });
   }
 
@@ -231,5 +231,6 @@ function AuthPage() {
     </div>
   );
 }
+
 
 

@@ -165,7 +165,7 @@ function PricingPage() {
               <CalendarClock className="h-4 w-4" />
               <AlertTitle>Annual rebate unavailable right now</AlertTitle>
               <AlertDescription>
-                India's academic session runs <strong>April â€“ March</strong>. The
+                India's academic session runs <strong>April - March</strong>. The
                 &ldquo;pay-for-10, get-12&rdquo; annual rebate is only offered to
                 subscribers who join <strong>on or before April</strong>. You can
                 subscribe monthly today and switch to the annual plan in April when
@@ -175,7 +175,7 @@ function PricingPage() {
           )}
           {effectiveInterval === "annual" && (
             <p className="text-xs text-muted-foreground mt-3">
-              Annual plans are billed as <strong>10 Ã— monthly price</strong> once a year â€” 2 months free.
+              Annual plans are billed as <strong>10 x monthly price</strong> once a year - 2 months free.
             </p>
           )}
         </div>
@@ -185,7 +185,7 @@ function PricingPage() {
             <CardContent className="flex items-center justify-between py-4">
               <div className="text-sm">
                 <span className="font-medium">{currentPlan.name}</span>
-                <span className="text-muted-foreground"> Â· {subscription?.status}</span>
+                <span className="text-muted-foreground"> - {subscription?.status}</span>
                 {subscription?.cancel_at_period_end && (
                   <Badge variant="secondary" className="ml-2">Cancels at period end</Badge>
                 )}
@@ -216,7 +216,7 @@ function PricingPage() {
                   <div className="text-2xl font-bold pt-2">{price.display}</div>
                   {effectiveInterval === "annual" && (
                     <p className="text-[11px] text-muted-foreground">
-                      vs {monthly.display} Ã— 12 â€” saves 2 months
+                      vs {monthly.display} x 12 - saves 2 months
                     </p>
                   )}
                 </CardHeader>
@@ -360,8 +360,8 @@ function PricingPage() {
                 billed separately from any subscription.
               </p>
               <p className="text-muted-foreground">
-                <strong>Annual rebate:</strong> Annual plans are billed at 10Ã— the monthly price
-                (2 months free). In India, the academic session runs Aprilâ€“March; the rebate is
+                <strong>Annual rebate:</strong> Annual plans are billed at 10x the monthly price
+                (2 months free). In India, the academic session runs April-March; the rebate is
                 only available to subscribers who join on or before April. Subscribers starting
                 May or later pay full annual or remain monthly.
               </p>
@@ -376,11 +376,11 @@ function PricingPage() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <AlertTriangle className="h-5 w-5 text-amber-500" />
-              Before you subscribe â€” please review the limits
+              Before you subscribe - please review the limits
             </DialogTitle>
             <DialogDescription>
-              {pending?.plan.name} Â· <strong>{pending?.priceDisplay}</strong>
-              {pending?.interval === "annual" && " Â· billed yearly (2 months free)"}
+              {pending?.plan.name} - <strong>{pending?.priceDisplay}</strong>
+              {pending?.interval === "annual" && " - billed yearly (2 months free)"}
             </DialogDescription>
           </DialogHeader>
 
@@ -413,7 +413,7 @@ function PricingPage() {
                 </p>
                 <p>
                   <strong className="text-foreground">Exports, seats, storage and campuses</strong>{" "}
-                  are hard-capped â€” additional capacity requires upgrading or buying an add-on.
+                  are hard-capped - additional capacity requires upgrading or buying an add-on.
                 </p>
                 <p>
                   <strong className="text-foreground">Consulting, training, audits, custom
@@ -464,7 +464,7 @@ function PricingPage() {
           <DialogHeader>
             <DialogTitle>Pay via UPI</DialogTitle>
             <DialogDescription>
-              {upiPayment?.plan.name} Â· {upiPayment?.priceDisplay}
+              {upiPayment?.plan.name} - {upiPayment?.priceDisplay}
             </DialogDescription>
           </DialogHeader>
           {upiPayment && (
@@ -492,6 +492,7 @@ function PricingPage() {
     </AppShell>
   );
 }
+
 
 
 

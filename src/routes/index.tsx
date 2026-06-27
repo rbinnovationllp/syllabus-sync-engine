@@ -28,9 +28,9 @@ import { getPublicSiteStats } from "@/lib/site-analytics.functions";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "CurriculumOS â€” AI Curriculum Planning for K-12 Schools" },
-      { name: "description", content: "Plan an entire academic year in minutes. Capacity-aware scheduling, textbook alignment, multi-teacher balance, and exam-ready syllabus completion â€” for CBSE, ICSE, IB, Cambridge, Common Core and more." },
-      { property: "og:title", content: "CurriculumOS â€” AI Curriculum Planning for K-12 Schools" },
+      { title: "CurriculumOS - AI Curriculum Planning for K-12 Schools" },
+      { name: "description", content: "Plan an entire academic year in minutes. Capacity-aware scheduling, textbook alignment, multi-teacher balance, and exam-ready syllabus completion - for CBSE, ICSE, IB, Cambridge, Common Core and more." },
+      { property: "og:title", content: "CurriculumOS - AI Curriculum Planning for K-12 Schools" },
       { property: "og:description", content: "From holiday calendar to lesson plan in minutes. Built for school leaders worldwide." },
       { property: "og:type", content: "website" },
       { property: "og:url", content: "https://www.syllabus-synk.in/" },
@@ -103,7 +103,7 @@ function Hero() {
           <span className="bg-gradient-to-r from-amber-300 via-fuchsia-400 to-indigo-300 bg-clip-text text-transparent">
             academic year
           </span>{" "}
-          in minutes â€” not months.
+          in minutes - not months.
         </h1>
 
         <p className="mx-auto mt-6 max-w-2xl text-base text-white/70 sm:text-lg">
@@ -124,7 +124,7 @@ function Hero() {
         <PublicVisitorProof />
 
         <div className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-white/60">
-          {["Trusted by school leaders", "CBSE â€¢ ICSE â€¢ IB â€¢ Cambridge", "Secure & private", "Free pilot for your school"].map((t) => (
+          {["Trusted by school leaders", "CBSE * ICSE * IB * Cambridge", "Secure & private", "Free pilot for your school"].map((t) => (
             <span key={t} className="flex items-center gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" /> {t}</span>
           ))}
         </div>
@@ -136,7 +136,7 @@ function Hero() {
               {[
                 { label: "Teaching days available", value: "187", trend: "after holidays & exams", accent: "from-indigo-500 to-cyan-400" },
                 { label: "Syllabus completion", value: "98%", trend: "30 days pre-board", accent: "from-emerald-500 to-lime-400" },
-                { label: "Teacher load balance", value: "âœ“ Even", trend: "across 14 classes", accent: "from-fuchsia-500 to-amber-400" },
+                { label: "Teacher load balance", value: "Yes Even", trend: "across 14 classes", accent: "from-fuchsia-500 to-amber-400" },
               ].map((c) => (
                 <div key={c.label} className="rounded-lg border border-white/10 bg-white/[0.03] p-4 text-left">
                   <p className="text-[11px] uppercase tracking-wide text-white/50">{c.label}</p>
@@ -198,11 +198,11 @@ function Logos() {
 }
 
 const FEATURES = [
-  { icon: Calendar, title: "Capacity engine", body: "Automatically subtracts holidays, vacations, exams, events, training & buffers â€” never plans beyond reality.", color: "from-indigo-500 to-violet-500" },
+  { icon: Calendar, title: "Capacity engine", body: "Automatically subtracts holidays, vacations, exams, events, training & buffers - never plans beyond reality.", color: "from-indigo-500 to-violet-500" },
   { icon: BookOpen, title: "Textbook intelligence", body: "Aligns plans to your exact edition, author and publisher. Auto-recommends books by region & fee tier.", color: "from-fuchsia-500 to-pink-500" },
   { icon: Users, title: "Multi-teacher balance", body: "Prevents student overload by syncing tough chapters across subjects.", color: "from-amber-500 to-orange-500" },
   { icon: Sparkles, title: "One-click recalibration", body: "Weather closure? Sports overrun? Re-engineer the year while protecting revision time.", color: "from-emerald-500 to-teal-500" },
-  { icon: Globe2, title: "Country-aware sessions", body: "Knows India runs Aprâ€“Mar, USA Augâ€“Jun, UK Sepâ€“Jul. Subjects & streams match local policy.", color: "from-sky-500 to-blue-500" },
+  { icon: Globe2, title: "Country-aware sessions", body: "Knows India runs Apr-Mar, USA Aug-Jun, UK Sep-Jul. Subjects & streams match local policy.", color: "from-sky-500 to-blue-500" },
   { icon: ShieldCheck, title: "Syllabus guarantee", body: "30/45/60-day pre-exam completion rules built-in for primary, secondary & senior secondary.", color: "from-rose-500 to-red-500" },
 ];
 
@@ -212,7 +212,7 @@ function Features() {
       <div className="mx-auto max-w-2xl text-center">
         <p className="text-xs font-semibold uppercase tracking-widest text-indigo-600">Why CurriculumOS</p>
         <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">Everything an academic leader needs</h2>
-        <p className="mt-4 text-slate-600">From the first holiday entry to the final lesson plan â€” one intelligent system replaces six spreadsheets.</p>
+        <p className="mt-4 text-slate-600">From the first holiday entry to the final lesson plan - one intelligent system replaces six spreadsheets.</p>
       </div>
       <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {FEATURES.map((f) => (
@@ -269,7 +269,7 @@ function Boards() {
         <div>
           <p className="text-xs font-semibold uppercase tracking-widest text-amber-600">Built for every curriculum</p>
           <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">10+ boards. Local subjects. Country-aware sessions.</h2>
-          <p className="mt-4 text-slate-600">Indian schools start in April. American schools start in August. CurriculumOS already knows â€” and ships the right subject catalog, streams, and completion rules out of the box.</p>
+          <p className="mt-4 text-slate-600">Indian schools start in April. American schools start in August. CurriculumOS already knows - and ships the right subject catalog, streams, and completion rules out of the box.</p>
           <div className="mt-6 flex flex-wrap gap-2">
             {list.map((b) => (
               <span key={b} className="rounded-full bg-gradient-to-r from-indigo-50 to-fuchsia-50 px-3.5 py-1.5 text-sm font-medium text-indigo-700 ring-1 ring-indigo-100">{b}</span>
@@ -280,7 +280,7 @@ function Boards() {
           <div className="rounded-3xl bg-gradient-to-br from-indigo-600 via-fuchsia-500 to-amber-400 p-1 shadow-2xl">
             <div className="rounded-[1.4rem] bg-white p-6">
               <div className="flex items-center justify-between">
-                <h3 className="font-semibold">Grade 12 â€” Science (PCM)</h3>
+                <h3 className="font-semibold">Grade 12 - Science (PCM)</h3>
                 <LineChart className="h-5 w-5 text-indigo-500" />
               </div>
               <ul className="mt-4 space-y-2.5 text-sm">
@@ -325,7 +325,7 @@ function Testimonials() {
             <div key={i} className="rounded-2xl border border-white/10 bg-white/[0.04] p-6 backdrop-blur">
               <div className="flex gap-0.5 text-amber-300">{Array.from({ length: 5 }).map((_, k) => <Star key={k} className="h-4 w-4 fill-current" />)}</div>
               <p className="mt-4 text-white/85">"{x.q}"</p>
-              <p className="mt-4 text-xs text-white/50">â€” {x.a}</p>
+              <p className="mt-4 text-xs text-white/50">- {x.a}</p>
             </div>
           ))}
         </div>
@@ -386,7 +386,7 @@ function Contact() {
                 </div>
                 <div className="space-y-1.5"><Label htmlFor="m">How can we help?</Label><Textarea id="m" rows={3} value={form.message} onChange={set("message")} /></div>
                 <Button type="submit" disabled={m.isPending} className="w-full bg-gradient-to-r from-indigo-600 to-fuchsia-600 text-white hover:opacity-95">
-                  {m.isPending ? "Sendingâ€¦" : "Request a demo"}
+                  {m.isPending ? "Sending..." : "Request a demo"}
                 </Button>
               </form>
             </CardContent>
@@ -425,11 +425,12 @@ function Footer() {
             <a href="#contact" className="hover:text-slate-800">Contact</a>
             <Link to="/auth" className="hover:text-slate-800">Sign in</Link>
           </div>
-          <p>Â© {new Date().getFullYear()} CurriculumOS. All rights reserved.</p>
+          <p>(c) {new Date().getFullYear()} CurriculumOS. All rights reserved.</p>
         </div>
       </div>
     </footer>
   );
 }
+
 
 
