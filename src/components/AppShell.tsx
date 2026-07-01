@@ -78,3 +78,4 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
     </div>
   );
 }
+
