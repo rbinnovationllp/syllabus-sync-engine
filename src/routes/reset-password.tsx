@@ -58,7 +58,9 @@ function ResetPasswordPage() {
         setReady(Boolean(data.session));
         setChecking(false);
         if (!data.session) {
-          setLinkError("This reset link is invalid or expired. Please request a fresh password reset email.");
+          setLinkError(
+            "This reset link is invalid or expired. Please request a fresh password reset email.",
+          );
         }
       }
     }
@@ -93,7 +95,7 @@ function ResetPasswordPage() {
   }
 
   async function resendReset() {
-    navigate({ to: "/auth" });
+    navigate({ to: "/auth", search: { invite: undefined } });
   }
 
   return (

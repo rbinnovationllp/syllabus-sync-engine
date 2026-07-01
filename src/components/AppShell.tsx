@@ -19,37 +19,53 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
 
   async function handleSignOut() {
     await supabase.auth.signOut();
-    navigate({ to: "/auth", replace: true });
+    navigate({ to: "/auth", search: { invite: undefined }, replace: true });
   }
 
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b sticky top-0 z-10 bg-background/95 backdrop-blur">
         <div className="mx-auto flex h-14 w-full max-w-screen-2xl items-center justify-between px-4 sm:px-6">
-          <Link to="/dashboard" className="font-semibold tracking-tight">CurriculumOS</Link>
+          <Link to="/dashboard" className="font-semibold tracking-tight">
+            CurriculumOS
+          </Link>
           <div className="flex items-center gap-3">
-            {title && <span className="text-sm text-muted-foreground hidden sm:inline">{title}</span>}
+            {title && (
+              <span className="text-sm text-muted-foreground hidden sm:inline">{title}</span>
+            )}
             <Button asChild variant="ghost" size="sm">
-              <Link to={"/v2/principal" as any}><Brain className="h-4 w-4 mr-1" /> AI Suite</Link>
+              <Link to="/v2/principal">
+                <Brain className="h-4 w-4 mr-1" /> AI Suite
+              </Link>
             </Button>
             <Button asChild variant="ghost" size="sm">
-              <Link to="/school-crm"><Building2 className="h-4 w-4 mr-1" /> School CRM</Link>
+              <Link to="/school-crm">
+                <Building2 className="h-4 w-4 mr-1" /> School CRM
+              </Link>
             </Button>
             {status?.isAdmin && (
               <Button asChild variant="ghost" size="sm">
-                <Link to="/admin"><Shield className="h-4 w-4 mr-1" /> Admin</Link>
+                <Link to="/admin">
+                  <Shield className="h-4 w-4 mr-1" /> Admin
+                </Link>
               </Button>
             )}
             {status?.isSuperAdmin && (
               <Button asChild variant="ghost" size="sm">
-                <Link to="/company-crm"><Briefcase className="h-4 w-4 mr-1" /> Company CRM</Link>
+                <Link to="/company-crm">
+                  <Briefcase className="h-4 w-4 mr-1" /> Company CRM
+                </Link>
               </Button>
             )}
             <Button asChild variant="ghost" size="sm">
-              <Link to="/seats"><Users className="h-4 w-4 mr-1" /> Seats</Link>
+              <Link to="/seats">
+                <Users className="h-4 w-4 mr-1" /> Seats
+              </Link>
             </Button>
             <Button asChild variant="ghost" size="sm">
-              <Link to="/pricing"><CreditCard className="h-4 w-4 mr-1" /> Plans</Link>
+              <Link to="/pricing">
+                <CreditCard className="h-4 w-4 mr-1" /> Plans
+              </Link>
             </Button>
             <NotificationBell />
             <Button variant="ghost" size="sm" onClick={handleSignOut}>
@@ -62,7 +78,3 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
     </div>
   );
 }
-
-
-
-
