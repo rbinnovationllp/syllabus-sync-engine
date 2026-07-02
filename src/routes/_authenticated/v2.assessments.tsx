@@ -15,10 +15,11 @@ function AssessmentGeneratorPage() {
       <V2Generator
         module="assessment_generator"
         title="Assessment generator"
-        description="Generate editable papers for completed syllabus only, then review before export or printing."
+        description="Generate editable class tests and exam papers by class, subject, exam type, chapter range, marks, duration, difficulty, and answer key."
         resourceTypes={["Class test", "Weekly test", "Unit test", "Half-yearly exam", "Mid-term exam", "Annual exam", "Practice paper", "Chapter-wise assessment"]}
-        defaultPrompt="Create a 40-mark assessment for completed syllabus only. Include duration, difficulty mix, Bloom taxonomy distribution, and answer key."
+        defaultPrompt="Create a syllabus-aligned question paper from the selected chapter range. Include clear instructions, marks distribution, difficulty balance, Bloom taxonomy distribution, and answer key."
       />
     </AppShell>
   );
 }
+

@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TermsRouteImport } from './routes/terms'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as PartnersRouteImport } from './routes/partners'
 import { Route as AuthRouteImport } from './routes/auth'
@@ -25,6 +26,7 @@ import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authen
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedCrmRouteImport } from './routes/_authenticated/crm'
 import { Route as AuthenticatedCompanyCrmRouteImport } from './routes/_authenticated/company-crm'
+import { Route as AuthenticatedAuditTrailRouteImport } from './routes/_authenticated/audit-trail'
 import { Route as AuthenticatedAssignmentsRouteImport } from './routes/_authenticated/assignments'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedV2TeacherIntelligenceRouteImport } from './routes/_authenticated/v2.teacher-intelligence'
@@ -49,6 +51,11 @@ import { Route as AuthenticatedCurriculumYearIdRescheduleRouteImport } from './r
 import { Route as AuthenticatedCurriculumYearIdProposeRouteImport } from './routes/_authenticated/curriculum.$yearId.propose'
 import { Route as AuthenticatedCrmAccountsIdRouteImport } from './routes/_authenticated/crm.accounts.$id'
 
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
@@ -128,6 +135,11 @@ const AuthenticatedCrmRoute = AuthenticatedCrmRouteImport.update({
 const AuthenticatedCompanyCrmRoute = AuthenticatedCompanyCrmRouteImport.update({
   id: '/company-crm',
   path: '/company-crm',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedAuditTrailRoute = AuthenticatedAuditTrailRouteImport.update({
+  id: '/audit-trail',
+  path: '/audit-trail',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedAssignmentsRoute =
@@ -273,8 +285,10 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/partners': typeof PartnersRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/terms': typeof TermsRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/assignments': typeof AuthenticatedAssignmentsRoute
+  '/audit-trail': typeof AuthenticatedAuditTrailRoute
   '/company-crm': typeof AuthenticatedCompanyCrmRoute
   '/crm': typeof AuthenticatedCrmRouteWithChildren
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -313,8 +327,10 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/partners': typeof PartnersRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/terms': typeof TermsRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/assignments': typeof AuthenticatedAssignmentsRoute
+  '/audit-trail': typeof AuthenticatedAuditTrailRoute
   '/company-crm': typeof AuthenticatedCompanyCrmRoute
   '/crm': typeof AuthenticatedCrmRouteWithChildren
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -355,8 +371,10 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/partners': typeof PartnersRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/terms': typeof TermsRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/assignments': typeof AuthenticatedAssignmentsRoute
+  '/_authenticated/audit-trail': typeof AuthenticatedAuditTrailRoute
   '/_authenticated/company-crm': typeof AuthenticatedCompanyCrmRoute
   '/_authenticated/crm': typeof AuthenticatedCrmRouteWithChildren
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
@@ -397,8 +415,10 @@ export interface FileRouteTypes {
     | '/auth'
     | '/partners'
     | '/reset-password'
+    | '/terms'
     | '/admin'
     | '/assignments'
+    | '/audit-trail'
     | '/company-crm'
     | '/crm'
     | '/dashboard'
@@ -437,8 +457,10 @@ export interface FileRouteTypes {
     | '/auth'
     | '/partners'
     | '/reset-password'
+    | '/terms'
     | '/admin'
     | '/assignments'
+    | '/audit-trail'
     | '/company-crm'
     | '/crm'
     | '/dashboard'
@@ -478,8 +500,10 @@ export interface FileRouteTypes {
     | '/auth'
     | '/partners'
     | '/reset-password'
+    | '/terms'
     | '/_authenticated/admin'
     | '/_authenticated/assignments'
+    | '/_authenticated/audit-trail'
     | '/_authenticated/company-crm'
     | '/_authenticated/crm'
     | '/_authenticated/dashboard'
@@ -520,6 +544,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   PartnersRoute: typeof PartnersRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  TermsRoute: typeof TermsRoute
   ApiPublicCronHealthCheckRoute: typeof ApiPublicCronHealthCheckRoute
   ApiPublicCronNotificationsTickRoute: typeof ApiPublicCronNotificationsTickRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
@@ -528,6 +553,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/reset-password': {
       id: '/reset-password'
       path: '/reset-password'
@@ -638,6 +670,13 @@ declare module '@tanstack/react-router' {
       path: '/company-crm'
       fullPath: '/company-crm'
       preLoaderRoute: typeof AuthenticatedCompanyCrmRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/audit-trail': {
+      id: '/_authenticated/audit-trail'
+      path: '/audit-trail'
+      fullPath: '/audit-trail'
+      preLoaderRoute: typeof AuthenticatedAuditTrailRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/assignments': {
@@ -818,6 +857,7 @@ const AuthenticatedCrmRouteWithChildren =
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedAssignmentsRoute: typeof AuthenticatedAssignmentsRoute
+  AuthenticatedAuditTrailRoute: typeof AuthenticatedAuditTrailRoute
   AuthenticatedCompanyCrmRoute: typeof AuthenticatedCompanyCrmRoute
   AuthenticatedCrmRoute: typeof AuthenticatedCrmRouteWithChildren
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
@@ -849,6 +889,7 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   AuthenticatedAssignmentsRoute: AuthenticatedAssignmentsRoute,
+  AuthenticatedAuditTrailRoute: AuthenticatedAuditTrailRoute,
   AuthenticatedCompanyCrmRoute: AuthenticatedCompanyCrmRoute,
   AuthenticatedCrmRoute: AuthenticatedCrmRouteWithChildren,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
@@ -891,6 +932,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   PartnersRoute: PartnersRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  TermsRoute: TermsRoute,
   ApiPublicCronHealthCheckRoute: ApiPublicCronHealthCheckRoute,
   ApiPublicCronNotificationsTickRoute: ApiPublicCronNotificationsTickRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
