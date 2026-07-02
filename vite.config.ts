@@ -1,4 +1,4 @@
-import { fileURLToPath, URL } from "node:url";
+﻿import { fileURLToPath, URL } from "node:url";
 import { defineConfig } from "vite";
 import tailwindcss from "@tailwindcss/vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
@@ -15,10 +15,12 @@ export default defineConfig({
     tsConfigPaths(),
     tailwindcss(),
     tanstackStart({
-      customViteReactPlugin: true,
+      start: { entry: "start" },
       server: { entry: "server" },
       nitro: { preset: "node-server" },
     }),
     react(),
   ],
 });
+
+

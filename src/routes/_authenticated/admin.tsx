@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+﻿import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
@@ -48,8 +48,27 @@ import { CurriculumReviewsTab } from "@/components/admin/CurriculumReviewsTab";
 import { AiUsageTab } from "@/components/admin/AiUsageTab";
 import { AiModelSettingsTab } from "@/components/admin/AiModelSettingsTab";
 
+const SUPPORT_EMAIL = "support@syllabus-synk.in";
+
+function buildLeadDemoReplyMailto(lead: any) {
+  const subject = `Syllabus Synk demo for ${lead.school_name || lead.name || "your school"}`;
+  const body = [
+    `Dear ${lead.name || "School Leader"},`,
+    "",
+    "Thank you for contacting Syllabus Synk. We would be happy to share a demo and show how CurriculumOS can help your school plan the academic year, curriculum, assessments, and AI-assisted academic workflows.",
+    "",
+    "Please share a convenient date and time for a short demo call. You can also reply with your school board, classes covered, and preferred contact number so we can prepare a relevant walkthrough.",
+    "",
+    "Regards,",
+    "Syllabus Synk Support Team",
+    SUPPORT_EMAIL,
+  ].join("\n");
+
+  return `mailto:${lead.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+}
+
 export const Route = createFileRoute("/_authenticated/admin")({
-  head: () => ({ meta: [{ title: "Admin & CRM — CurriculumOS" }] }),
+  head: () => ({ meta: [{ title: "Admin & CRM â€” CurriculumOS" }] }),
   component: AdminPage,
 });
 
@@ -212,7 +231,7 @@ function LeadsTab() {
     onError: (e: any) => toast.error(e.message),
   });
 
-  if (q.isLoading) return <div className="py-10 text-center text-muted-foreground">Loading leads…</div>;
+  if (q.isLoading) return <div className="py-10 text-center text-muted-foreground">Loading leadsâ€¦</div>;
   const leads = q.data ?? [];
   if (leads.length === 0) {
     return (
@@ -233,7 +252,8 @@ function LeadsTab() {
               <TableHead>Name</TableHead>
               <TableHead>Email</TableHead>
               <TableHead>School / Country</TableHead>
-              <TableHead>Stage</TableHead>
+                            <TableHead>Stage</TableHead>
+              <TableHead>Reply</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -251,8 +271,8 @@ function LeadsTab() {
                   {l.message && <div className="text-xs text-muted-foreground line-clamp-2 max-w-xs">{l.message}</div>}
                 </TableCell>
                 <TableCell className="text-sm">
-                  {l.school_name || "—"}
-                  <div className="text-xs text-muted-foreground">{[l.country, l.board].filter(Boolean).join(" • ")}</div>
+                  {l.school_name || "â€”"}
+                  <div className="text-xs text-muted-foreground">{[l.country, l.board].filter(Boolean).join(" â€¢ ")}</div>
                 </TableCell>
                 <TableCell>
                   <Select
@@ -265,7 +285,16 @@ function LeadsTab() {
                         <SelectItem key={s} value={s}>{s}</SelectItem>
                       ))}
                     </SelectContent>
-                  </Select>
+                                    </Select>
+                </TableCell>
+                <TableCell>
+                  {l.email ? (
+                    <Button asChild size="sm" variant="outline">
+                      <a href={buildLeadDemoReplyMailto(l)}>Reply from support</a>
+                    </Button>
+                  ) : (
+                    <span className="text-xs text-muted-foreground">No email</span>
+                  )}
                 </TableCell>
               </TableRow>
             ))}
@@ -288,7 +317,7 @@ function ClientsTab({ clients }: { clients: any[] }) {
           <TableBody>
             {clients.map((c) => (
               <TableRow key={c.id}>
-                <TableCell className="font-medium">{c.display_name || "—"}</TableCell>
+                <TableCell className="font-medium">{c.display_name || "â€”"}</TableCell>
                 <TableCell>{c.email}</TableCell>
                 <TableCell className="text-xs text-muted-foreground">{new Date(c.created_at).toLocaleDateString()}</TableCell>
               </TableRow>
@@ -317,7 +346,7 @@ function SubscriptionsTab({ subs, clients }: { subs: any[]; clients: any[] }) {
                 <TableCell>{emailFor(s.user_id)}</TableCell>
                 <TableCell className="text-xs">{s.product_id}<div className="text-muted-foreground">{s.price_id}</div></TableCell>
                 <TableCell><Badge variant={s.status === "active" ? "default" : "secondary"}>{s.status}</Badge></TableCell>
-                <TableCell className="text-xs text-muted-foreground">{s.current_period_end ? new Date(s.current_period_end).toLocaleDateString() : "—"}</TableCell>
+                <TableCell className="text-xs text-muted-foreground">{s.current_period_end ? new Date(s.current_period_end).toLocaleDateString() : "â€”"}</TableCell>
                 <TableCell className="text-xs uppercase">{s.environment}</TableCell>
               </TableRow>
             ))}
@@ -369,9 +398,9 @@ function SchoolsTab({ schools }: { schools: any[] }) {
             {schools.map((s) => (
               <TableRow key={s.id}>
                 <TableCell className="font-medium"><School className="inline h-3.5 w-3.5 mr-1.5 text-muted-foreground" />{s.name}</TableCell>
-                <TableCell>{s.country || "—"}</TableCell>
-                <TableCell>{s.board || "—"}</TableCell>
-                <TableCell>{s.fee_tier || "—"}</TableCell>
+                <TableCell>{s.country || "â€”"}</TableCell>
+                <TableCell>{s.board || "â€”"}</TableCell>
+                <TableCell>{s.fee_tier || "â€”"}</TableCell>
                 <TableCell className="text-xs text-muted-foreground">{new Date(s.created_at).toLocaleDateString()}</TableCell>
               </TableRow>
             ))}
@@ -419,7 +448,7 @@ function AccessTab() {
         <CardContent className="space-y-3">
           <p className="text-sm text-muted-foreground">
             Enter the email of an existing user and the special promotion code.
-            Both are required — your login alone does not authorize promotion.
+            Both are required â€” your login alone does not authorize promotion.
           </p>
           <div className="space-y-1.5">
             <Label htmlFor="email">User email</Label>
@@ -430,7 +459,7 @@ function AccessTab() {
             <Input id="code" type="password" value={code} onChange={(e) => setCode(e.target.value)} placeholder="Special code" />
           </div>
           <Button onClick={() => promote.mutate()} disabled={!email || !code || promote.isPending} className="w-full">
-            {promote.isPending ? "Granting…" : "Grant admin access"}
+            {promote.isPending ? "Grantingâ€¦" : "Grant admin access"}
           </Button>
         </CardContent>
       </Card>
@@ -463,7 +492,7 @@ function AccessTab() {
 function AuditTab() {
   const fn = useServerFn(listAuditLog);
   const q = useQuery({ queryKey: ["admin-audit"], queryFn: () => fn() });
-  if (q.isLoading) return <div className="py-10 text-center text-muted-foreground">Loading audit log…</div>;
+  if (q.isLoading) return <div className="py-10 text-center text-muted-foreground">Loading audit logâ€¦</div>;
   const rows = q.data ?? [];
   if (rows.length === 0) {
     return (
@@ -491,12 +520,12 @@ function AuditTab() {
                 <TableCell className="text-sm">{r.actor_email || r.actor_id?.slice(0, 8)}</TableCell>
                 <TableCell><Badge variant="secondary" className="text-[10px]">{r.action}</Badge></TableCell>
                 <TableCell className="text-xs">
-                  {r.target_type ? <span className="text-muted-foreground">{r.target_type}:</span> : null} {r.target_id?.slice(0, 8) || "—"}
+                  {r.target_type ? <span className="text-muted-foreground">{r.target_type}:</span> : null} {r.target_id?.slice(0, 8) || "â€”"}
                 </TableCell>
                 <TableCell className="text-xs text-muted-foreground max-w-md">
                   {r.details && Object.keys(r.details).length > 0
-                    ? Object.entries(r.details).map(([k, v]) => `${k}: ${typeof v === "string" ? v : JSON.stringify(v)}`).join(" · ")
-                    : "—"}
+                    ? Object.entries(r.details).map(([k, v]) => `${k}: ${typeof v === "string" ? v : JSON.stringify(v)}`).join(" Â· ")
+                    : "â€”"}
                 </TableCell>
               </TableRow>
             ))}
@@ -506,3 +535,4 @@ function AuditTab() {
     </Card>
   );
 }
+

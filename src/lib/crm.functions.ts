@@ -1,7 +1,8 @@
-import { createServerFn } from "@tanstack/react-start";
+﻿import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 
+const SUPPORT_EMAIL = "support@syllabus-synk.in";
 const STAGES = ["new", "contacted", "qualified", "demo", "proposal", "won", "lost"] as const;
 const DEAL_STAGES = ["qualified", "demo", "proposal", "negotiation", "won", "lost"] as const;
 const ACTIVITY_TYPES = ["call", "meeting", "email", "task", "note"] as const;
@@ -131,7 +132,7 @@ export const importLeadsFromWebsite = createServerFn({ method: "POST" })
       source: l.source || "website",
       stage: "new",
       owner_user_id: context.userId,
-      notes: [l.school_name, l.country, l.board, l.message].filter(Boolean).join(" • "),
+      notes: [l.school_name, l.country, l.board, l.message].filter(Boolean).join(" â€¢ "),
       last_touched_at: l.created_at,
     }));
     if (toInsert.length === 0) return { inserted: 0 };
@@ -309,7 +310,7 @@ export const addCrmNote = createServerFn({ method: "POST" })
     return row;
   });
 
-// ============ CONVERT account → schools (provision) ============
+// ============ CONVERT account â†’ schools (provision) ============
 export const provisionSchoolFromAccount = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ account_id: z.string().uuid() }).parse(d))
@@ -377,3 +378,4 @@ export const draftFollowUpEmail = createServerFn({ method: "POST" })
     });
     return { draft };
   });
+

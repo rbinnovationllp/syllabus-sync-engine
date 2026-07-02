@@ -1,6 +1,9 @@
-import { createServerFn } from "@tanstack/react-start";
+﻿import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
+
+const SUPPORT_EMAIL = process.env.SUPPORT_EMAIL || "support@syllabus-synk.in";
+const LEAD_NOTIFICATION_EMAIL = process.env.LEAD_NOTIFICATION_EMAIL || "rbinnovationllp@gmail.com";
 
 const leadSchema = z.object({
   name: z.string().trim().min(1).max(120),
@@ -11,6 +14,52 @@ const leadSchema = z.object({
   board: z.string().trim().max(80).optional().nullable(),
   message: z.string().trim().max(2000).optional().nullable(),
 });
+
+async function sendLeadNotificationEmail(data: z.infer<typeof leadSchema>) {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    console.warn("Lead notification email skipped: RESEND_API_KEY is not configured.");
+    return;
+  }
+
+  const lines = [
+    "New demo enquiry received from syllabus-synk.in",
+    "",
+    `Name: ${data.name}`,
+    `Email: ${data.email}`,
+    `Phone: ${data.phone ?? "-"}`,
+    `School: ${data.school_name ?? "-"}`,
+    `Country: ${data.country ?? "-"}`,
+    `Board: ${data.board ?? "-"}`,
+    "",
+    "Message:",
+    data.message ?? "-",
+  ];
+
+  try {
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        from: `Syllabus Synk <${SUPPORT_EMAIL}>`,
+        to: [LEAD_NOTIFICATION_EMAIL],
+        reply_to: data.email,
+        subject: `New demo enquiry: ${data.school_name || data.name}`,
+        text: lines.join("\n"),
+      }),
+    });
+
+    if (!res.ok) {
+      const body = await res.text().catch(() => "");
+      console.warn(`Lead notification email failed: ${res.status} ${body}`);
+    }
+  } catch (error) {
+    console.warn("Lead notification email failed", error);
+  }
+}
 
 // PUBLIC: capture website inquiry
 export const createLead = createServerFn({ method: "POST" })
@@ -27,11 +76,12 @@ export const createLead = createServerFn({ method: "POST" })
       message: data.message ?? null,
       source: "website",
     });
-    if (error) throw new Error(error.message);
+        if (error) throw new Error(error.message);
+    await sendLeadNotificationEmail(data);
     return { ok: true };
   });
 
-// Helper — assert admin or super_admin
+// Helper â€” assert admin or super_admin
 async function assertAdmin(context: { supabase: any; userId: string }) {
   const { data, error } = await context.supabase
     .from("user_roles")
@@ -247,3 +297,4 @@ export const getMyAdminStatus = createServerFn({ method: "GET" })
       isSuperAdmin: roles.includes("super_admin"),
     };
   });
+

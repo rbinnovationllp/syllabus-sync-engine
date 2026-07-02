@@ -724,8 +724,8 @@ function Footer() {
           <p>Rashi Bhartiya Innovation LLP</p>
           <p>
             Email:{" "}
-            <a href="mailto:rbinnovationllp@gmail.com" className="hover:text-slate-800">
-              rbinnovationllp@gmail.com
+            <a href="mailto:support@syllabus-synk.in" className="hover:text-slate-800">
+              support@syllabus-synk.in
             </a>
           </p>
         </div>
@@ -750,5 +750,6 @@ function Footer() {
     </footer>
   );
 }
+
 
 
