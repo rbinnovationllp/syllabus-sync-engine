@@ -19,7 +19,8 @@ export async function getPrimaryOrgId(supabase: any, userId: string): Promise<st
 }
 
 export async function hasOrgFeature(supabase: any, userId: string, feature: PlanFeature): Promise<boolean> {
-  const orgId = await getPrimaryOrgId(supabase, userId);
+  const { data: tester } = await supabase.rpc("is_active_tester", { user_uuid: userId, feature });
+  if (tester === true) return true;  const orgId = await getPrimaryOrgId(supabase, userId);
 
   const { data, error } = await supabase
     .from("organization_subscription_profiles")
@@ -46,3 +47,4 @@ export async function requireOrgFeature(supabase: any, userId: string, feature: 
     throw new Error("This feature is available only in the required subscription plan. Please upgrade or ask the company admin to assign the correct plan code.");
   }
 }
+

@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Brain, LogOut, CreditCard, Shield, Users, Briefcase, Building2 } from "lucide-react";
+import { Brain, LogOut, CreditCard, Shield, Users, Briefcase, Building2, Beaker } from "lucide-react";
 import { getMyAdminStatus } from "@/lib/admin.functions";
 import { NotificationBell } from "@/components/NotificationBell";
 
@@ -78,4 +78,5 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
     </div>
   );
 }
+
 

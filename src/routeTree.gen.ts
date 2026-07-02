@@ -16,6 +16,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AiLeadershipSuiteRouteImport } from './routes/ai-leadership-suite'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedTesterAccessRouteImport } from './routes/_authenticated/tester-access'
 import { Route as AuthenticatedSeatsRouteImport } from './routes/_authenticated/seats'
 import { Route as AuthenticatedSchoolStorageRouteImport } from './routes/_authenticated/school-storage'
 import { Route as AuthenticatedSchoolCrmRouteImport } from './routes/_authenticated/school-crm'
@@ -85,6 +86,12 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedTesterAccessRoute =
+  AuthenticatedTesterAccessRouteImport.update({
+    id: '/tester-access',
+    path: '/tester-access',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedSeatsRoute = AuthenticatedSeatsRouteImport.update({
   id: '/seats',
   path: '/seats',
@@ -299,6 +306,7 @@ export interface FileRoutesByFullPath {
   '/school-crm': typeof AuthenticatedSchoolCrmRoute
   '/school-storage': typeof AuthenticatedSchoolStorageRoute
   '/seats': typeof AuthenticatedSeatsRoute
+  '/tester-access': typeof AuthenticatedTesterAccessRoute
   '/account/ai-cost': typeof AuthenticatedAccountAiCostRoute
   '/account/usage': typeof AuthenticatedAccountUsageRoute
   '/curriculum/proposals': typeof AuthenticatedCurriculumProposalsRoute
@@ -341,6 +349,7 @@ export interface FileRoutesByTo {
   '/school-crm': typeof AuthenticatedSchoolCrmRoute
   '/school-storage': typeof AuthenticatedSchoolStorageRoute
   '/seats': typeof AuthenticatedSeatsRoute
+  '/tester-access': typeof AuthenticatedTesterAccessRoute
   '/account/ai-cost': typeof AuthenticatedAccountAiCostRoute
   '/account/usage': typeof AuthenticatedAccountUsageRoute
   '/curriculum/proposals': typeof AuthenticatedCurriculumProposalsRoute
@@ -385,6 +394,7 @@ export interface FileRoutesById {
   '/_authenticated/school-crm': typeof AuthenticatedSchoolCrmRoute
   '/_authenticated/school-storage': typeof AuthenticatedSchoolStorageRoute
   '/_authenticated/seats': typeof AuthenticatedSeatsRoute
+  '/_authenticated/tester-access': typeof AuthenticatedTesterAccessRoute
   '/_authenticated/account/ai-cost': typeof AuthenticatedAccountAiCostRoute
   '/_authenticated/account/usage': typeof AuthenticatedAccountUsageRoute
   '/_authenticated/curriculum/proposals': typeof AuthenticatedCurriculumProposalsRoute
@@ -429,6 +439,7 @@ export interface FileRouteTypes {
     | '/school-crm'
     | '/school-storage'
     | '/seats'
+    | '/tester-access'
     | '/account/ai-cost'
     | '/account/usage'
     | '/curriculum/proposals'
@@ -471,6 +482,7 @@ export interface FileRouteTypes {
     | '/school-crm'
     | '/school-storage'
     | '/seats'
+    | '/tester-access'
     | '/account/ai-cost'
     | '/account/usage'
     | '/curriculum/proposals'
@@ -514,6 +526,7 @@ export interface FileRouteTypes {
     | '/_authenticated/school-crm'
     | '/_authenticated/school-storage'
     | '/_authenticated/seats'
+    | '/_authenticated/tester-access'
     | '/_authenticated/account/ai-cost'
     | '/_authenticated/account/usage'
     | '/_authenticated/curriculum/proposals'
@@ -601,6 +614,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/tester-access': {
+      id: '/_authenticated/tester-access'
+      path: '/tester-access'
+      fullPath: '/tester-access'
+      preLoaderRoute: typeof AuthenticatedTesterAccessRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/seats': {
       id: '/_authenticated/seats'
@@ -868,6 +888,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSchoolCrmRoute: typeof AuthenticatedSchoolCrmRoute
   AuthenticatedSchoolStorageRoute: typeof AuthenticatedSchoolStorageRoute
   AuthenticatedSeatsRoute: typeof AuthenticatedSeatsRoute
+  AuthenticatedTesterAccessRoute: typeof AuthenticatedTesterAccessRoute
   AuthenticatedAccountAiCostRoute: typeof AuthenticatedAccountAiCostRoute
   AuthenticatedAccountUsageRoute: typeof AuthenticatedAccountUsageRoute
   AuthenticatedCurriculumProposalsRoute: typeof AuthenticatedCurriculumProposalsRoute
@@ -900,6 +921,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSchoolCrmRoute: AuthenticatedSchoolCrmRoute,
   AuthenticatedSchoolStorageRoute: AuthenticatedSchoolStorageRoute,
   AuthenticatedSeatsRoute: AuthenticatedSeatsRoute,
+  AuthenticatedTesterAccessRoute: AuthenticatedTesterAccessRoute,
   AuthenticatedAccountAiCostRoute: AuthenticatedAccountAiCostRoute,
   AuthenticatedAccountUsageRoute: AuthenticatedAccountUsageRoute,
   AuthenticatedCurriculumProposalsRoute: AuthenticatedCurriculumProposalsRoute,

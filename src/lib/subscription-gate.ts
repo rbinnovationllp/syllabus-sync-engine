@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Server-side subscription guard for AI generation and export endpoints.
  * Wrap any server function that costs AI credits or produces a downloadable
  * artifact so unpaid users can't extract value from the demo.
@@ -17,6 +17,12 @@ export async function requireActiveSubscription(
   userId: string,
   env: "sandbox" | "live" = "live",
 ): Promise<SubscriptionGate> {
+    const { data: tester } = await supabase.rpc("is_active_tester", {
+    user_uuid: userId,
+    feature: "exports",
+  });
+  if (tester === true) return { ok: true };
+
   const { data, error } = await supabase.rpc("has_active_subscription", {
     user_uuid: userId,
     check_env: env,
@@ -26,4 +32,5 @@ export async function requireActiveSubscription(
 }
 
 /** Use in pre-paid PDF/DOCX generation to stamp every page when caller is unpaid. */
-export const DEMO_WATERMARK_TEXT = "DEMO — Not Licensed for Production Use";
+export const DEMO_WATERMARK_TEXT = "DEMO â€” Not Licensed for Production Use";
+
