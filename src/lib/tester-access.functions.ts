@@ -25,6 +25,7 @@ const grantInput = z.object({
   ends_at: z.string().datetime().optional().nullable(),
   notes: z.string().max(2000).optional().nullable(),
   invite_email: z.boolean().optional().default(false),
+  admin_code: z.string().min(1),
 });
 
 const updateInput = z.object({
@@ -35,7 +36,14 @@ const updateInput = z.object({
   ends_at: z.string().datetime().optional().nullable(),
   notes: z.string().max(2000).optional().nullable(),
   status: z.enum(["invited", "active", "revoked", "expired"]).optional(),
+  admin_code: z.string().min(1),
 });
+
+function requireTesterAdminCode(code: string) {
+  const expected = process.env.TESTER_ACCESS_ADMIN_CODE ?? process.env.ADMIN_PROMOTION_CODE;
+  if (!expected) throw new Error("Tester access admin code is not configured.");
+  if (code !== expected) throw new Error("Invalid Super Admin confirmation code.");
+}
 
 async function assertSuperAdmin(context: { supabase: any; userId: string }) {
   const { data, error } = await context.supabase
@@ -122,6 +130,7 @@ export const grantTesterAccess = createServerFn({ method: "POST" })
   .inputValidator((i: unknown) => grantInput.parse(i))
   .handler(async ({ data, context }) => {
     await assertSuperAdmin(context);
+    requireTesterAdminCode(data.admin_code);
     const admin = await adminClient();
     const user = await findUserByEmail(data.email);
     const flags = moduleFlags(data.modules, data.access_scope);
@@ -171,6 +180,7 @@ export const updateTesterAccess = createServerFn({ method: "POST" })
   .inputValidator((i: unknown) => updateInput.parse(i))
   .handler(async ({ data, context }) => {
     await assertSuperAdmin(context);
+    requireTesterAdminCode(data.admin_code);
     const admin = await adminClient();
     const update: Record<string, unknown> = { updated_at: new Date().toISOString() };
 
@@ -201,9 +211,10 @@ export const updateTesterAccess = createServerFn({ method: "POST" })
 
 export const revokeTesterAccess = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i: unknown) => z.object({ id: z.string().uuid() }).parse(i))
+  .inputValidator((i: unknown) => z.object({ id: z.string().uuid(), admin_code: z.string().min(1) }).parse(i))
   .handler(async ({ data, context }) => {
     await assertSuperAdmin(context);
+    requireTesterAdminCode(data.admin_code);
     const admin = await adminClient();
     const update = {
       status: "revoked",
@@ -221,3 +232,4 @@ export const revokeTesterAccess = createServerFn({ method: "POST" })
     await logTesterAudit(context, "tester_access.revoked", data.id, {});
     return row;
   });
+
