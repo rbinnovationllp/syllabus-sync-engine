@@ -18,6 +18,7 @@ import {
   Globe2,
   ShieldCheck,
   Zap,
+  ClipboardList,
   LineChart,
   ArrowRight,
   CheckCircle2,
@@ -398,6 +399,12 @@ function HowItWorks() {
       d: "Calendars, lesson plans, training, exports.",
       icon: Zap,
     },
+    {
+      n: "05",
+      t: "Generate class test / exam paper",
+      d: "Select subject, class, exam type, and chapter range so teachers can choose from which chapter to which chapter the paper should be generated.",
+      icon: ClipboardList,
+    },
   ];
   return (
     <section id="how" className="bg-gradient-to-b from-white via-indigo-50/40 to-white py-24">
@@ -410,7 +417,7 @@ function HowItWorks() {
             From blank slate to bulletproof plan
           </h2>
         </div>
-        <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-5">
           {steps.map((s) => (
             <div
               key={s.n}
@@ -743,3 +750,5 @@ function Footer() {
     </footer>
   );
 }
+
+
