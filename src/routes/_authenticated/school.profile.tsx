@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+﻿import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { z } from "zod";
@@ -17,11 +17,12 @@ import {
 import { Lock, Pencil, Loader2, History } from "lucide-react";
 import { listMyAcademicYears } from "@/lib/onboarding.functions";
 import { getSchoolProfile, listProfileAuditLog } from "@/lib/school-profile.functions";
+import { acquisitionDetailLabel, acquisitionSourceLabel } from "@/lib/acquisition";
 
 const searchSchema = z.object({ year: z.string().uuid().optional() });
 
 export const Route = createFileRoute("/_authenticated/school/profile")({
-  head: () => ({ meta: [{ title: "Master School Profile — CurriculumOS" }] }),
+  head: () => ({ meta: [{ title: "Master School Profile â€” CurriculumOS" }] }),
   validateSearch: searchSchema,
   component: SchoolProfilePage,
 });
@@ -119,12 +120,16 @@ function SchoolProfilePage() {
             <Row k="State" v={school?.state_province} />
             <Row k="City" v={school?.city} />
             <Row k="Fee tier" v={school?.fee_tier} />
-            <Row k="Currency" v={school?.currency} />
+                        <Row k="Currency" v={school?.currency} />
+            <Row k="Acquisition source" v={acquisitionSourceLabel(school?.acquisition_source)} />
+            <Row k="Acquisition channel" v={acquisitionDetailLabel(school?.acquisition_source, school?.acquisition_detail)} />
+            <Row k="Partner / referral" v={school?.partner_referral_code || school?.partner_name} />
+            <Row k="Attribution" v={school?.attribution_label} />
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader><CardTitle className="text-base">Academic year — {year.label}</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="text-base">Academic year â€” {year.label}</CardTitle></CardHeader>
           <CardContent className="text-sm space-y-1">
             <Row k="Start" v={year.start_date} />
             <Row k="End" v={year.end_date} />
@@ -136,11 +141,11 @@ function SchoolProfilePage() {
         </Card>
 
         <ProfileList title={`Holidays (${p.holidays.length})`} rows={p.holidays.map((h: any) => ({ a: h.date, b: h.name }))} />
-        <ProfileList title={`Vacations (${p.vacations.length})`} rows={p.vacations.map((v: any) => ({ a: `${v.start_date} → ${v.end_date}`, b: v.name }))} />
+        <ProfileList title={`Vacations (${p.vacations.length})`} rows={p.vacations.map((v: any) => ({ a: `${v.start_date} â†’ ${v.end_date}`, b: v.name }))} />
         <ProfileList title={`Events (${p.events.length})`} rows={p.events.map((e: any) => ({ a: e.date, b: `${e.name}${e.prep_days ? ` (+${e.prep_days}d prep)` : ""}` }))} />
-        <ProfileList title={`Exam windows (${p.exams.length})`} rows={p.exams.map((e: any) => ({ a: `${e.start_date} → ${e.end_date}`, b: e.name }))} />
+        <ProfileList title={`Exam windows (${p.exams.length})`} rows={p.exams.map((e: any) => ({ a: `${e.start_date} â†’ ${e.end_date}`, b: e.name }))} />
         <ProfileList title={`Training days (${p.training.length})`} rows={p.training.map((t: any) => ({ a: t.date, b: t.name ?? "Teacher training" }))} />
-        <ProfileList title={`Subjects (${p.grade_subjects.length})`} rows={p.grade_subjects.map((g: any) => ({ a: `Grade ${g.grade}`, b: `${g.subject} — ${g.periods_per_week}/wk` }))} />
+        <ProfileList title={`Subjects (${p.grade_subjects.length})`} rows={p.grade_subjects.map((g: any) => ({ a: `Grade ${g.grade}`, b: `${g.subject} â€” ${g.periods_per_week}/wk` }))} />
       </div>
 
       {p.textbooks.length > 0 && (
@@ -153,9 +158,9 @@ function SchoolProfilePage() {
                 {p.textbooks.map((t: any) => (
                   <TableRow key={t.id}>
                     <TableCell>{t.title}</TableCell>
-                    <TableCell>{t.author ?? "—"}</TableCell>
-                    <TableCell>{t.publisher ?? "—"}</TableCell>
-                    <TableCell>{t.edition_year ?? "—"}</TableCell>
+                    <TableCell>{t.author ?? "â€”"}</TableCell>
+                    <TableCell>{t.publisher ?? "â€”"}</TableCell>
+                    <TableCell>{t.edition_year ?? "â€”"}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -172,7 +177,7 @@ function SchoolProfilePage() {
           </CardHeader>
           <CardContent className="text-sm">
             {audit.isLoading ? (
-              <div className="text-muted-foreground">Loading…</div>
+              <div className="text-muted-foreground">Loadingâ€¦</div>
             ) : !audit.data || audit.data.length === 0 ? (
               <div className="text-muted-foreground">No changes recorded yet.</div>
             ) : (
@@ -182,7 +187,7 @@ function SchoolProfilePage() {
                   {audit.data.map((row: any) => (
                     <TableRow key={row.id}>
                       <TableCell className="whitespace-nowrap">{new Date(row.created_at).toLocaleString()}</TableCell>
-                      <TableCell>{row.actor_email ?? "—"}</TableCell>
+                      <TableCell>{row.actor_email ?? "â€”"}</TableCell>
                       <TableCell>{row.action}</TableCell>
                       <TableCell>{row.target_type}</TableCell>
                     </TableRow>
@@ -201,7 +206,7 @@ function Row({ k, v }: { k: string; v: any }) {
   return (
     <div className="flex justify-between gap-4">
       <span className="text-muted-foreground">{k}</span>
-      <span className="font-medium text-right">{v ?? "—"}</span>
+      <span className="font-medium text-right">{v ?? "â€”"}</span>
     </div>
   );
 }
@@ -227,3 +232,4 @@ function ProfileList({ title, rows }: { title: string; rows: { a: string; b: str
     </Card>
   );
 }
+

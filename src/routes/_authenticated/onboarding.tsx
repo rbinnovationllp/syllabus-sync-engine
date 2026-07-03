@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+﻿import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useRef, useState } from "react";
 import { getDefaultHolidays, hasCountryDefaults } from "@/lib/default-holidays";
@@ -17,6 +17,7 @@ import { BOARDS, FEE_TIERS, CURRENCIES, GRADES, BENCHMARK_DEFAULTS } from "@/lib
 import { sessionEndForStart, sessionLabel, getStreams, getSubjects, inferSubjectKind, SUBJECT_OTHER } from "@/lib/subject-catalog";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useDraftState } from "@/hooks/useDraftState";
+import { AcquisitionSourceFields } from "@/components/AcquisitionSourceFields";
 
 export const Route = createFileRoute("/_authenticated/onboarding")({
   component: OnboardingRouter,
@@ -43,7 +44,7 @@ function OnboardingRouter() {
     );
   }
 
-  // Retail tier is tutor-only — lock to tutor flow regardless of stored choice.
+  // Retail tier is tutor-only â€” lock to tutor flow regardless of stored choice.
   const effectiveType: ProfileType | null = tier === "retail_single_access" ? "tutor" : profileType;
 
   function choose(type: ProfileType) {
@@ -91,7 +92,7 @@ function ProfileTypeChooser({ onChoose }: { onChoose: (t: ProfileType) => void }
             <div className="text-lg font-semibold mb-1">Private Tutor</div>
             <p className="text-sm text-muted-foreground">
               You teach one class / one subject from a textbook. Quick 2-step setup: book details,
-              period duration, holidays and exam dates — no school profile required.
+              period duration, holidays and exam dates â€” no school profile required.
             </p>
           </button>
         </div>
@@ -101,7 +102,7 @@ function ProfileTypeChooser({ onChoose }: { onChoose: (t: ProfileType) => void }
 }
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-const WORKDAYS = [1, 2, 3, 4, 5, 6]; // Mon–Sat checkbox options for per-subject cadence
+const WORKDAYS = [1, 2, 3, 4, 5, 6]; // Monâ€“Sat checkbox options for per-subject cadence
 const SENIOR_GRADES = ["9", "10", "11", "12"];
 
 function makeGS(grade: string, stream: string, subject: string, periods = 5): import("@/lib/onboarding-schema").Step3["grade_subjects"][number] {
@@ -122,7 +123,8 @@ function OnboardingWizard({ onSwitchType }: { onSwitchType?: () => void }) {
   const [saving, setSaving] = useState(false);
 
   const [s1, setS1, clearS1] = useDraftState<Step1>("curriculumos.onboarding.s1", {
-    school_name: "", region: "", country: "", state_province: "", city: "", board: "cbse",
+        school_name: "", region: "", country: "", state_province: "", city: "", board: "cbse",
+    acquisition_source: "", acquisition_detail: "", partner_name: "", partner_referral_code: "", other_source: "",
   });
   const [s2, setS2, clearS2] = useDraftState<Step2>("curriculumos.onboarding.s2", {
     monthly_fee_per_student: undefined, currency: "USD", fee_tier: "mid", textbooks: [],
@@ -162,7 +164,7 @@ function OnboardingWizard({ onSwitchType }: { onSwitchType?: () => void }) {
   const progress = (step / 4) * 100;
 
   // Auto-prefill national / state holidays the first time the admin lands on
-  // step 4 with an empty holiday list. The list stays fully editable — every
+  // step 4 with an empty holiday list. The list stays fully editable â€” every
   // row can be removed and new ones can be added at any time.
   const holidayPrefillRef = useRef(false);
   useEffect(() => {
@@ -204,7 +206,7 @@ function OnboardingWizard({ onSwitchType }: { onSwitchType?: () => void }) {
     setSaving(true);
     try {
       const result = await submit({ data: parsed.data });
-      toast.success(`Plan ready — ${result.breakdown.t_available} teaching days available.`);
+      toast.success(`Plan ready â€” ${result.breakdown.t_available} teaching days available.`);
       // Clear drafts after a successful submission so the next year starts fresh.
       clearS1(); clearS2(); clearS3(); clearS4(); clearStep();
       navigate({ to: "/results/$yearId", params: { yearId: result.academic_year_id } });
@@ -259,7 +261,7 @@ function OnboardingWizard({ onSwitchType }: { onSwitchType?: () => void }) {
                   <Input value={s1.city} onChange={(e) => setS1({ ...s1, city: e.target.value })} />
                 </Field>
               </div>
-              <Field label="Examination board" required>
+                            <Field label="Examination board" required>
                 <Select value={s1.board} onValueChange={(v) => setS1({ ...s1, board: v })}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
@@ -267,6 +269,7 @@ function OnboardingWizard({ onSwitchType }: { onSwitchType?: () => void }) {
                   </SelectContent>
                 </Select>
               </Field>
+              <AcquisitionSourceFields value={s1} onChange={(next) => setS1({ ...s1, ...next })} />
             </CardContent>
           </Card>
         )}
@@ -305,7 +308,7 @@ function OnboardingWizard({ onSwitchType }: { onSwitchType?: () => void }) {
                   </Button>
                 </div>
                 {s2.textbooks.length === 0 ? (
-                  <p className="text-xs text-muted-foreground p-3 border rounded">No books added — AI will recommend a tier-matched set.</p>
+                  <p className="text-xs text-muted-foreground p-3 border rounded">No books added â€” AI will recommend a tier-matched set.</p>
                 ) : (
                   <div className="space-y-2">
                     {s2.textbooks.map((tb, i) => (
@@ -350,7 +353,7 @@ function OnboardingWizard({ onSwitchType }: { onSwitchType?: () => void }) {
               </div>
               <p className="text-xs text-muted-foreground -mt-2">
                 End date is auto-filled to match the {s1.country || "selected country"} academic session
-                {" "}(India: April → 31 March). You can override it if your school differs.
+                {" "}(India: April â†’ 31 March). You can override it if your school differs.
               </p>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 <Field label="Working days/week">
@@ -426,7 +429,7 @@ function OnboardingWizard({ onSwitchType }: { onSwitchType?: () => void }) {
 
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <Label>Subjects & co-curricular activities (min 6 — add as many as your school needs)</Label>
+                  <Label>Subjects & co-curricular activities (min 6 â€” add as many as your school needs)</Label>
                   <Button type="button" size="sm" variant="outline"
                     onClick={() => {
                       const last = s3.grade_subjects[s3.grade_subjects.length - 1];
@@ -440,8 +443,8 @@ function OnboardingWizard({ onSwitchType }: { onSwitchType?: () => void }) {
                 </div>
                 <p className="text-xs text-muted-foreground mb-2">
                   Mix core subjects (Math, English, Science, <b>Computer Science</b>, etc.) with co-curricular periods (Sports, Music, Dance, Art & Craft, Karate, etc.).
-                  Most schools run 6–9 subjects per grade — use <b>+ Add subject row</b> for every subject taught so the timetable can schedule all of them.
-                  For Grades 11–12, pick a <b>stream</b> first to filter electives. Pick <b>"Other"</b> to type any custom subject name.
+                  Most schools run 6â€“9 subjects per grade â€” use <b>+ Add subject row</b> for every subject taught so the timetable can schedule all of them.
+                  For Grades 11â€“12, pick a <b>stream</b> first to filter electives. Pick <b>"Other"</b> to type any custom subject name.
                   Use <b>weekdays</b> to schedule alternate-day subjects common in senior grades.
                 </p>
                 <div className="space-y-2">
@@ -539,7 +542,7 @@ function OnboardingWizard({ onSwitchType }: { onSwitchType?: () => void }) {
                           <Label className="text-xs">Chapters already completed (optional)</Label>
                           <Input
                             className="h-8 text-sm"
-                            placeholder="e.g. Ch 1: Number Systems, Ch 2: Polynomials — AI will plan the remaining syllabus from where you stopped"
+                            placeholder="e.g. Ch 1: Number Systems, Ch 2: Polynomials â€” AI will plan the remaining syllabus from where you stopped"
                             value={gs.completed_chapters ?? ""}
                             onChange={(e) => setRow({ ...gs, completed_chapters: e.target.value })}
                           />
@@ -755,7 +758,12 @@ function TutorWizard({ onSwitchType }: { onSwitchType?: () => void }) {
         country: "N/A",
         state_province: "",
         city: "",
-        board: "custom",
+                board: "custom",
+        acquisition_source: "direct_website",
+        acquisition_detail: "",
+        partner_name: "",
+        partner_referral_code: "",
+        other_source: "",
       },
       step2: {
         currency: "USD",
@@ -807,7 +815,7 @@ function TutorWizard({ onSwitchType }: { onSwitchType?: () => void }) {
     setSaving(true);
     try {
       const result = await submit({ data: parsed.data });
-      toast.success(`Plan ready — ${result.breakdown.t_available} teaching days available.`);
+      toast.success(`Plan ready â€” ${result.breakdown.t_available} teaching days available.`);
       clearTutorName(); clearGrade(); clearSubject(); clearBook();
       clearPeriodDuration(); clearPeriodsPerWeek(); clearStartDate(); clearEndDate();
       clearS4(); clearStep();
@@ -842,7 +850,7 @@ function TutorWizard({ onSwitchType }: { onSwitchType?: () => void }) {
             <CardHeader>
               <CardTitle>Your class & textbook</CardTitle>
               <CardDescription>
-                Built for individual tutors and coaching institutes — only the essentials needed
+                Built for individual tutors and coaching institutes â€” only the essentials needed
                 to plan your course schedule.
               </CardDescription>
             </CardHeader>
@@ -871,7 +879,7 @@ function TutorWizard({ onSwitchType }: { onSwitchType?: () => void }) {
                   <SmallInput label="Edition year" type="number" value={book.edition_year} onChange={(v) => setBook({ ...book, edition_year: v })} />
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Edition year matters — chapter content changes between editions.
+                  Edition year matters â€” chapter content changes between editions.
                 </p>
               </div>
 
@@ -967,3 +975,4 @@ function TutorWizard({ onSwitchType }: { onSwitchType?: () => void }) {
     </AppShell>
   );
 }
+

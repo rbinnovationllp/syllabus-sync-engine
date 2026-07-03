@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import { createLead } from "@/lib/admin.functions";
 import { getPublicSiteStats } from "@/lib/site-analytics.functions";
+import { AcquisitionSourceFields } from "@/components/AcquisitionSourceFields";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -567,6 +568,10 @@ function Contact() {
     country: "",
     board: "",
     message: "",
+    acquisition_source: "",
+    acquisition_detail: "",
+    partner_code: "",
+    referred_by: "",
   });
   const m = useMutation({
     mutationFn: () => fn({ data: form }),
@@ -580,6 +585,10 @@ function Contact() {
         country: "",
         board: "",
         message: "",
+        acquisition_source: "",
+        acquisition_detail: "",
+        partner_code: "",
+        referred_by: "",
       });
     },
     onError: (e: unknown) =>
@@ -683,6 +692,10 @@ function Contact() {
                   <Label htmlFor="m">How can we help?</Label>
                   <Textarea id="m" rows={3} value={form.message} onChange={set("message")} />
                 </div>
+                <AcquisitionSourceFields
+                  value={form}
+                  onChange={(next) => setForm({ ...form, ...next })}
+                />
                 <Button
                   type="submit"
                   disabled={m.isPending}

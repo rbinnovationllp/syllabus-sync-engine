@@ -1,9 +1,10 @@
-import { createServerFn } from "@tanstack/react-start";
+﻿import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 import { fullOnboardingSchema } from "./onboarding-schema";
 import { calculateCapacity } from "./capacity-engine";
 import { friendlyOrgMemberError, logOrgMemberBootstrap } from "./org-errors";
+import { attributionLabelForSource } from "@/lib/acquisition";
 
 export const submitOnboarding = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -50,10 +51,30 @@ export const submitOnboarding = createServerFn({ method: "POST" })
         monthly_fee_per_student: step2.monthly_fee_per_student ?? null,
         currency: step2.currency,
         fee_tier: step2.fee_tier,
+        acquisition_source: step1.acquisition_source,
+        acquisition_detail: step1.acquisition_detail || null,
+        partner_name: step1.partner_name || null,
+        partner_referral_code: step1.partner_referral_code || null,
+        other_source: step1.other_source || null,
+        attribution_label: attributionLabelForSource(step1.acquisition_source),
+        acquisition_locked_at: new Date().toISOString(),
       })
       .select()
       .single();
     if (schErr || !school) throw new Error(`Failed to create school: ${schErr?.message}`);
+
+    await supabaseAdmin.from("acquisition_attributions").insert({
+      user_id: userId,
+      org_id: org.id,
+      school_id: school.id,
+      acquisition_source: step1.acquisition_source,
+      acquisition_detail: step1.acquisition_detail || null,
+      partner_name: step1.partner_name || null,
+      partner_referral_code: step1.partner_referral_code || null,
+      other_source: step1.other_source || null,
+      attribution_label: attributionLabelForSource(step1.acquisition_source),
+      locked_at: new Date().toISOString(),
+    });
 
     // 4. Academic year
     const { data: year, error: yrErr } = await supabase
@@ -213,3 +234,4 @@ export const getYearResults = createServerFn({ method: "POST" })
       grade_subjects: gs.data ?? [],
     };
   });
+

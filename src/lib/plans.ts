@@ -76,9 +76,9 @@ export type AiAction = keyof typeof AI_ACTION_COSTS;
 function prices(id: string, usd: number, inr: number, usdDisplay: string, inrDisplay: string): PlanPrice[] {
   return [
     { priceId: `${id}_monthly_usd`, amount: usd * 100, currency: "usd", display: `$${usdDisplay}/mo`, interval: "monthly" },
-    { priceId: `${id}_monthly_inr`, amount: inr * 100, currency: "inr", display: `Rs. ${inrDisplay}/mo`, interval: "monthly" },
+    { priceId: `${id}_monthly_inr`, amount: inr * 100, currency: "inr", display: `Rs. ${inrDisplay}/mo + GST`, interval: "monthly" },
     { priceId: `${id}_annual_usd`, amount: usd * 1000, currency: "usd", display: `$${Number(usdDisplay.replace(/,/g, "")) * 10}/yr`, interval: "annual" },
-    { priceId: `${id}_annual_inr`, amount: inr * 1000, currency: "inr", display: `Rs. ${inr * 10}/yr`, interval: "annual" },
+    { priceId: `${id}_annual_inr`, amount: inr * 1000, currency: "inr", display: `Rs. ${inr * 10}/yr + GST`, interval: "annual" },
   ];
 }
 
@@ -528,6 +528,7 @@ export function planDisplayRestrictions(plan: Plan, currency: Currency): string[
     r.replace("{extra_user_price}", extraUser).replace("{extra_campus_price}", extraCampus),
   );
 }
+
 
 
 

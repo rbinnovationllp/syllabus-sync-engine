@@ -5,6 +5,8 @@ import { useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { getCompanyCrmOperations, createCompanySupportTicket, updateCompanySupportTicketStatus } from "@/lib/company-crm.functions";
 import { getVisitorConversionReport } from "@/lib/site-analytics.functions";
+import { getAcquisitionReport } from "@/lib/acquisition.functions";
+import { acquisitionSourceLabel } from "@/lib/acquisition";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,8 +24,10 @@ export const Route = createFileRoute("/_authenticated/company-crm")({
 });
 
 function CompanyCrmPage() {
-  const fn = useServerFn(getCompanyCrmOperations);
-  const q = useQuery({ queryKey: ["company-crm-ops"], queryFn: () => fn() });
+    const fn = useServerFn(getCompanyCrmOperations);
+  const acquisitionFn = useServerFn(getAcquisitionReport);
+    const q = useQuery({ queryKey: ["company-crm-ops"], queryFn: () => fn() });
+  const acquisition = useQuery({ queryKey: ["acquisition-report"], queryFn: () => acquisitionFn() });
 
   if (q.isLoading) {
     return <AppShell title="Company CRM"><div className="flex min-h-[50vh] items-center justify-center"><Loader2 className="h-6 w-6 animate-spin" /></div></AppShell>;
@@ -65,7 +69,8 @@ function CompanyCrmPage() {
           <Metric icon={IndianRupee} label="Open pipeline" value={`Rs ${Math.round(d.metrics.openPipelineInr).toLocaleString()}`} />
         </div>
 
-        <ConversionReportPanel report={conversion.data} isLoading={conversion.isLoading} />
+                <ConversionReportPanel report={conversion.data} isLoading={conversion.isLoading} />
+        <AcquisitionReportPanel report={acquisition.data} isLoading={acquisition.isLoading} />
 
         <Tabs defaultValue="subscriptions" className="space-y-4">
           <TabsList className="grid w-full max-w-4xl grid-cols-4">
@@ -333,3 +338,62 @@ function CatalogPanel({ rows }: any) {
 }
 
 
+
+function AcquisitionReportPanel({ report, isLoading }: { report: any; isLoading: boolean }) {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Acquisition & referral attribution</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {isLoading ? (
+          <div className="text-sm text-muted-foreground">Loading acquisition report...</div>
+        ) : !report ? (
+          <div className="text-sm text-muted-foreground">No acquisition report available.</div>
+        ) : (
+          <>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow><TableHead>Source</TableHead><TableHead>Leads</TableHead><TableHead>Customers</TableHead><TableHead>Subscriptions</TableHead><TableHead>Conversion</TableHead></TableRow>
+                </TableHeader>
+                <TableBody>
+                  {report.bySource.map((row: any) => (
+                    <TableRow key={row.source}>
+                      <TableCell>{acquisitionSourceLabel(row.source)}</TableCell>
+                      <TableCell>{row.leads}</TableCell>
+                      <TableCell>{row.customers}</TableCell>
+                      <TableCell>{row.subscriptions}</TableCell>
+                      <TableCell>{row.leads ? `${Math.round((row.customers / row.leads) * 100)}%` : "-"}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow><TableHead>Partner / code</TableHead><TableHead>Leads</TableHead><TableHead>Customers</TableHead><TableHead>Subscriptions</TableHead><TableHead>Commission</TableHead></TableRow>
+                </TableHeader>
+                <TableBody>
+                  {report.byPartner.length === 0 ? (
+                    <TableRow><TableCell colSpan={5} className="text-muted-foreground">No partner-attributed revenue yet.</TableCell></TableRow>
+                  ) : report.byPartner.map((row: any) => (
+                    <TableRow key={row.partner}>
+                      <TableCell>{row.partner}</TableCell>
+                      <TableCell>{row.leads}</TableCell>
+                      <TableCell>{row.customers}</TableCell>
+                      <TableCell>{row.subscriptions}</TableCell>
+                      <TableCell>{row.commission_status}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+            <p className="text-xs text-muted-foreground">{report.directCompanyRevenueNote}</p>
+          </>
+        )}
+      </CardContent>
+    </Card>
+  );
+}

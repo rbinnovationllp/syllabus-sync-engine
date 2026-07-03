@@ -1,6 +1,7 @@
 ﻿import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
+import { attributionLabelForSource } from "@/lib/acquisition";
 
 const SUPPORT_EMAIL = process.env.SUPPORT_EMAIL || "support@syllabus-synk.in";
 const LEAD_NOTIFICATION_EMAIL = process.env.LEAD_NOTIFICATION_EMAIL || "rbinnovationllp@gmail.com";
@@ -12,7 +13,12 @@ const leadSchema = z.object({
   school_name: z.string().trim().max(200).optional().nullable(),
   country: z.string().trim().max(80).optional().nullable(),
   board: z.string().trim().max(80).optional().nullable(),
-  message: z.string().trim().max(2000).optional().nullable(),
+    message: z.string().trim().max(2000).optional().nullable(),
+  acquisition_source: z.string().trim().min(1, "Required"),
+  acquisition_detail: z.string().trim().max(120).optional().nullable(),
+  partner_name: z.string().trim().max(200).optional().nullable(),
+  partner_referral_code: z.string().trim().max(120).optional().nullable(),
+  other_source: z.string().trim().max(200).optional().nullable(),
 });
 
 async function sendLeadNotificationEmail(data: z.infer<typeof leadSchema>) {
@@ -74,7 +80,13 @@ export const createLead = createServerFn({ method: "POST" })
       country: data.country ?? null,
       board: data.board ?? null,
       message: data.message ?? null,
-      source: "website",
+            source: "website",
+      acquisition_source: data.acquisition_source,
+      acquisition_detail: data.acquisition_detail ?? null,
+      partner_name: data.partner_name ?? null,
+      partner_referral_code: data.partner_referral_code ?? null,
+      other_source: data.other_source ?? null,
+      attribution_label: attributionLabelForSource(data.acquisition_source),
     });
         if (error) throw new Error(error.message);
     await sendLeadNotificationEmail(data);
@@ -297,4 +309,5 @@ export const getMyAdminStatus = createServerFn({ method: "GET" })
       isSuperAdmin: roles.includes("super_admin"),
     };
   });
+
 

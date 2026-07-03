@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { acceptInvitation, previewInvitation } from "@/lib/seats.functions";
+import { AcquisitionSourceFields } from "@/components/AcquisitionSourceFields";
 
 export const Route = createFileRoute("/auth")({
   validateSearch: (s: Record<string, unknown>) => ({
@@ -36,7 +37,14 @@ function AuthPage() {
   const [tab, setTab] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
+    const [name, setName] = useState("");
+  const [acquisition, setAcquisition] = useState({
+    acquisition_source: "",
+    acquisition_detail: "",
+    partner_name: "",
+    partner_referral_code: "",
+    other_source: "",
+  });
   const [invitePreview, setInvitePreview] = useState<{
     email: string;
     role: string;
@@ -99,7 +107,7 @@ function AuthPage() {
       password,
       options: {
         emailRedirectTo: typeof window !== "undefined" ? window.location.origin : undefined,
-        data: { full_name: name },
+        data: { full_name: name, ...acquisition },
       },
     });
     if (error) {
@@ -192,25 +200,7 @@ function AuthPage() {
                     </div>
                     <PasswordInput id="si-password" required value={password} onChange={(e) => setPassword(e.target.value)} />
                   </div>
-                  <Button type="submit" className="w-full" disabled={loading}>
-                    {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Sign in
-                  </Button>
-                </form>
-              </TabsContent>
-              <TabsContent value="signup" className="space-y-4 pt-4">
-                <form onSubmit={handleEmailSignUp} className="space-y-3">
-                  <div className="space-y-1.5">
-                    <Label htmlFor="su-name">Your name</Label>
-                    <Input id="su-name" required value={name} onChange={(e) => setName(e.target.value)} />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="su-email">Email</Label>
-                    <Input id="su-email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="su-password">Password</Label>
-                    <PasswordInput id="su-password" required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} />
-                  </div>
+                                    <AcquisitionSourceFields value={acquisition} onChange={setAcquisition} />
                   <Button type="submit" className="w-full" disabled={loading}>
                     {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Create account
                   </Button>
@@ -232,6 +222,7 @@ function AuthPage() {
     </div>
   );
 }
+
 
 
 

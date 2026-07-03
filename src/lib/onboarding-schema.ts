@@ -1,4 +1,4 @@
-import { z } from "zod";
+﻿import { z } from "zod";
 
 export const step1Schema = z.object({
   school_name: z.string().trim().min(1, "Required").max(200),
@@ -8,7 +8,12 @@ export const step1Schema = z.object({
   city: z.string().trim().max(100).optional().default(""),
   latitude: z.number().min(-90).max(90).optional(),
   longitude: z.number().min(-180).max(180).optional(),
-  board: z.string().min(1, "Required"),
+    board: z.string().min(1, "Required"),
+  acquisition_source: z.string().trim().min(1, "Required"),
+  acquisition_detail: z.string().trim().max(120).optional().default(""),
+  partner_name: z.string().trim().max(200).optional().default(""),
+  partner_referral_code: z.string().trim().max(120).optional().default(""),
+  other_source: z.string().trim().max(200).optional().default(""),
 });
 
 export const textbookSchema = z.object({
@@ -32,7 +37,7 @@ export const gradeSubjectSchema = z.object({
   stream: z.string().trim().max(50).optional().default(""),
   subject: z.string().trim().min(1).max(100),
   kind: z.enum(["core", "co_curricular"]).default("core"),
-  // 0 = Sunday … 6 = Saturday. Default Mon–Fri.
+  // 0 = Sunday â€¦ 6 = Saturday. Default Monâ€“Fri.
   weekdays: z.array(z.coerce.number().int().min(0).max(6)).min(1, "Pick at least one weekday").default([1, 2, 3, 4, 5]),
   periods_per_week: z.coerce.number().int().min(1).max(40),
   teacher_name: z.string().trim().max(200).optional().default(""),
@@ -101,3 +106,4 @@ export type Step1 = z.infer<typeof step1Schema>;
 export type Step2 = z.infer<typeof step2Schema>;
 export type Step3 = z.infer<typeof step3Schema>;
 export type Step4 = z.infer<typeof step4Schema>;
+
