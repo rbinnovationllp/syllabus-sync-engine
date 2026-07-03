@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Brain, LogOut, CreditCard, Shield, Users, Briefcase, Building2, Beaker } from "lucide-react";
+import { Brain, LogOut, CreditCard, Shield, Users, Briefcase, Building2, ClipboardCheck, Landmark } from "lucide-react";
 import { getMyAdminStatus } from "@/lib/admin.functions";
 import { NotificationBell } from "@/components/NotificationBell";
 
@@ -41,6 +41,16 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
             <Button asChild variant="ghost" size="sm">
               <Link to="/school-crm">
                 <Building2 className="h-4 w-4 mr-1" /> School CRM
+              </Link>
+            </Button>
+            <Button asChild variant="ghost" size="sm">
+              <Link to="/academic-execution">
+                <ClipboardCheck className="h-4 w-4 mr-1" /> Execution
+              </Link>
+            </Button>
+            <Button asChild variant="ghost" size="sm">
+              <Link to="/school-governance">
+                <Landmark className="h-4 w-4 mr-1" /> Governance
               </Link>
             </Button>
             {status?.isAdmin && (

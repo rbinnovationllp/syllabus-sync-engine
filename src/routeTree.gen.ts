@@ -19,6 +19,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedTesterAccessRouteImport } from './routes/_authenticated/tester-access'
 import { Route as AuthenticatedSeatsRouteImport } from './routes/_authenticated/seats'
 import { Route as AuthenticatedSchoolStorageRouteImport } from './routes/_authenticated/school-storage'
+import { Route as AuthenticatedSchoolGovernanceRouteImport } from './routes/_authenticated/school-governance'
 import { Route as AuthenticatedSchoolCrmRouteImport } from './routes/_authenticated/school-crm'
 import { Route as AuthenticatedPricingRouteImport } from './routes/_authenticated/pricing'
 import { Route as AuthenticatedPartnerRouteImport } from './routes/_authenticated/partner'
@@ -30,6 +31,7 @@ import { Route as AuthenticatedCompanyCrmRouteImport } from './routes/_authentic
 import { Route as AuthenticatedAuditTrailRouteImport } from './routes/_authenticated/audit-trail'
 import { Route as AuthenticatedAssignmentsRouteImport } from './routes/_authenticated/assignments'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
+import { Route as AuthenticatedAcademicExecutionRouteImport } from './routes/_authenticated/academic-execution'
 import { Route as AuthenticatedV2TeacherIntelligenceRouteImport } from './routes/_authenticated/v2.teacher-intelligence'
 import { Route as AuthenticatedV2StudentIntelligenceRouteImport } from './routes/_authenticated/v2.student-intelligence'
 import { Route as AuthenticatedV2PrincipalRouteImport } from './routes/_authenticated/v2.principal'
@@ -103,6 +105,12 @@ const AuthenticatedSchoolStorageRoute =
     path: '/school-storage',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedSchoolGovernanceRoute =
+  AuthenticatedSchoolGovernanceRouteImport.update({
+    id: '/school-governance',
+    path: '/school-governance',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedSchoolCrmRoute = AuthenticatedSchoolCrmRouteImport.update({
   id: '/school-crm',
   path: '/school-crm',
@@ -160,6 +168,12 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAcademicExecutionRoute =
+  AuthenticatedAcademicExecutionRouteImport.update({
+    id: '/academic-execution',
+    path: '/academic-execution',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedV2TeacherIntelligenceRoute =
   AuthenticatedV2TeacherIntelligenceRouteImport.update({
     id: '/v2/teacher-intelligence',
@@ -293,6 +307,7 @@ export interface FileRoutesByFullPath {
   '/partners': typeof PartnersRoute
   '/reset-password': typeof ResetPasswordRoute
   '/terms': typeof TermsRoute
+  '/academic-execution': typeof AuthenticatedAcademicExecutionRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/assignments': typeof AuthenticatedAssignmentsRoute
   '/audit-trail': typeof AuthenticatedAuditTrailRoute
@@ -304,6 +319,7 @@ export interface FileRoutesByFullPath {
   '/partner': typeof AuthenticatedPartnerRoute
   '/pricing': typeof AuthenticatedPricingRoute
   '/school-crm': typeof AuthenticatedSchoolCrmRoute
+  '/school-governance': typeof AuthenticatedSchoolGovernanceRoute
   '/school-storage': typeof AuthenticatedSchoolStorageRoute
   '/seats': typeof AuthenticatedSeatsRoute
   '/tester-access': typeof AuthenticatedTesterAccessRoute
@@ -336,6 +352,7 @@ export interface FileRoutesByTo {
   '/partners': typeof PartnersRoute
   '/reset-password': typeof ResetPasswordRoute
   '/terms': typeof TermsRoute
+  '/academic-execution': typeof AuthenticatedAcademicExecutionRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/assignments': typeof AuthenticatedAssignmentsRoute
   '/audit-trail': typeof AuthenticatedAuditTrailRoute
@@ -347,6 +364,7 @@ export interface FileRoutesByTo {
   '/partner': typeof AuthenticatedPartnerRoute
   '/pricing': typeof AuthenticatedPricingRoute
   '/school-crm': typeof AuthenticatedSchoolCrmRoute
+  '/school-governance': typeof AuthenticatedSchoolGovernanceRoute
   '/school-storage': typeof AuthenticatedSchoolStorageRoute
   '/seats': typeof AuthenticatedSeatsRoute
   '/tester-access': typeof AuthenticatedTesterAccessRoute
@@ -381,6 +399,7 @@ export interface FileRoutesById {
   '/partners': typeof PartnersRoute
   '/reset-password': typeof ResetPasswordRoute
   '/terms': typeof TermsRoute
+  '/_authenticated/academic-execution': typeof AuthenticatedAcademicExecutionRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/assignments': typeof AuthenticatedAssignmentsRoute
   '/_authenticated/audit-trail': typeof AuthenticatedAuditTrailRoute
@@ -392,6 +411,7 @@ export interface FileRoutesById {
   '/_authenticated/partner': typeof AuthenticatedPartnerRoute
   '/_authenticated/pricing': typeof AuthenticatedPricingRoute
   '/_authenticated/school-crm': typeof AuthenticatedSchoolCrmRoute
+  '/_authenticated/school-governance': typeof AuthenticatedSchoolGovernanceRoute
   '/_authenticated/school-storage': typeof AuthenticatedSchoolStorageRoute
   '/_authenticated/seats': typeof AuthenticatedSeatsRoute
   '/_authenticated/tester-access': typeof AuthenticatedTesterAccessRoute
@@ -426,6 +446,7 @@ export interface FileRouteTypes {
     | '/partners'
     | '/reset-password'
     | '/terms'
+    | '/academic-execution'
     | '/admin'
     | '/assignments'
     | '/audit-trail'
@@ -437,6 +458,7 @@ export interface FileRouteTypes {
     | '/partner'
     | '/pricing'
     | '/school-crm'
+    | '/school-governance'
     | '/school-storage'
     | '/seats'
     | '/tester-access'
@@ -469,6 +491,7 @@ export interface FileRouteTypes {
     | '/partners'
     | '/reset-password'
     | '/terms'
+    | '/academic-execution'
     | '/admin'
     | '/assignments'
     | '/audit-trail'
@@ -480,6 +503,7 @@ export interface FileRouteTypes {
     | '/partner'
     | '/pricing'
     | '/school-crm'
+    | '/school-governance'
     | '/school-storage'
     | '/seats'
     | '/tester-access'
@@ -513,6 +537,7 @@ export interface FileRouteTypes {
     | '/partners'
     | '/reset-password'
     | '/terms'
+    | '/_authenticated/academic-execution'
     | '/_authenticated/admin'
     | '/_authenticated/assignments'
     | '/_authenticated/audit-trail'
@@ -524,6 +549,7 @@ export interface FileRouteTypes {
     | '/_authenticated/partner'
     | '/_authenticated/pricing'
     | '/_authenticated/school-crm'
+    | '/_authenticated/school-governance'
     | '/_authenticated/school-storage'
     | '/_authenticated/seats'
     | '/_authenticated/tester-access'
@@ -636,6 +662,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSchoolStorageRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/school-governance': {
+      id: '/_authenticated/school-governance'
+      path: '/school-governance'
+      fullPath: '/school-governance'
+      preLoaderRoute: typeof AuthenticatedSchoolGovernanceRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/school-crm': {
       id: '/_authenticated/school-crm'
       path: '/school-crm'
@@ -711,6 +744,13 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/academic-execution': {
+      id: '/_authenticated/academic-execution'
+      path: '/academic-execution'
+      fullPath: '/academic-execution'
+      preLoaderRoute: typeof AuthenticatedAcademicExecutionRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/v2/teacher-intelligence': {
@@ -875,6 +915,7 @@ const AuthenticatedCrmRouteWithChildren =
   AuthenticatedCrmRoute._addFileChildren(AuthenticatedCrmRouteChildren)
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAcademicExecutionRoute: typeof AuthenticatedAcademicExecutionRoute
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedAssignmentsRoute: typeof AuthenticatedAssignmentsRoute
   AuthenticatedAuditTrailRoute: typeof AuthenticatedAuditTrailRoute
@@ -886,6 +927,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedPartnerRoute: typeof AuthenticatedPartnerRoute
   AuthenticatedPricingRoute: typeof AuthenticatedPricingRoute
   AuthenticatedSchoolCrmRoute: typeof AuthenticatedSchoolCrmRoute
+  AuthenticatedSchoolGovernanceRoute: typeof AuthenticatedSchoolGovernanceRoute
   AuthenticatedSchoolStorageRoute: typeof AuthenticatedSchoolStorageRoute
   AuthenticatedSeatsRoute: typeof AuthenticatedSeatsRoute
   AuthenticatedTesterAccessRoute: typeof AuthenticatedTesterAccessRoute
@@ -908,6 +950,7 @@ interface AuthenticatedRouteRouteChildren {
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAcademicExecutionRoute: AuthenticatedAcademicExecutionRoute,
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   AuthenticatedAssignmentsRoute: AuthenticatedAssignmentsRoute,
   AuthenticatedAuditTrailRoute: AuthenticatedAuditTrailRoute,
@@ -919,6 +962,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedPartnerRoute: AuthenticatedPartnerRoute,
   AuthenticatedPricingRoute: AuthenticatedPricingRoute,
   AuthenticatedSchoolCrmRoute: AuthenticatedSchoolCrmRoute,
+  AuthenticatedSchoolGovernanceRoute: AuthenticatedSchoolGovernanceRoute,
   AuthenticatedSchoolStorageRoute: AuthenticatedSchoolStorageRoute,
   AuthenticatedSeatsRoute: AuthenticatedSeatsRoute,
   AuthenticatedTesterAccessRoute: AuthenticatedTesterAccessRoute,
