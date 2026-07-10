@@ -32,10 +32,12 @@ export function RazorpaySubscriptionButton({
   priceId,
   label = "Pay with Razorpay",
   onStarted,
+  disabled = false,
 }: {
   priceId: string;
   label?: string;
   onStarted?: () => void;
+  disabled?: boolean;
 }) {
   const [loading, setLoading] = useState(false);
 
@@ -69,7 +71,7 @@ export function RazorpaySubscriptionButton({
   }
 
   return (
-    <Button onClick={start} disabled={loading} className="w-full">
+    <Button onClick={start} disabled={loading || disabled} className="w-full">
       {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
       {label}
     </Button>

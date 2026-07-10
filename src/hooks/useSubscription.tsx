@@ -10,6 +10,9 @@ interface SubscriptionRow {
   price_id: string;
   product_id: string;
   current_period_end: string | null;
+  grace_until?: string | null;
+  last_payment_failed_at?: string | null;
+  last_payment_failure_reason?: string | null;
   cancel_at_period_end: boolean | null;
   stripe_customer_id: string;
 }
@@ -18,7 +21,7 @@ async function fetchSubscription(userId: string): Promise<SubscriptionRow | null
   const env = getStripeEnvironment();
   const { data, error } = await supabase
     .from("subscriptions")
-    .select("id,status,price_id,product_id,current_period_end,cancel_at_period_end,stripe_customer_id,provider,razorpay_subscription_id")
+    .select("id,status,price_id,product_id,current_period_end,grace_until,last_payment_failed_at,last_payment_failure_reason,cancel_at_period_end,stripe_customer_id,provider,razorpay_subscription_id")
     .eq("user_id", userId)
     .order("created_at", { ascending: false })
     .limit(1)
@@ -60,10 +63,13 @@ export function useSubscription() {
   const row = query.data ?? null;
   const tier: TierId | null = tierForPriceId(row?.price_id);
   const plan = planForTier(tier);
+  const now = new Date();
+  const isPendingGrace = row?.status === "pending" && !!row.grace_until && new Date(row.grace_until) > now;
   const isActive = !!row && (
-    (["active", "trialing", "past_due"].includes(row.status) &&
+    (["active", "authenticated", "charged", "trialing", "past_due"].includes(row.status) &&
       (!row.current_period_end || new Date(row.current_period_end) > new Date()))
-    || (row.status === "canceled" && !!row.current_period_end && new Date(row.current_period_end) > new Date())
+    || isPendingGrace
+    || (["canceled", "cancelled"].includes(row.status) && !!row.current_period_end && new Date(row.current_period_end) > now)
   );
 
   return { subscription: row, tier, plan, isActive, isLoading: query.isLoading, userId };

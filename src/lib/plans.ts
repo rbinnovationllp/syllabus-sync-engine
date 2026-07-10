@@ -389,7 +389,16 @@ export const PLANS: Plan[] = [
   },
 ];
 
-export type AddOnId = "ai_credits_500" | "ai_credits_2k" | "ai_credits_10k" | "extra_campus" | "extra_user";
+export type AddOnId =
+  | "ai_credits_500"
+  | "ai_credits_2k"
+  | "ai_credits_10k"
+  | "extra_campus"
+  | "extra_user"
+  | "ai_future_force_primary"
+  | "ai_future_force_middle"
+  | "ai_future_force_higher"
+  | "ai_future_force_enterprise";
 
 export interface AddOn {
   id: AddOnId;
@@ -401,6 +410,50 @@ export interface AddOn {
 }
 
 export const ADD_ONS: AddOn[] = [
+  {
+    id: "ai_future_force_primary",
+    name: "AI Future Force - Primary School",
+    description: "One-time AI course design and activation for Classes 1-5. Requires an active Plus plan.",
+    creditsGranted: 0,
+    recurring: false,
+    prices: [
+      { priceId: "ai_future_force_primary_inr", amount: 100000, currency: "inr", display: "Rs. 1,000 one-time + GST" },
+      { priceId: "ai_future_force_primary_usd", amount: 1200, currency: "usd", display: "$12 one-time" },
+    ],
+  },
+  {
+    id: "ai_future_force_middle",
+    name: "AI Future Force - Middle School",
+    description: "One-time AI course design and activation for Classes 6-8. Requires an active Plus plan.",
+    creditsGranted: 0,
+    recurring: false,
+    prices: [
+      { priceId: "ai_future_force_middle_inr", amount: 200000, currency: "inr", display: "Rs. 2,000 one-time + GST" },
+      { priceId: "ai_future_force_middle_usd", amount: 2400, currency: "usd", display: "$24 one-time" },
+    ],
+  },
+  {
+    id: "ai_future_force_higher",
+    name: "AI Future Force - Higher Secondary",
+    description: "One-time AI course design and activation for Classes 9-12. Requires an active Plus plan.",
+    creditsGranted: 0,
+    recurring: false,
+    prices: [
+      { priceId: "ai_future_force_higher_inr", amount: 500000, currency: "inr", display: "Rs. 5,000 one-time + GST" },
+      { priceId: "ai_future_force_higher_usd", amount: 6000, currency: "usd", display: "$60 one-time" },
+    ],
+  },
+  {
+    id: "ai_future_force_enterprise",
+    name: "AI Future Force - Enterprise",
+    description: "Monthly enterprise AI education subscription for Classes 1-12 with advanced reporting and administrative controls.",
+    creditsGranted: 0,
+    recurring: true,
+    prices: [
+      { priceId: "ai_future_force_enterprise_monthly_inr", amount: 1000000, currency: "inr", display: "Rs. 10,000 / mo + GST", interval: "monthly" },
+      { priceId: "ai_future_force_enterprise_monthly_usd", amount: 12000, currency: "usd", display: "$120 / mo", interval: "monthly" },
+    ],
+  },
   {
     id: "extra_user",
     name: "Additional User Seat",

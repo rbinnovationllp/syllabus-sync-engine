@@ -1,5 +1,9 @@
 ﻿import { createFileRoute } from "@tanstack/react-router";
-import { upsertRazorpaySubscriptionFromEvent, verifyRazorpaySignature } from "@/lib/razorpay.webhook.server";
+import {
+  updateRazorpayPaymentFromEvent,
+  upsertRazorpaySubscriptionFromEvent,
+  verifyRazorpaySignature,
+} from "@/lib/razorpay.webhook.server";
 
 export const Route = createFileRoute("/api/public/razorpay/webhook")({
   server: {
@@ -18,8 +22,14 @@ export const Route = createFileRoute("/api/public/razorpay/webhook")({
           case "subscription.completed":
           case "subscription.cancelled":
           case "subscription.paused":
+          case "subscription.pending":
+          case "subscription.halted":
           case "subscription.resumed":
             await upsertRazorpaySubscriptionFromEvent(event);
+            break;
+          case "payment.captured":
+          case "payment.failed":
+            await updateRazorpayPaymentFromEvent(event);
             break;
           default:
             break;
