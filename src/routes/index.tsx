@@ -23,6 +23,7 @@ import {
   ArrowRight,
   CheckCircle2,
   Star,
+  BrainCircuit,
 } from "lucide-react";
 import { createLead } from "@/lib/admin.functions";
 import { getPublicSiteStats } from "@/lib/site-analytics.functions";
@@ -331,6 +332,12 @@ const FEATURES = [
     body: "30/45/60-day pre-exam completion rules built-in for primary, secondary & senior secondary.",
     color: "from-rose-500 to-red-500",
   },
+  {
+    icon: BrainCircuit,
+    title: "AI Future Force",
+    body: "Optional AI education add-on with grade-wise curriculum previews, weekly AI class planning, monthly content updates, and future-readiness projects.",
+    color: "from-violet-500 to-fuchsia-500",
+  },
 ];
 
 function Features() {
@@ -406,6 +413,12 @@ function HowItWorks() {
       d: "Select subject, class, exam type, and chapter range so teachers can choose from which chapter to which chapter the paper should be generated.",
       icon: ClipboardList,
     },
+    {
+      n: "06",
+      t: "Add AI Future Force",
+      d: "Optional AI curriculum with one or two weekly classes, grade-wise preview, monthly updates, and future-ready projects.",
+      icon: BrainCircuit,
+    },
   ];
   return (
     <section id="how" className="bg-gradient-to-b from-white via-indigo-50/40 to-white py-24">
@@ -418,7 +431,7 @@ function HowItWorks() {
             From blank slate to bulletproof plan
           </h2>
         </div>
-        <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-5">
+        <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
           {steps.map((s) => (
             <div
               key={s.n}
@@ -525,6 +538,10 @@ function Testimonials() {
       q: "Multi-teacher load balancing alone is worth the subscription.",
       a: "Head of Middle School, IB",
     },
+    {
+      q: "The AI Future Force roadmap helps us introduce AI without disturbing regular academics. It gives leadership a clear way to prepare students for future careers.",
+      a: "School Leader, K-12 innovation program",
+    },
   ];
   return (
     <section className="bg-slate-950 py-24 text-white">
@@ -537,7 +554,7 @@ function Testimonials() {
             Schools planning smarter
           </h2>
         </div>
-        <div className="mt-12 grid gap-5 md:grid-cols-3">
+        <div className="mt-12 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
           {t.map((x, i) => (
             <div
               key={i}
