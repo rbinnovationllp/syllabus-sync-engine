@@ -24,9 +24,11 @@ export const Route = createFileRoute("/_authenticated/company-crm")({
 });
 
 function CompanyCrmPage() {
-    const fn = useServerFn(getCompanyCrmOperations);
+  const fn = useServerFn(getCompanyCrmOperations);
+  const conversionFn = useServerFn(getVisitorConversionReport);
   const acquisitionFn = useServerFn(getAcquisitionReport);
-    const q = useQuery({ queryKey: ["company-crm-ops"], queryFn: () => fn() });
+  const q = useQuery({ queryKey: ["company-crm-ops"], queryFn: () => fn() });
+  const conversion = useQuery({ queryKey: ["visitor-conversion-report"], queryFn: () => conversionFn() });
   const acquisition = useQuery({ queryKey: ["acquisition-report"], queryFn: () => acquisitionFn() });
 
   if (q.isLoading) {

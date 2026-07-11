@@ -10,8 +10,9 @@ type ChatMessage = { role: "user" | "assistant"; content: string };
 
 const starterPrompts = [
   "How do I create a free 30-day preview?",
+  "What is AI Future Workforce?",
+  "How should teachers prepare for AI classes?",
   "Which plan includes AI Leadership Suite?",
-  "How do I generate a yearly syllabus?",
 ];
 
 export function AiHelpAssistantWidget() {
@@ -20,7 +21,7 @@ export function AiHelpAssistantWidget() {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       role: "assistant",
-      content: "Hi, I am the Syllabus Synk help assistant. Ask me about setup, syllabus planning, subscriptions, exports, or AI Leadership Suite.",
+      content: "Hi, I am the Syllabus Synk help assistant. Ask me about setup, syllabus planning, subscriptions, exports, AI Leadership Suite, or AI Future Workforce.",
     },
   ]);
   const askFn = useServerFn(askAiHelpAssistant);

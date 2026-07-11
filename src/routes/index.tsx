@@ -59,6 +59,7 @@ function Landing() {
       <Hero />
       <Logos />
       <Features />
+      <AiFutureWorkforce />
       <HowItWorks />
       <Boards />
       <Testimonials />
@@ -81,6 +82,9 @@ function Nav() {
         <nav className="hidden items-center gap-7 text-sm text-slate-600 md:flex">
           <a href="#features" className="hover:text-slate-900">
             Features
+          </a>
+          <a href="#ai-future-workforce" className="hover:text-slate-900">
+            AI Future Workforce
           </a>
           <a href="#how" className="hover:text-slate-900">
             How it works
@@ -334,8 +338,8 @@ const FEATURES = [
   },
   {
     icon: BrainCircuit,
-    title: "AI Future Force",
-    body: "Optional AI education add-on with grade-wise curriculum previews, weekly AI class planning, monthly content updates, and future-readiness projects.",
+    title: "AI Future Workforce",
+    body: "Optional AI education add-on with grade-wise learning paths, weekly AI class planning, monthly updates, teacher readiness, and future-career projects.",
     color: "from-violet-500 to-fuchsia-500",
   },
 ];
@@ -381,6 +385,111 @@ function Features() {
   );
 }
 
+function AiFutureWorkforce() {
+  const pathways = [
+    "Classes 1-5: AI awareness, patterns, smart devices, and responsible technology.",
+    "Classes 6-8: data labeling, machine learning basics, chatbots, image recognition, ethics, bias, and privacy.",
+    "Classes 9-12: Python for AI, generative AI, prompt engineering, AI agents, machine learning, and capstone projects.",
+  ];
+  const careers = [
+    "AI engineer",
+    "Data analyst",
+    "Machine learning specialist",
+    "Prompt engineer",
+    "Robotics and automation",
+    "AI ethics and governance",
+  ];
+
+  return (
+    <section id="ai-future-workforce" className="bg-slate-950 py-24 text-white">
+      <div className="container mx-auto px-4">
+        <div className="grid gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:items-start">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-widest text-amber-300">
+              Future-ready education ecosystem
+            </p>
+            <h2 className="mt-3 max-w-3xl text-3xl font-bold tracking-tight sm:text-4xl">
+              AI Future Workforce prepares students for tomorrow's technology careers.
+            </h2>
+            <p className="mt-5 max-w-3xl text-white/70">
+              Syllabus Synk is not only an academic planning platform. It also helps schools introduce
+              a structured AI curriculum that fits regular timetables, supports one or two AI classes
+              per week, and gives leaders grade-wise previews before activation.
+            </p>
+            <div className="mt-8 grid gap-3">
+              {pathways.map((item) => (
+                <div key={item} className="rounded-lg border border-white/10 bg-white/[0.04] p-4 text-sm text-white/78">
+                  {item}
+                </div>
+              ))}
+            </div>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Button
+                asChild
+                className="bg-gradient-to-r from-amber-400 to-fuchsia-500 font-semibold text-slate-950 hover:opacity-95"
+              >
+                <Link to="/auth" search={{ invite: undefined }}>
+                  Explore AI curriculum <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+              <Button
+                asChild
+                variant="outline"
+                className="border-white/25 bg-white/5 text-white hover:bg-white/10"
+              >
+                <a href="#contact">Talk to our team</a>
+              </Button>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <div className="rounded-xl border border-white/10 bg-white/[0.04] p-5">
+              <div className="flex items-start gap-3">
+                <BrainCircuit className="mt-1 h-5 w-5 text-amber-300" />
+                <div>
+                  <h3 className="font-semibold">Curriculum commitment</h3>
+                  <p className="mt-2 text-sm leading-6 text-white/70">
+                    Our AI Future Workforce Team continuously monitors global developments in
+                    Artificial Intelligence and emerging technologies. The curriculum for senior
+                    students will be regularly updated to incorporate the latest innovations, industry
+                    practices, and future workforce requirements.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-white/10 bg-white/[0.04] p-5">
+              <div className="flex items-start gap-3">
+                <Users className="mt-1 h-5 w-5 text-fuchsia-300" />
+                <div>
+                  <h3 className="font-semibold">Teacher professional development</h3>
+                  <p className="mt-2 text-sm leading-6 text-white/70">
+                    Artificial Intelligence is evolving rapidly across the world. Schools should
+                    encourage their Computer Science and Technology teachers to continuously enhance
+                    their knowledge and skills in AI so students receive relevant and future-ready
+                    education.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-white/10 bg-white/[0.04] p-5">
+              <h3 className="font-semibold">Career awareness built in</h3>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {careers.map((career) => (
+                  <span key={career} className="rounded-full bg-white/10 px-3 py-1.5 text-xs text-white/75">
+                    {career}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function HowItWorks() {
   const steps = [
     {
@@ -415,8 +524,8 @@ function HowItWorks() {
     },
     {
       n: "06",
-      t: "Add AI Future Force",
-      d: "Optional AI curriculum with one or two weekly classes, grade-wise preview, monthly updates, and future-ready projects.",
+      t: "Add AI Future Workforce",
+      d: "Optional AI curriculum with one or two weekly classes, grade-wise preview, teacher readiness, monthly updates, and future-ready projects.",
       icon: BrainCircuit,
     },
   ];
