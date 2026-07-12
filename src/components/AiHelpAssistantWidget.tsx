@@ -127,7 +127,7 @@ export function AiHelpAssistantWidget() {
       )}
 
       <Button
-        className="pointer-events-auto h-14 rounded-full px-5 text-sm font-semibold shadow-xl"
+        className="pointer-events-auto h-14 min-w-[132px] rounded-full bg-slate-950 px-5 text-sm font-semibold text-white shadow-xl hover:bg-slate-900"
         onClick={() => setOpen((v) => !v)}
       >
         Ask Synk AI
