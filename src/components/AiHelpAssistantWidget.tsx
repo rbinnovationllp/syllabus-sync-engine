@@ -4,7 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { askAiHelpAssistant } from "@/lib/ai-help.functions";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Bot, Loader2, MessageCircle, Send, X } from "lucide-react";
+import { Bot, Loader2, Send, X } from "lucide-react";
 
 type ChatMessage = { role: "user" | "assistant"; content: string };
 
@@ -127,12 +127,10 @@ export function AiHelpAssistantWidget() {
       )}
 
       <Button
-        className="pointer-events-auto h-14 min-w-14 rounded-full px-4 shadow-xl sm:px-5"
+        className="pointer-events-auto h-14 rounded-full px-5 text-sm font-semibold shadow-xl"
         onClick={() => setOpen((v) => !v)}
       >
-        <MessageCircle className="h-5 w-5 sm:mr-2" />
-        <span className="hidden sm:inline">Ask Synk AI</span>
-        <span className="sr-only sm:hidden">Open Ask Synk AI</span>
+        Ask Synk AI
       </Button>
     </div>
   );

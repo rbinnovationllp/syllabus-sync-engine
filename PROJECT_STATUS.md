@@ -45,6 +45,8 @@ Implemented or partially implemented areas include:
 ## Recent Work Completed
 
 Recent changes completed through 2026-07-12:
+- Added a permanent Master Super Admin bootstrap for `rbinnovationllp@gmail.com` / Rajesh Kumar Khare, granting the global `super_admin` role whenever that Supabase Auth user exists or is created later.
+- Updated the homepage floating Ask Synk AI launcher to display the name "Ask Synk AI" directly instead of showing only a chat symbol on small screens.
 - Fixed public visitor counting by rendering `SiteVisitTracker` in the root application layout.
 - Added a Supabase migration for `site_page_views` permissions, safe public insert policy, super-admin read policy, and security-definer aggregate/recording functions so visitor analytics can work without exposing raw page-view rows.
 - Updated visitor analytics server functions to use controlled database RPCs first, with direct table access as a fallback for older deployments.
