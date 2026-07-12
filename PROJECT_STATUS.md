@@ -45,6 +45,9 @@ Implemented or partially implemented areas include:
 ## Recent Work Completed
 
 Recent changes completed through 2026-07-12:
+- Fixed public visitor counting by rendering `SiteVisitTracker` in the root application layout.
+- Added a Supabase migration for `site_page_views` permissions, safe public insert policy, super-admin read policy, and security-definer aggregate/recording functions so visitor analytics can work without exposing raw page-view rows.
+- Updated visitor analytics server functions to use controlled database RPCs first, with direct table access as a fallback for older deployments.
 - Renamed the public floating assistant to "Ask Synk AI" across the visitor widget, greeting, prompts, and assistant system guidance.
 - Confirmed and documented the web-based AI Future Force Curriculum Planner for age-appropriate Classes 1-12 AI education courses.
 - Added a one-month AI Future Force demo-plan explanation on the homepage with once-a-week and twice-a-week delivery framing.
@@ -91,7 +94,7 @@ Working:
 
 Needs work:
 - Final client-approved copy review.
-- Production analytics validation after deployment.
+- Apply the latest visitor analytics Supabase migration in production and verify that live visitor counters increase after deployment.
 - Visual QA across mobile and desktop after every homepage amendment.
 
 ### Ask Synk AI
@@ -340,6 +343,8 @@ Known issues:
 - Company CRM should receive runtime QA after the newly added visitor conversion query.
 
 Recent focused checks:
+- Focused syntax transpile passed for the visitor analytics server function and root layout after wiring `SiteVisitTracker` into the app.
+- `git diff --check` passed after the visitor analytics permission and tracker updates.
 - Focused syntax transpile passed for files edited on 2026-07-12: Ask Synk AI widget, assistant knowledge, homepage, academic execution UI, and academic execution server functions.
 - Focused syntax transpile passed for edited files after the AI Future Workforce homepage and assistant updates.
 - Earlier focused lint and filtered TypeScript checks passed for previously changed files.

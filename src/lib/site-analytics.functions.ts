@@ -40,6 +40,18 @@ export const recordSiteVisit = createServerFn({ method: "POST" })
       return { ok: true, skipped: true };
     }
 
+    const { error: rpcError } = await supabaseAdmin.rpc("record_site_page_view", {
+      _visitor_id: data.visitorId,
+      _path: path,
+      _page_title: data.pageTitle ?? null,
+      _referrer: data.referrer ?? null,
+      _user_agent: data.userAgent ?? null,
+      _screen_width: data.screenWidth ?? null,
+      _screen_height: data.screenHeight ?? null,
+    });
+
+    if (!rpcError) return { ok: true };
+
     const { error } = await supabaseAdmin.from("site_page_views").insert({
       visitor_id: data.visitorId,
       path,
@@ -51,7 +63,7 @@ export const recordSiteVisit = createServerFn({ method: "POST" })
     });
 
     if (error) {
-      console.warn("Could not record site visit", error.message);
+      console.warn("Could not record site visit", rpcError.message, error.message);
       return { ok: false };
     }
 
@@ -75,11 +87,21 @@ function percent(part: number, total: number) {
 }
 
 async function getVisitorCounts(supabaseAdmin: any, since?: string) {
+  const { data: rpcData, error: rpcError } = await supabaseAdmin.rpc("get_site_visitor_counts", {
+    _since: since ?? null,
+  });
+  if (!rpcError && Array.isArray(rpcData) && rpcData[0]) {
+    return {
+      visits: Number(rpcData[0].visits ?? 0),
+      visitors: Number(rpcData[0].visitors ?? 0),
+    };
+  }
+
   let query = supabaseAdmin.from("site_page_views").select("visitor_id, created_at").limit(100000);
   if (since) query = query.gte("created_at", since);
   const { data, error } = await query;
   if (error) {
-    console.warn("Could not read visitor analytics", error.message);
+    console.warn("Could not read visitor analytics", rpcError?.message ?? "RPC unavailable", error.message);
     return { visits: 0, visitors: 0 };
   }
   return {
