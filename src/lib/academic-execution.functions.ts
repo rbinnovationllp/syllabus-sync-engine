@@ -22,6 +22,7 @@ function isSchoolAdmin(role: string) {
 function statusWeight(status: string) {
   if (status === "completed") return 1;
   if (status === "partially_completed") return 0.5;
+  if (status === "in_progress") return 0.25;
   return 0;
 }
 
@@ -89,7 +90,7 @@ const progressSchema = z.object({
   planned_topic: z.string().trim().max(1000).optional().nullable(),
   actual_chapter: z.string().trim().max(300).optional().nullable(),
   actual_topics: z.string().trim().min(2).max(4000),
-  status: z.enum(["completed", "partially_completed", "not_covered"]),
+  status: z.enum(["not_started", "in_progress", "completed", "partially_completed", "rescheduled", "not_covered"]),
   periods_taken: z.coerce.number().min(0).max(20).default(1),
   remarks: z.string().trim().max(2000).optional().nullable(),
 });
@@ -241,7 +242,12 @@ export const getAcademicExecutionDashboard = createServerFn({ method: "GET" })
       row.completedUnits += statusWeight(log.status);
       row.classesConducted += 1;
       row.lastTaught = row.lastTaught ?? log.actual_date;
-      row.pendingChapters = log.status === "not_covered" ? "Topic not covered in latest class" : "Track next planned topic";
+      row.pendingChapters =
+        log.status === "not_covered" || log.status === "not_started"
+          ? "Topic not completed in latest class"
+          : log.status === "rescheduled"
+            ? "Lesson rescheduled; follow-up required"
+            : "Track next planned topic";
       grouped.set(key, row);
     }
 
@@ -259,6 +265,10 @@ export const getAcademicExecutionDashboard = createServerFn({ method: "GET" })
     const averageCompletion = rows.length
       ? Math.round(rows.reduce((sum, row) => sum + row.completion, 0) / rows.length)
       : 0;
+    const delayedOrRescheduled = logs.filter((log: any) =>
+      ["not_started", "rescheduled", "not_covered"].includes(log.status),
+    ).length;
+    const missedProgressUpdates = rows.filter((row) => row.classesConducted === 0).length;
 
     return {
       year,
@@ -267,6 +277,9 @@ export const getAcademicExecutionDashboard = createServerFn({ method: "GET" })
         averageCompletion,
         atRisk: rows.filter((r) => r.risk === "at_risk").length,
         behind: rows.filter((r) => r.risk === "behind_schedule").length,
+        delayedOrRescheduled,
+        missedProgressUpdates,
+        monthlyCompletionStatus: averageCompletion,
       },
       rows,
       logs: logs.slice(0, 30),

@@ -12,6 +12,7 @@ const helpInput = z.object({
 
 const KNOWLEDGE_BASE = `
 Product name: Syllabus Synk / CurriculumOS.
+Public website assistant name: Ask Synk AI.
 Support email: support@syllabus-synk.in.
 Website: https://syllabus-synk.in.
 
@@ -30,7 +31,8 @@ Main workflows:
 6. Export PDF/DOCX where permitted.
 
 Detailed product guide:
-- Public website: explains CurriculumOS/Syllabus Synk, captures demo leads, shows visitor interest counters, partner/referral entry, AI Leadership Suite, and AI Future Workforce messaging.
+- Public website: explains CurriculumOS/Syllabus Synk, captures demo leads, shows visitor interest counters, partner/referral entry, AI Leadership Suite, and AI Future Force / AI Future Workforce messaging.
+- Ask Synk AI: public-facing visitor assistant on the homepage. It explains Syllabus Synk features, AI Future Force curriculum, sample monthly plans, pricing, implementation, dashboards, FAQs, and demo-request next steps. It should not operate internal curriculum monitoring, teacher tracking, progress analysis, or management reporting; those remain inside authenticated Syllabus Synk administration dashboards.
 - Authentication: email/password sign-up, sign-in, Google sign-in, invitation acceptance, password recovery, and protected routes.
 - Onboarding for schools: choose institution profile; enter school name, country, region, state, city, board, acquisition source, fee tier, currency, textbooks, academic year dates, weekly offs, working days, periods per day, period duration, school timings, lunch timings, senior extra classes, grade-subject rows, teachers, completed chapters, holidays, vacations, events with prep days, exam windows, and teacher training days.
 - Onboarding for tutors: retail single-access flow for one grade and subject, book details, class duration, classes per week, course dates, holidays, vacations, and exam dates.
@@ -90,6 +92,7 @@ AI Leadership Suite includes:
 AI Future Workforce / AI Future Force:
 - AI Future Workforce is the public-facing curriculum program also implemented in the product as AI Future Force.
 - It is an optional AI education add-on for schools that want structured, future-ready AI learning alongside regular academics.
+- Confirmed capability: the web-based software includes a comprehensive AI Future Force Curriculum Planner designed to prepare age-appropriate AI education courses for Classes 1-12.
 - It supports grade-wise learning paths for Primary Classes 1-5, Middle Classes 6-8, Higher Secondary Classes 9-12, and Enterprise Classes 1-12.
 - Primary students focus on AI awareness, patterns, classification, responsible technology, and familiar smart-device examples.
 - Middle school students focus on data labeling, machine learning basics, chatbots, image recognition, AI ethics, bias, and privacy.
@@ -97,6 +100,12 @@ AI Future Workforce / AI Future Force:
 - Enterprise schools receive a whole-school AI readiness roadmap, teacher enablement, governance guidance, innovation projects, and reporting.
 - Schools can schedule one or two AI classes per week so the course fits the existing timetable, examination calendar, revision time, and subject workload.
 - The program provides curriculum previews with learning objectives, outcomes, projects, classroom activities, tools, examples, and monthly release planning.
+- One-month sample course plan model:
+  * Once per week: Week 1 AI awareness or concept introduction, Week 2 guided demonstration, Week 3 classroom activity or worksheet, Week 4 recap, reflection, and short assessment.
+  * Twice per week: Week 1 concept plus hands-on demo, Week 2 data/tool activity plus responsible-use discussion, Week 3 mini-project build plus peer review, Week 4 presentation, assessment, and teacher feedback.
+  * Primary demo examples: AI in everyday life, patterns, smart devices, safe technology use, poster/story activity.
+  * Middle demo examples: data labeling, chatbot basics, image recognition demo, bias/privacy discussion, small worksheet/project.
+  * Senior demo examples: Python for AI thinking, prompt engineering, generative AI review, AI agent concepts, capstone problem framing.
 - If a school joins in the final month, the system releases an AI Foundation Module first and carries the remaining grade-level curriculum into the next academic session.
 - Benefits include AI literacy, responsible AI use, exposure to emerging tools, project-based learning, career awareness, and preparation for future AI-enabled workplaces.
 - Future opportunities students can explore include AI engineer, data analyst, machine learning specialist, prompt engineer, robotics and automation roles, AI product roles, AI ethics and governance, cybersecurity, healthcare AI, education technology, business analytics, and other emerging technology careers.
@@ -105,6 +114,12 @@ AI Future Workforce / AI Future Force:
 - The AI Future Workforce Team continuously monitors global developments in Artificial Intelligence and emerging technologies. The curriculum for senior students will be regularly updated to incorporate the latest innovations, industry practices, and future workforce requirements, helping students remain prepared for the rapidly changing world of technology.
 - The curriculum is periodically reviewed and updated to reflect emerging technologies, industry trends, tools, case studies, and real-world applications.
 - Positioning: Syllabus Synk is both an Academic Planning Platform and a Future-Ready Education Ecosystem.
+
+Teacher progress monitoring:
+- In authenticated dashboards, teachers can mark scheduled chapters or sessions as Not Started, In Progress, Completed, Partially Completed, or Rescheduled.
+- Teacher updates should capture topic taught, date and period, portion completed, student participation, activity/assessment conducted, reason for delay if any, and next planned topic.
+- Principal and School Super Admin dashboards should monitor today's AI classes, completed/pending chapters, teacher-wise progress, class-wise completion percentage, delayed/rescheduled lessons, student assessment results, missed progress updates, and monthly completion status.
+- Alerts for missing updates or unfinished planned chapters belong to the authenticated admin/dashboard system, not the public Ask Synk AI assistant.
 
 AI assistant maintenance rule:
 - The assistant should guide users across every major feature listed above.
@@ -120,6 +135,9 @@ Support policy:
 
 function localAnswer(message: string, page?: string | null) {
   const q = message.toLowerCase();
+  if (q.includes("one-month") || q.includes("one month") || q.includes("monthly ai course") || q.includes("demo plan")) {
+    return "Schools can request a one-month AI Future Force demo plan from the homepage demo form. Select \"Request a One-Month AI Future Force Course Demo Plan\" and share the school name, board/location, classes, preferred frequency once or twice a week, available periods during the month, and contact person details. A simple sample structure is: once weekly - concept, demonstration, classroom activity, recap/assessment; twice weekly - concept plus hands-on demo, tool/data activity, mini-project work, presentation, and assessment.";
+  }
   if (
     q.includes("future workforce") ||
     q.includes("future force") ||
@@ -128,7 +146,7 @@ function localAnswer(message: string, page?: string | null) {
     q.includes("career") ||
     q.includes("emerging technolog")
   ) {
-    return "AI Future Workforce is Syllabus Synk's optional future-ready AI education program, implemented in the platform as AI Future Force. It offers grade-wise AI learning paths for Classes 1-5, 6-8, 9-12, and whole-school enterprise adoption. Schools can plan one or two AI classes per week, review curriculum previews before activation, and receive monthly content updates covering current AI tools, case studies, projects, responsible AI use, and real-world applications. It helps students build AI literacy and career awareness for fields such as AI engineering, data analysis, machine learning, prompt engineering, robotics, cybersecurity, healthcare AI, education technology, and AI governance. Schools should also encourage Computer Science and Technology teachers to keep upgrading their AI skills, because AI is evolving rapidly worldwide.";
+    return "AI Future Force is Syllabus Synk's optional future-ready AI education program. The web-based software includes a comprehensive curriculum planner for age-appropriate AI courses across Classes 1-12. Schools can plan one or two AI classes per week, request a one-month demo plan, review grade-wise curriculum previews, and introduce AI education without disturbing regular academic classes. It covers AI awareness for primary grades, data and machine-learning basics for middle school, and Python, generative AI, prompt engineering, AI agents, and capstone projects for senior students.";
   }
   if (
     q.includes("teacher training") ||
@@ -163,7 +181,7 @@ function localAnswer(message: string, page?: string | null) {
   if (q.includes("login") || q.includes("sign") || q.includes("password")) {
     return "Use the Sign in page to log in or create an account. If email confirmation is enabled, check your inbox. Never share your password or OTP with anyone. For account access help, contact support@syllabus-synk.in.";
   }
-  return `I can help with academic year setup, syllabus generation, subscriptions, AI Leadership Suite, AI Future Workforce, exports, and troubleshooting${page ? ` on this page (${page})` : ""}. Tell me what you are trying to do, and I will guide you step by step. For urgent support, email support@syllabus-synk.in.`;
+  return `I am Ask Synk AI. I can help with Syllabus Synk features, academic year setup, syllabus generation, subscriptions, AI Leadership Suite, AI Future Force, one-month demo plans, exports, and visitor guidance${page ? ` on this page (${page})` : ""}. Tell me what you are trying to do, and I will guide you step by step. For demos or urgent support, email support@syllabus-synk.in.`;
 }
 
 async function projectStatusKnowledge() {
@@ -205,9 +223,11 @@ async function aiAnswer(data: z.infer<typeof helpInput>) {
   const result = await generateText({
     model: provider(model),
     system: [
-      "You are the Syllabus Synk AI Help Assistant.",
+      "You are Ask Synk AI, the public-facing Syllabus Synk website visitor assistant.",
       "Answer only about using the product, academic planning, school workflows, subscriptions, AI Future Workforce, and support.",
       "Be concise, practical, and step-by-step.",
+      "You may explain internal dashboards and monitoring capabilities, but do not claim to operate teacher tracking, curriculum monitoring, progress analysis, or management reporting from the public chat. Direct those actions to authenticated Syllabus Synk dashboards.",
+      "When visitors ask for a demo, guide them to the homepage demo form and the one-month AI Future Force demo-plan option.",
       "For broad feature questions, explain what the feature does, who uses it, where to find it, and any current limitations from the living project status.",
       "Never ask for passwords, OTPs, service role keys, API secrets, or payment card details.",
       "If unsure or if the issue is billing/account-specific, send the user to support@syllabus-synk.in.",

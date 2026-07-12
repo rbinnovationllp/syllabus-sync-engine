@@ -1,6 +1,6 @@
 # Project Status
 
-Date: 2026-07-11
+Date: 2026-07-12
 
 Project: CurriculumOS / Syllabus Synk
 
@@ -18,7 +18,7 @@ Syllabus Synk / CurriculumOS is both:
 
 Implemented or partially implemented areas include:
 - Public marketing website, demo lead capture, partner/referral landing page, visitor proof counters, AI Leadership Suite messaging, and AI Future Workforce homepage section.
-- Floating homepage AI Help Assistant with local fallback answers and optional AI-provider answers.
+- Floating homepage visitor assistant renamed to Ask Synk AI, with local fallback answers and optional AI-provider answers.
 - Authentication with email/password, Google sign-in, reset-password flow, invitation preview, and invitation acceptance.
 - Authenticated dashboard and app shell navigation.
 - Institution onboarding for school profile, board, fees, textbooks, teaching matrix, calendar, holidays, events, exams, and teacher training days.
@@ -27,8 +27,8 @@ Implemented or partially implemented areas include:
 - AI annual calendar generation, per-subject curriculum generation, schedule recalculation, AI credit accounting, run history, PDF/DOCX exports, demo watermarking, version history, and soft-delete/recycle-bin foundations.
 - Teacher curriculum proposal workflow for proposed changes, AI review, finalization, teacher acknowledgement, and admin review.
 - AI Leadership Suite V2: principal dashboard, teacher copilot, content studio, assessment generator, academic digital twin, teacher intelligence, student intelligence, and parent communication drafts.
-- AI Future Workforce / AI Future Force add-on with grade-wise AI curriculum previews, one/two weekly AI class planning, monthly releases, foundation module for late-session enrollment, teacher enablement messaging, and future-career positioning.
-- Academic Execution module for daily teacher progress logging and principal/coordinator monitoring.
+- AI Future Workforce / AI Future Force add-on with a web-based Class 1-12 curriculum planner, grade-wise AI curriculum previews, one/two weekly AI class planning, one-month demo plan request flow, monthly releases, foundation module for late-session enrollment, teacher enablement messaging, and future-career positioning.
+- Academic Execution module for daily teacher progress logging, expanded lesson/session statuses, and principal/school-admin monitoring.
 - Teacher assignment management.
 - School Governance module for official School Super Admin declaration, delegated authority visibility, session registry foundation, and recycle-bin governance.
 - Seat invitations and member management with role assignment and subscription seat limits.
@@ -44,7 +44,17 @@ Implemented or partially implemented areas include:
 
 ## Recent Work Completed
 
-Recent changes completed through 2026-07-11:
+Recent changes completed through 2026-07-12:
+- Renamed the public floating assistant to "Ask Synk AI" across the visitor widget, greeting, prompts, and assistant system guidance.
+- Confirmed and documented the web-based AI Future Force Curriculum Planner for age-appropriate Classes 1-12 AI education courses.
+- Added a one-month AI Future Force demo-plan explanation on the homepage with once-a-week and twice-a-week delivery framing.
+- Added a homepage demo request option: "Request a One-Month AI Future Force Course Demo Plan."
+- Added conditional homepage fields for classes required, preferred frequency, available periods during the month, and contact person details; these are appended into the lead message for sales follow-up without requiring a database migration.
+- Updated Ask Synk AI knowledge so it can explain Syllabus Synk features, AI Future Force, sample monthly plans, pricing, implementation without disrupting regular classes, dashboards, FAQs, and demo-plan requests.
+- Added public-assistant guardrails: Ask Synk AI may explain internal dashboards, but authenticated curriculum monitoring, teacher tracking, progress analysis, and management reporting remain inside Syllabus Synk dashboards.
+- Expanded teacher progress tracking statuses to Not Started, In Progress, Completed, Partially Completed, and Rescheduled while preserving legacy Not Covered records.
+- Expanded teacher progress update fields to include portion completed, student participation, activity/assessment conducted, reason for delay, and next planned topic, stored in the existing remarks trail.
+- Added principal/school-admin monitoring summary signals for delayed/rescheduled lessons, missed progress updates, monthly completion status, and AI-class schedule visibility placeholder.
 - Expanded the homepage AI Help Assistant knowledge base to cover AI Future Workforce / AI Future Force, AI Leadership Suite, onboarding, planning, execution, governance, CRM, storage, seats, payments, admin, partner, notifications, and support flows.
 - Added runtime loading of this `PROJECT_STATUS.md` into AI-provider assistant answers, so future amendments to the project status become part of the assistant's guidance automatically.
 - Updated assistant starter prompts and greeting to include AI Future Workforce and teacher preparation.
@@ -56,9 +66,9 @@ Recent changes completed through 2026-07-11:
 - Preserved the existing AI Future Force implementation language in authenticated product areas while aligning public/assistant wording around AI Future Workforce.
 - Earlier July work added `PRODUCTION_READINESS_REVIEW.md`, created the initial `PROJECT_STATUS.md`, fixed homepage visitor proof calculations, cleaned contact-form typing, corrected typed `/auth` route usage, and ran focused checks on touched files.
 
-## AI Assistant Knowledge Maintenance
+## Ask Synk AI Knowledge Maintenance
 
-The AI Help Assistant now uses two knowledge layers:
+Ask Synk AI now uses two knowledge layers:
 - Static product knowledge in `src/lib/ai-help.functions.ts` for core workflows and safe local fallback answers.
 - Dynamic living project context from `PROJECT_STATUS.md`, loaded on the server for AI-provider answers.
 
@@ -84,20 +94,24 @@ Needs work:
 - Production analytics validation after deployment.
 - Visual QA across mobile and desktop after every homepage amendment.
 
-### AI Help Assistant
+### Ask Synk AI
 
 Status: Implemented and expanded.
 
 Working:
-- Floating help widget on the homepage/root layout.
+- Floating visitor assistant on the homepage/root layout.
 - Starter prompts, conversation history, local fallback answers, AI-provider answer path, safety rules, and support escalation.
 - Knowledge now covers major product modules and AI Future Workforce.
 - AI-provider answers load `PROJECT_STATUS.md` as living context.
+- Renamed to Ask Synk AI.
+- Guides visitors to the one-month AI Future Force demo-plan request option.
+- Explains internal dashboards without operating authenticated monitoring or reporting from public chat.
 
 Needs work:
 - Add automated regression tests for common user questions.
 - Consider a structured knowledge file or admin-editable knowledge table if non-developers need to update assistant content.
 - Ensure every future feature change amends this status file.
+- If true lead capture inside the chat widget is required later, add a dedicated chat-to-lead submission flow with explicit consent.
 
 ### Authentication and Access Control
 
@@ -163,6 +177,8 @@ Working:
 - Public and assistant messaging now uses AI Future Workforce.
 - Grade bands: Classes 1-5, 6-8, 9-12, and Enterprise Classes 1-12.
 - One or two AI classes per week.
+- World-class AI Future Force Curriculum Planner positioning for Classes 1-12.
+- One-month sample course-plan request path on the homepage.
 - Curriculum preview with objectives, outcomes, projects, activities, tools, and examples.
 - Monthly release model and foundation module for final-month enrollment.
 - Plus-plan eligibility checks and tester access support.
@@ -180,11 +196,16 @@ Status: Partially implemented.
 
 Working:
 - Teachers can record daily teaching progress against assignments.
-- Principals/coordinators can monitor class-wise, subject-wise, and teacher-wise completion.
+- Teachers can mark lessons/sessions as Not Started, In Progress, Completed, Partially Completed, or Rescheduled.
+- Teacher update details include topic taught, date/period, portion completed, student participation, activity/assessment, delay reason, and next planned topic.
+- Principals and school admins can monitor class-wise, subject-wise, teacher-wise completion, delayed/rescheduled lessons, missed updates, and monthly completion status.
 - School Super Admin declaration and member authority visibility.
 - Session registry foundation and recycle-bin governance display.
 
 Needs work:
+- Full AI-class schedule integration for "today's scheduled AI classes."
+- Student assessment result integration in the execution dashboard.
+- Automated alert delivery for missed teacher updates and unfinished planned chapters.
 - Forced logout/session management policy.
 - More granular permission delegation.
 - School-level audit logs and activity monitoring.
@@ -319,6 +340,7 @@ Known issues:
 - Company CRM should receive runtime QA after the newly added visitor conversion query.
 
 Recent focused checks:
+- Focused syntax transpile passed for files edited on 2026-07-12: Ask Synk AI widget, assistant knowledge, homepage, academic execution UI, and academic execution server functions.
 - Focused syntax transpile passed for edited files after the AI Future Workforce homepage and assistant updates.
 - Earlier focused lint and filtered TypeScript checks passed for previously changed files.
 

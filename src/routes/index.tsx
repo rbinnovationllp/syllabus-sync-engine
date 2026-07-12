@@ -391,6 +391,12 @@ function AiFutureWorkforce() {
     "Classes 6-8: data labeling, machine learning basics, chatbots, image recognition, ethics, bias, and privacy.",
     "Classes 9-12: Python for AI, generative AI, prompt engineering, AI agents, machine learning, and capstone projects.",
   ];
+  const demoPlan = [
+    ["Week 1", "AI awareness and key concepts", "Teacher-led discussion, examples, safety norms"],
+    ["Week 2", "Guided demonstration", "Smart tool, data, chatbot, or image-recognition activity"],
+    ["Week 3", "Classroom practice", "Worksheet, mini-project, group activity, or lab task"],
+    ["Week 4", "Review and assessment", "Reflection, short quiz, presentation, and next-step plan"],
+  ];
   const careers = [
     "AI engineer",
     "Data analyst",
@@ -409,12 +415,13 @@ function AiFutureWorkforce() {
               Future-ready education ecosystem
             </p>
             <h2 className="mt-3 max-w-3xl text-3xl font-bold tracking-tight sm:text-4xl">
-              AI Future Workforce prepares students for tomorrow's technology careers.
+              World-class AI Future Force Curriculum Planner for Classes 1-12.
             </h2>
             <p className="mt-5 max-w-3xl text-white/70">
-              Syllabus Synk is not only an academic planning platform. It also helps schools introduce
-              a structured AI curriculum that fits regular timetables, supports one or two AI classes
-              per week, and gives leaders grade-wise previews before activation.
+              Yes, Syllabus Synk includes a comprehensive web-based AI Future Force Curriculum Planner
+              designed to create age-appropriate AI education courses from Classes 1 to 12. It helps
+              schools introduce AI education through one or two periods per week without disturbing
+              regular academics, exams, or revision schedules.
             </p>
             <div className="mt-8 grid gap-3">
               {pathways.map((item) => (
@@ -443,6 +450,23 @@ function AiFutureWorkforce() {
           </div>
 
           <div className="space-y-4">
+            <div className="rounded-xl border border-white/10 bg-white/[0.04] p-5">
+              <h3 className="font-semibold">One-month demo plan</h3>
+              <p className="mt-2 text-sm leading-6 text-white/70">
+                Schools can request a one-month sample plan for selected classes. The plan adapts to
+                once-a-week or twice-a-week availability and shows topics, activities, assessments,
+                and teacher delivery notes for the month.
+              </p>
+              <div className="mt-4 grid gap-2">
+                {demoPlan.map(([week, title, detail]) => (
+                  <div key={week} className="rounded-lg bg-white/10 p-3 text-sm">
+                    <div className="font-medium">{week}: {title}</div>
+                    <div className="mt-1 text-xs text-white/65">{detail}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
             <div className="rounded-xl border border-white/10 bg-white/[0.04] p-5">
               <div className="flex items-start gap-3">
                 <BrainCircuit className="mt-1 h-5 w-5 text-amber-300" />
@@ -698,9 +722,29 @@ function Contact() {
     acquisition_detail: "",
     partner_code: "",
     referred_by: "",
+    request_ai_future_force_demo: false,
+    demo_classes: "",
+    demo_frequency: "once",
+    demo_available_periods: "",
+    demo_contact_details: "",
   });
   const m = useMutation({
-    mutationFn: () => fn({ data: form }),
+    mutationFn: () => {
+      const demoDetails = form.request_ai_future_force_demo
+        ? [
+            "",
+            "AI Future Force one-month demo plan request:",
+            `School name: ${form.school_name || "-"}`,
+            `Board and location: ${[form.board, form.country].filter(Boolean).join(", ") || "-"}`,
+            `Classes required: ${form.demo_classes || "-"}`,
+            `Preferred frequency: ${form.demo_frequency === "twice" ? "Twice a week" : "Once a week"}`,
+            `Available periods during the month: ${form.demo_available_periods || "-"}`,
+            `Contact person details: ${form.demo_contact_details || form.name || "-"}`,
+          ].join("\n")
+        : "";
+      const { request_ai_future_force_demo, demo_classes, demo_frequency, demo_available_periods, demo_contact_details, ...lead } = form;
+      return fn({ data: { ...lead, message: `${form.message || ""}${demoDetails}`.trim() } });
+    },
     onSuccess: () => {
       toast.success("Thanks! We'll be in touch within one business day.");
       setForm({
@@ -715,12 +759,17 @@ function Contact() {
         acquisition_detail: "",
         partner_code: "",
         referred_by: "",
+        request_ai_future_force_demo: false,
+        demo_classes: "",
+        demo_frequency: "once",
+        demo_available_periods: "",
+        demo_contact_details: "",
       });
     },
     onError: (e: unknown) =>
       toast.error(e instanceof Error ? e.message : "Could not submit. Try again."),
   });
-  const set = (k: keyof typeof form) => (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+  const set = (k: keyof typeof form) => (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
     setForm({ ...form, [k]: e.target.value });
 
   return (
@@ -818,6 +867,70 @@ function Contact() {
                   <Label htmlFor="m">How can we help?</Label>
                   <Textarea id="m" rows={3} value={form.message} onChange={set("message")} />
                 </div>
+                <label className="flex items-start gap-3 rounded-lg border border-indigo-100 bg-indigo-50/70 p-3 text-sm text-slate-700">
+                  <input
+                    type="checkbox"
+                    checked={form.request_ai_future_force_demo}
+                    onChange={(e) => setForm({ ...form, request_ai_future_force_demo: e.target.checked })}
+                    className="mt-1 h-4 w-4 rounded border-slate-300"
+                  />
+                  <span>
+                    <span className="block font-semibold text-slate-900">
+                      Request a One-Month AI Future Force Course Demo Plan
+                    </span>
+                    <span className="mt-1 block text-xs text-slate-600">
+                      Share your classes and available periods so our team can prepare a sample AI course plan.
+                    </span>
+                  </span>
+                </label>
+
+                {form.request_ai_future_force_demo && (
+                  <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="space-y-1.5">
+                        <Label htmlFor="demo-classes">Classes required</Label>
+                        <Input
+                          id="demo-classes"
+                          value={form.demo_classes}
+                          onChange={set("demo_classes")}
+                          placeholder="Classes 1-5, 6-8, 9-12..."
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label htmlFor="demo-frequency">Preferred frequency</Label>
+                        <select
+                          id="demo-frequency"
+                          value={form.demo_frequency}
+                          onChange={set("demo_frequency")}
+                          className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                        >
+                          <option value="once">Once a week</option>
+                          <option value="twice">Twice a week</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div className="mt-4 space-y-1.5">
+                      <Label htmlFor="demo-periods">Available periods during the month</Label>
+                      <Textarea
+                        id="demo-periods"
+                        rows={2}
+                        value={form.demo_available_periods}
+                        onChange={set("demo_available_periods")}
+                        placeholder="Example: Mondays period 3, Thursdays period 5, 4 periods total..."
+                      />
+                    </div>
+                    <div className="mt-4 space-y-1.5">
+                      <Label htmlFor="demo-contact">Contact person's details</Label>
+                      <Textarea
+                        id="demo-contact"
+                        rows={2}
+                        value={form.demo_contact_details}
+                        onChange={set("demo_contact_details")}
+                        placeholder="Name, designation, phone, email, preferred demo mode..."
+                      />
+                    </div>
+                  </div>
+                )}
                 <AcquisitionSourceFields
                   value={form}
                   onChange={(next) => setForm({ ...form, ...next })}

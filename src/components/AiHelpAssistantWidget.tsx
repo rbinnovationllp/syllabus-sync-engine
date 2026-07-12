@@ -9,10 +9,10 @@ import { Bot, Loader2, MessageCircle, Send, X } from "lucide-react";
 type ChatMessage = { role: "user" | "assistant"; content: string };
 
 const starterPrompts = [
-  "How do I create a free 30-day preview?",
-  "What is AI Future Workforce?",
-  "How should teachers prepare for AI classes?",
-  "Which plan includes AI Leadership Suite?",
+  "What is Syllabus Synk?",
+  "Show a one-month AI Future Force plan",
+  "Request an AI Future Force demo",
+  "How can schools add AI classes?",
 ];
 
 export function AiHelpAssistantWidget() {
@@ -21,7 +21,7 @@ export function AiHelpAssistantWidget() {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       role: "assistant",
-      content: "Hi, I am the Syllabus Synk help assistant. Ask me about setup, syllabus planning, subscriptions, exports, AI Leadership Suite, or AI Future Workforce.",
+      content: "Hi, I am Ask Synk AI. Ask me about Syllabus Synk, AI Future Force for Classes 1-12, demo plans, pricing, implementation, dashboards, or curriculum planning.",
     },
   ]);
   const askFn = useServerFn(askAiHelpAssistant);
@@ -58,8 +58,8 @@ export function AiHelpAssistantWidget() {
             <div className="flex items-center gap-2">
               <div className="rounded-lg bg-white/10 p-2"><Bot className="h-4 w-4" /></div>
               <div>
-                <div className="text-sm font-semibold">AI Help Assistant</div>
-                <div className="text-xs text-slate-300">Product and academic guidance</div>
+                <div className="text-sm font-semibold">Ask Synk AI</div>
+                <div className="text-xs text-slate-300">Visitor guidance and demo help</div>
               </div>
             </div>
             <Button variant="ghost" size="icon" className="h-8 w-8 text-white hover:bg-white/10 hover:text-white" onClick={() => setOpen(false)}>
@@ -111,7 +111,7 @@ export function AiHelpAssistantWidget() {
                     submit();
                   }
                 }}
-                placeholder="Ask for help..."
+                placeholder="Ask Synk AI..."
                 rows={2}
                 className="min-h-11 resize-none"
               />
@@ -120,7 +120,7 @@ export function AiHelpAssistantWidget() {
               </Button>
             </div>
             <div className="mt-2 text-[11px] text-muted-foreground">
-              For account-specific issues: support@syllabus-synk.in
+              For demos and account-specific issues: support@syllabus-synk.in
             </div>
           </div>
         </div>
@@ -131,8 +131,8 @@ export function AiHelpAssistantWidget() {
         onClick={() => setOpen((v) => !v)}
       >
         <MessageCircle className="h-5 w-5 sm:mr-2" />
-        <span className="hidden sm:inline">Help</span>
-        <span className="sr-only sm:hidden">Open help assistant</span>
+        <span className="hidden sm:inline">Ask Synk AI</span>
+        <span className="sr-only sm:hidden">Open Ask Synk AI</span>
       </Button>
     </div>
   );

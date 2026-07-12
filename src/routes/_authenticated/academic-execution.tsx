@@ -51,6 +51,10 @@ function riskVariant(risk: string) {
   return "outline";
 }
 
+function progressStatusLabel(status: string) {
+  return status.replaceAll("_", " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
 function AcademicExecutionPage() {
   const qc = useQueryClient();
   const teacherFn = useServerFn(getTeacherExecutionWorkspace);
@@ -81,6 +85,11 @@ function AcademicExecutionPage() {
     planned_topic: "",
     actual_chapter: "",
     actual_topics: "",
+    portion_completed: "",
+    student_participation: "",
+    activity_or_assessment: "",
+    delay_reason: "",
+    next_planned_topic: "",
     status: "completed",
     periods_taken: "1",
     remarks: "",
@@ -104,7 +113,14 @@ function AcademicExecutionPage() {
           actual_topics: form.actual_topics,
           status: form.status,
           periods_taken: Number(form.periods_taken || 1),
-          remarks: form.remarks || null,
+          remarks: [
+            form.remarks,
+            form.portion_completed ? `Portion completed: ${form.portion_completed}` : "",
+            form.student_participation ? `Student participation: ${form.student_participation}` : "",
+            form.activity_or_assessment ? `Activity/assessment conducted: ${form.activity_or_assessment}` : "",
+            form.delay_reason ? `Reason for delay: ${form.delay_reason}` : "",
+            form.next_planned_topic ? `Next planned topic: ${form.next_planned_topic}` : "",
+          ].filter(Boolean).join("\n") || null,
         },
       });
     },
@@ -116,6 +132,11 @@ function AcademicExecutionPage() {
         planned_topic: "",
         actual_chapter: "",
         actual_topics: "",
+        portion_completed: "",
+        student_participation: "",
+        activity_or_assessment: "",
+        delay_reason: "",
+        next_planned_topic: "",
         status: "completed",
         periods_taken: "1",
         remarks: "",
@@ -153,7 +174,7 @@ function AcademicExecutionPage() {
             <CardTitle className="flex items-center gap-2 text-base">
               <ClipboardCheck className="h-4 w-4" /> Daily Teaching Progress
             </CardTitle>
-            <CardDescription>Teachers record completed, partially completed, or not covered topics after class.</CardDescription>
+            <CardDescription>Teachers update every scheduled chapter or AI session after class.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {!teacher.data?.year ? (
@@ -198,8 +219,8 @@ function AcademicExecutionPage() {
                   <Input value={form.actual_chapter} onChange={(e) => setForm({ ...form, actual_chapter: e.target.value })} placeholder="Chapter actually taught" />
                 </div>
                 <div className="space-y-1.5">
-                  <Label>Actual topics taught *</Label>
-                  <Textarea value={form.actual_topics} onChange={(e) => setForm({ ...form, actual_topics: e.target.value })} rows={4} placeholder="Write the topic/subtopic covered today" />
+                  <Label>Topic taught / session update *</Label>
+                  <Textarea value={form.actual_topics} onChange={(e) => setForm({ ...form, actual_topics: e.target.value })} rows={4} placeholder="Write the topic/subtopic taught today, or the scheduled topic if not started/rescheduled" />
                 </div>
 
                 <div className="grid gap-3 sm:grid-cols-2">
@@ -208,15 +229,44 @@ function AcademicExecutionPage() {
                     <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v })}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
+                        <SelectItem value="not_started">Not Started</SelectItem>
+                        <SelectItem value="in_progress">In Progress</SelectItem>
                         <SelectItem value="completed">Completed</SelectItem>
                         <SelectItem value="partially_completed">Partially Completed</SelectItem>
-                        <SelectItem value="not_covered">Not Covered</SelectItem>
+                        <SelectItem value="rescheduled">Rescheduled</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div className="space-y-1.5">
                     <Label>Periods taken</Label>
                     <Input type="number" min="0" max="20" step="0.5" value={form.periods_taken} onChange={(e) => setForm({ ...form, periods_taken: e.target.value })} />
+                  </div>
+                </div>
+
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="space-y-1.5">
+                    <Label>Portion completed</Label>
+                    <Input value={form.portion_completed} onChange={(e) => setForm({ ...form, portion_completed: e.target.value })} placeholder="Example: 60%, exercise 2.1, activity 1" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>Student participation</Label>
+                    <Input value={form.student_participation} onChange={(e) => setForm({ ...form, student_participation: e.target.value })} placeholder="High / moderate / low, notes..." />
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label>Activity or assessment conducted</Label>
+                  <Textarea value={form.activity_or_assessment} onChange={(e) => setForm({ ...form, activity_or_assessment: e.target.value })} rows={2} placeholder="Quiz, worksheet, AI demo, lab activity, group discussion..." />
+                </div>
+
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="space-y-1.5">
+                    <Label>Reason for delay, if any</Label>
+                    <Textarea value={form.delay_reason} onChange={(e) => setForm({ ...form, delay_reason: e.target.value })} rows={2} placeholder="Holiday, assembly, slow progress, rescheduled class..." />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>Next planned topic</Label>
+                    <Textarea value={form.next_planned_topic} onChange={(e) => setForm({ ...form, next_planned_topic: e.target.value })} rows={2} placeholder="Topic/chapter/session planned next" />
                   </div>
                 </div>
 
@@ -239,12 +289,24 @@ function AcademicExecutionPage() {
             <Metric icon={BookOpenCheck} label="Avg. completion" value={`${d?.summary.averageCompletion ?? 0}%`} />
             <Metric icon={ShieldAlert} label="Behind schedule" value={d?.summary.behind ?? 0} />
             <Metric icon={ShieldAlert} label="At risk" value={d?.summary.atRisk ?? 0} danger />
+            <Metric icon={ShieldAlert} label="Delayed / rescheduled" value={d?.summary.delayedOrRescheduled ?? 0} danger={(d?.summary.delayedOrRescheduled ?? 0) > 0} />
+            <Metric icon={ClipboardCheck} label="Missed updates" value={d?.summary.missedProgressUpdates ?? 0} danger={(d?.summary.missedProgressUpdates ?? 0) > 0} />
+            <Metric icon={BookOpenCheck} label="Monthly completion" value={`${d?.summary.monthlyCompletionStatus ?? 0}%`} />
+            <Metric icon={CalendarCheck} label="Today's AI classes" value="Schedule sync pending" />
           </div>
+
+          {((d?.summary.missedProgressUpdates ?? 0) > 0 || (d?.summary.delayedOrRescheduled ?? 0) > 0) && (
+            <Card className="border-amber-200 bg-amber-50">
+              <CardContent className="p-4 text-sm text-amber-950">
+                Automatic alerts should be reviewed for missed teacher updates and chapters not completed within the scheduled period.
+              </CardContent>
+            </Card>
+          )}
 
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Principal & Coordinator Monitoring Dashboard</CardTitle>
-              <CardDescription>Subject-wise, teacher-wise, and class-wise completion status.</CardDescription>
+              <CardTitle className="text-base">Principal & School Super Admin Monitoring Dashboard</CardTitle>
+              <CardDescription>Today&apos;s AI classes, chapter status, teacher-wise progress, class-wise completion, delays, missed updates, and monthly completion status.</CardDescription>
             </CardHeader>
             <CardContent>
               {!d?.rows?.length ? (
@@ -298,7 +360,7 @@ function AcademicExecutionPage() {
                         <div className="font-medium">
                           Grade {log.grade}{log.section ? `-${log.section}` : ""} - {log.subject}
                         </div>
-                        <Badge variant="outline">{log.status.replaceAll("_", " ")}</Badge>
+                        <Badge variant="outline">{progressStatusLabel(log.status)}</Badge>
                       </div>
                       <p className="mt-1 text-muted-foreground">{log.actual_date} - {log.actual_topics}</p>
                       {log.remarks && <p className="mt-1 text-xs text-muted-foreground">Remarks: {log.remarks}</p>}
