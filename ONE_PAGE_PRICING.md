@@ -4,17 +4,17 @@ Syllabus Synk is an academic planning and future-ready education platform for sc
 
 Prices below are current platform prices. Indian pricing is exclusive of GST. Annual billing is charged at 10 months for a 12-month subscription where applicable.
 
-| Plan | Best For | Monthly Price | Annual Price | Key Limits |
-| --- | --- | ---: | ---: | --- |
-| Retail Single Access | Individual teachers, tutors, coaching faculty | Rs. 499 + GST / $9 | Rs. 4,990 + GST / $90 | 1 user, 1 class, 1 subject, 500 AI credits/month, 1 GB storage |
-| Primary Bundle | Pre-K to Grade 5, single school | Rs. 2,999 + GST / $29 | Rs. 29,990 + GST / $290 | Up to 6 users, all primary subjects, 2,000 AI credits/month |
-| Primary Plus Bundle | Pre-K to Grade 5 with AI Leadership Suite | Rs. 4,000 + GST / $39 | Rs. 40,000 + GST / $390 | Up to 8 users, 3,500 AI credits/month, AI Leadership Suite |
-| Middle School Bundle | Grades 6 to 8, single school | Rs. 4,999 + GST / $49 | Rs. 49,990 + GST / $490 | Up to 10 users, 4,000 AI credits/month, standard recalibration |
-| Middle School Plus Bundle | Grades 6 to 8 with AI Leadership Suite | Rs. 6,000 + GST / $59 | Rs. 60,000 + GST / $590 | Up to 14 users, 6,500 AI credits/month, AI Leadership Suite |
-| High School Bundle | Grades 9 to 12, single school | Rs. 7,000 + GST / $69 | Rs. 70,000 + GST / $690 | Up to 18 users, 6,500 AI credits/month, board exam planning |
-| High School Plus Bundle | Grades 9 to 12 with AI Leadership Suite | Rs. 9,000 + GST / $89 | Rs. 90,000 + GST / $890 | Up to 25 users, 10,000 AI credits/month, AI Leadership Suite |
-| Enterprise | Single campus, full K-12 | Rs. 18,000 + GST / $179 | Rs. 1,80,000 + GST / $1,790 | All grades, up to 60 users, 25,000 AI credits/month, white-label, API access |
-| Enterprise Plus | Full K-12 with advanced AI Leadership Suite | Rs. 25,000 + GST / $249 | Rs. 2,50,000 + GST / $2,490 | All grades, up to 100 users, 40,000 AI credits/month, advanced intelligence suite |
+| Plan | Best For | Monthly Price | Annual Price | Storage Included | Key Limits |
+| --- | --- | ---: | ---: | ---: | --- |
+| Retail Single Access | Individual teachers, tutors, coaching faculty | Rs. 499 + GST / $9 | Rs. 4,990 + GST / $90 | 1 GB | 1 user, 1 class, 1 subject, 500 AI credits/month |
+| Primary Bundle | Pre-K to Grade 5, single school | Rs. 2,999 + GST / $29 | Rs. 29,990 + GST / $290 | 50 GB | Up to 6 users, all primary subjects, 2,000 AI credits/month |
+| Primary Plus Bundle | Pre-K to Grade 5 with AI Leadership Suite | Rs. 4,000 + GST / $39 | Rs. 40,000 + GST / $390 | 75 GB | Up to 8 users, 3,500 AI credits/month, AI Leadership Suite |
+| Middle School Bundle | Grades 6 to 8, single school | Rs. 4,999 + GST / $49 | Rs. 49,990 + GST / $490 | 100 GB | Up to 10 users, 4,000 AI credits/month, standard recalibration |
+| Middle School Plus Bundle | Grades 6 to 8 with AI Leadership Suite | Rs. 6,000 + GST / $59 | Rs. 60,000 + GST / $590 | 150 GB | Up to 14 users, 6,500 AI credits/month, AI Leadership Suite |
+| High School Bundle | Grades 9 to 12, single school | Rs. 7,000 + GST / $69 | Rs. 70,000 + GST / $690 | 200 GB | Up to 18 users, 6,500 AI credits/month, board exam planning |
+| High School Plus Bundle | Grades 9 to 12 with AI Leadership Suite | Rs. 9,000 + GST / $89 | Rs. 90,000 + GST / $890 | 300 GB | Up to 25 users, 10,000 AI credits/month, AI Leadership Suite |
+| Enterprise | Single campus, full K-12 | Rs. 18,000 + GST / $179 | Rs. 1,80,000 + GST / $1,790 | 400 GB | All grades, up to 60 users, 25,000 AI credits/month, white-label, API access |
+| Enterprise Plus | Full K-12 with advanced AI Leadership Suite | Rs. 25,000 + GST / $249 | Rs. 2,50,000 + GST / $2,490 | 500 GB | All grades, up to 100 users, 40,000 AI credits/month, advanced intelligence suite |
 
 ## What Schools Get
 
