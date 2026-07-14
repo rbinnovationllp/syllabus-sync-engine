@@ -45,6 +45,7 @@ Implemented or partially implemented areas include:
 ## Recent Work Completed
 
 Recent changes completed through 2026-07-15:
+- Updated Ask Synk AI storage-pricing knowledge so it states exact additional storage add-on prices: 25 GB Rs. 250/month, 50 GB Rs. 500/month, 100 GB Rs. 900/month, 250 GB Rs. 2,000/month, 500 GB Rs. 3,500/month, and 1 TB+ custom enterprise pricing via support.
 - Added Ask SynkAI Knowledge Base Auto-Update architecture: indexed knowledge sources, validation status, critical-update approval, sync-run history, Company Super Admin refresh/review/approve controls, and approved-index loading for assistant answers.
 - Added Ask SynkAI unknown-question escalation: when the assistant lacks approved knowledge, it gives a passive non-guessing response and creates a Company CRM support-review ticket for support@syllabus-synk.in follow-up.
 - Added School Data Privacy, Security & Confidentiality Framework covering school data ownership, tenant isolation, role-based access, company admin support access, encryption expectations, audit logging, backups, secure exports, and confidentiality commitments.
