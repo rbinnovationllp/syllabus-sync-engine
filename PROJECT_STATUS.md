@@ -1,6 +1,6 @@
 # Project Status
 
-Date: 2026-07-12
+Date: 2026-07-15
 
 Project: CurriculumOS / Syllabus Synk
 
@@ -44,7 +44,8 @@ Implemented or partially implemented areas include:
 
 ## Recent Work Completed
 
-Recent changes completed through 2026-07-12:
+Recent changes completed through 2026-07-15:
+- Added daily syllabus progress exception reporting: assigned-vs-completed comparison, automatic exception reports, delay duration, syllabus target impact, corrective recommendations, pending-portion tracking, and in-app alerts for incomplete/rescheduled/not-started teacher updates.
 - Fixed the `/auth` page tab wiring so Sign in and Create account are separate forms with the correct submit handlers; signup now has its own name, email, password, and acquisition-source fields.
 - Added `ONE_PAGE_PRICING.md`, a concise one-page subscription pricing sheet aligned with the current plan catalog, storage quotas, add-ons, AI Future Force pricing, and paid services.
 - Added a permanent Master Super Admin bootstrap for `rbinnovationllp@gmail.com` / Rajesh Kumar Khare, granting the global `super_admin` role whenever that Supabase Auth user exists or is created later.
@@ -206,13 +207,15 @@ Working:
 - Teachers can mark lessons/sessions as Not Started, In Progress, Completed, Partially Completed, or Rescheduled.
 - Teacher update details include topic taught, date/period, portion completed, student participation, activity/assessment, delay reason, and next planned topic.
 - Principals and school admins can monitor class-wise, subject-wise, teacher-wise completion, delayed/rescheduled lessons, missed updates, and monthly completion status.
+- Daily Syllabus Exception Reports compare assigned work with completed work, show pending portion, delay duration, syllabus completion impact, and corrective recommendation.
+- Incomplete, not-started, rescheduled, or not-covered teacher updates create in-app alerts for school leadership roles using notification dedupe keys.
 - School Super Admin declaration and member authority visibility.
 - Session registry foundation and recycle-bin governance display.
 
 Needs work:
 - Full AI-class schedule integration for "today's scheduled AI classes."
 - Student assessment result integration in the execution dashboard.
-- Automated alert delivery for missed teacher updates and unfinished planned chapters.
+- Timetable-driven cron alerts for completely missed teacher updates before any progress record exists.
 - Forced logout/session management policy.
 - More granular permission delegation.
 - School-level audit logs and activity monitoring.

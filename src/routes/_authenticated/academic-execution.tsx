@@ -298,10 +298,47 @@ function AcademicExecutionPage() {
           {((d?.summary.missedProgressUpdates ?? 0) > 0 || (d?.summary.delayedOrRescheduled ?? 0) > 0) && (
             <Card className="border-amber-200 bg-amber-50">
               <CardContent className="p-4 text-sm text-amber-950">
-                Automatic alerts should be reviewed for missed teacher updates and chapters not completed within the scheduled period.
+                Automatic alerts and exception reports should be reviewed for missed teacher updates and chapters not completed within the scheduled period.
               </CardContent>
             </Card>
           )}
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Daily Syllabus Exception Reports</CardTitle>
+              <CardDescription>
+                Automatic comparison of assigned work against completed work, pending portions, delay impact, and corrective recommendations.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {!d?.exceptionReports?.length ? (
+                <p className="text-sm text-muted-foreground">No daily syllabus exceptions found.</p>
+              ) : (
+                <div className="space-y-3">
+                  {d.exceptionReports.map((report: any) => (
+                    <div key={report.id} className="rounded-md border p-3 text-sm">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <div className="font-medium">
+                          {report.teacher} - Grade {report.grade}{report.section ? `-${report.section}` : ""} - {report.subject}
+                        </div>
+                        <Badge variant={["not_started", "not_covered", "rescheduled"].includes(report.status) ? "destructive" : "secondary"}>
+                          {progressStatusLabel(report.status)}
+                        </Badge>
+                      </div>
+                      <div className="mt-3 grid gap-3 md:grid-cols-2">
+                        <ReportLine label="Assigned work" value={report.assignedWork} />
+                        <ReportLine label="Completed work" value={report.completedWork} />
+                        <ReportLine label="Pending portion" value={report.pendingPortion} />
+                        <ReportLine label="Delay duration" value={`${report.delayDurationDays} day${report.delayDurationDays === 1 ? "" : "s"}`} />
+                        <ReportLine label="Syllabus impact" value={report.impact} />
+                        <ReportLine label="Corrective recommendation" value={report.recommendation} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
           <Card>
             <CardHeader>
@@ -373,6 +410,15 @@ function AcademicExecutionPage() {
         </div>
       </div>
     </AppShell>
+  );
+}
+
+function ReportLine({ label, value }: { label: string; value: any }) {
+  return (
+    <div>
+      <div className="text-xs font-medium uppercase text-muted-foreground">{label}</div>
+      <div className="mt-1">{value || "-"}</div>
+    </div>
   );
 }
 

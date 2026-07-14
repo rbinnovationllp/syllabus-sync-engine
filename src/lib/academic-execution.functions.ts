@@ -33,6 +33,88 @@ function riskFrom(completion: number) {
   return "at_risk";
 }
 
+function extractRemarkValue(remarks: string | null | undefined, label: string) {
+  if (!remarks) return "";
+  const line = remarks
+    .split("\n")
+    .find((entry) => entry.toLowerCase().startsWith(`${label.toLowerCase()}:`));
+  return line?.slice(label.length + 1).trim() ?? "";
+}
+
+function isIncompleteStatus(status: string) {
+  return ["not_started", "in_progress", "partially_completed", "rescheduled", "not_covered"].includes(status);
+}
+
+function daysBetween(start: string | null | undefined, end: string | null | undefined) {
+  if (!start || !end) return 0;
+  const startTime = new Date(start).getTime();
+  const endTime = new Date(end).getTime();
+  if (!Number.isFinite(startTime) || !Number.isFinite(endTime)) return 0;
+  return Math.max(0, Math.ceil((endTime - startTime) / (24 * 60 * 60 * 1000)));
+}
+
+function buildCorrectiveRecommendation(log: any, delayDays: number) {
+  if (log.status === "rescheduled") {
+    return "Reschedule this lesson in the next available period and keep it open until the planned portion is completed.";
+  }
+  if (log.status === "not_started" || log.status === "not_covered") {
+    return "Assign a make-up class or protected recovery period, then require the teacher to submit a completion update.";
+  }
+  if (log.status === "partially_completed") {
+    return "Carry the pending portion into the next lesson, reduce non-essential activity time, and verify closure in the next progress update.";
+  }
+  if (delayDays > 2) {
+    return "Escalate to the academic coordinator and review whether the monthly syllabus target needs recalibration.";
+  }
+  return "Monitor the next update and close the pending portion before moving to the next chapter.";
+}
+
+async function notifyExecutionException(args: {
+  supabaseAdmin: any;
+  orgId: string;
+  schoolId: string | null;
+  logId: string;
+  teacherName: string;
+  grade: string;
+  section: string | null;
+  subject: string;
+  assignedWork: string;
+  pendingPortion: string;
+  status: string;
+}) {
+  const { data: recipients } = await args.supabaseAdmin
+    .from("org_members")
+    .select("user_id, role")
+    .eq("org_id", args.orgId)
+    .in("role", ["admin", "super_admin", "coordinator", "owner"]);
+
+  const severity = ["not_started", "not_covered", "rescheduled"].includes(args.status) ? "critical" : "warn";
+  const title = "Daily syllabus exception requires review";
+  const body = [
+    `${args.teacherName} did not fully complete the planned work for Grade ${args.grade}${args.section ? `-${args.section}` : ""} ${args.subject}.`,
+    `Assigned: ${args.assignedWork || "Not specified"}.`,
+    `Pending: ${args.pendingPortion || "Pending portion requires confirmation"}.`,
+  ].join(" ");
+
+  const rows = (recipients ?? []).map((recipient: any) => ({
+    user_id: recipient.user_id,
+    school_id: args.schoolId,
+    type: "daily_syllabus_exception",
+    title,
+    body,
+    link: "/academic-execution",
+    severity,
+    dedupe_key: `daily-syllabus-exception:${args.logId}:${recipient.user_id}`,
+  }));
+
+  if (rows.length) {
+    const { error } = await args.supabaseAdmin.from("notifications").insert(rows);
+    if (error && !String(error.message).toLowerCase().includes("duplicate")) {
+      console.warn("Could not create syllabus exception notifications", error.message);
+    }
+  }
+}
+
 export const getTeacherExecutionWorkspace = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
@@ -150,6 +232,27 @@ export const recordTeachingProgress = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    if (isIncompleteStatus(data.status)) {
+      const { data: profile } = await supabaseAdmin
+        .from("profiles")
+        .select("email, display_name")
+        .eq("id", userId)
+        .maybeSingle();
+      await notifyExecutionException({
+        supabaseAdmin,
+        orgId: me.org_id,
+        schoolId: year.school_id,
+        logId: row.id,
+        teacherName: profile?.display_name || profile?.email || "Teacher",
+        grade: data.grade,
+        section: data.section || null,
+        subject: data.subject,
+        assignedWork: data.planned_topic || data.actual_topics,
+        pendingPortion: extractRemarkValue(data.remarks, "Next planned topic") || data.planned_topic || "Pending portion requires follow-up",
+        status: data.status,
+      });
+    }
+
     await supabaseAdmin.from("platform_audit_logs").insert({
       org_id: me.org_id,
       user_id: userId,
@@ -269,6 +372,39 @@ export const getAcademicExecutionDashboard = createServerFn({ method: "GET" })
       ["not_started", "rescheduled", "not_covered"].includes(log.status),
     ).length;
     const missedProgressUpdates = rows.filter((row) => row.classesConducted === 0).length;
+    const exceptionReports = logs
+      .filter((log: any) => isIncompleteStatus(log.status))
+      .map((log: any) => {
+        const assignedWork = log.planned_topic || "Assigned work not specified";
+        const completedWork = log.actual_topics || "No completed work recorded";
+        const portionCompleted = extractRemarkValue(log.remarks, "Portion completed");
+        const nextPlannedTopic = extractRemarkValue(log.remarks, "Next planned topic");
+        const pendingPortion =
+          log.status === "completed"
+            ? ""
+            : nextPlannedTopic || (portionCompleted ? `Remaining after ${portionCompleted}` : assignedWork);
+        const delayDurationDays = daysBetween(log.planned_date, log.actual_date);
+        return {
+          id: log.id,
+          teacher: log.profiles?.display_name || log.profiles?.email || "Teacher",
+          grade: log.grade,
+          section: log.section,
+          subject: log.subject,
+          planned_date: log.planned_date,
+          actual_date: log.actual_date,
+          status: log.status,
+          assignedWork,
+          completedWork,
+          portionCompleted: portionCompleted || "Not fully completed",
+          pendingPortion,
+          delayDurationDays,
+          impact: delayDurationDays > 0
+            ? `${delayDurationDays} day delay may affect monthly syllabus completion target.`
+            : "Same-day exception; monitor next class to protect syllabus target.",
+          recommendation: buildCorrectiveRecommendation(log, delayDurationDays),
+          trackUntilCompleted: true,
+        };
+      });
 
     return {
       year,
@@ -280,9 +416,12 @@ export const getAcademicExecutionDashboard = createServerFn({ method: "GET" })
         delayedOrRescheduled,
         missedProgressUpdates,
         monthlyCompletionStatus: averageCompletion,
+        exceptionReports: exceptionReports.length,
+        pendingPortions: exceptionReports.filter((report) => report.pendingPortion).length,
       },
       rows,
       logs: logs.slice(0, 30),
+      exceptionReports,
     };
   });
 
