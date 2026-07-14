@@ -1,5 +1,9 @@
 ﻿import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import {
+  escalateAskSynkaiUnknownQuestion,
+  getApprovedAskSynkaiKnowledge,
+} from "@/lib/ask-synkai-knowledge.functions";
 
 const helpInput = z.object({
   message: z.string().trim().min(1).max(2000),
@@ -51,12 +55,14 @@ Detailed product guide:
 - Teacher Intelligence: highlights teachers tracked, average completion, high-risk/watch status, pending rows, and pacing interventions.
 - Student Intelligence: prepares cohort-style learning insight placeholders and intervention guidance; richer individual student scoring requires connected student assessment/homework/attendance data.
 - Parent Communication Hub: drafts PTM messages, parent notices, reminders, progress updates, and intervention communications for human review.
-- Academic Execution: teachers record daily teaching progress by assignment, date, planned topic, actual chapter/topics, completion status, periods taken, and remarks; principals/coordinators monitor class-wise, subject-wise, and teacher-wise completion, risk, and recent records.
+- Academic Execution: teachers record daily teaching progress by assignment, date, planned topic, actual chapter/topics, completion status, periods taken, and remarks; principals/coordinators monitor class-wise, subject-wise, and teacher-wise completion, risk, recent records, daily syllabus exception reports, and Teacher Credit Distribution Recommendations.
+- Teacher Credit Distribution Recommendations: School Super Admins can review advisory workload scores in Academic Execution. The engine analyzes assigned classes, subjects, weekly periods, academic responsibilities, examination duties, co-curricular responsibilities, special projects, and recent teaching activity to identify balanced, moderate overload, high overload, or underutilized teachers. Recommendations are advisory only; final decisions remain with school management.
 - Teacher Assignments: school admins assign teachers to grades, sections, and subjects, and can revoke assignments.
 - Seats: admins invite users as admin, coordinator, teacher, or viewer; invitation links can be copied/revoked; seat limits follow subscription plan plus extra seats.
 - School Governance: records official School Super Admin declaration, governance notes, member authority, session registry foundation, and recycle-bin governance.
 - School Profile: read-only master profile for school, academic year, holidays, vacations, events, exams, training days, subjects, and audit logs.
-- School Storage: AWS S3-backed protected storage for school documents, curriculum files, circulars, exports, and academic records within subscription quota.
+- School Storage: AWS S3-backed protected storage for school documents, curriculum files, circulars, exports, and academic records within subscription quota. School Super Admins can see allocated, used, and available storage; largest files; file-type breakdown; user-wise usage; category usage; threshold alerts at 80%, 90%, and 100%; upload blocking at quota limit; add-on storage packs; fair usage policy; enterprise storage options; and academic session archival controls.
+- Data privacy and security: school data remains the property of the respective school. Syllabus Synk acts as a technology platform and custodian only. School data must not be sold, shared, distributed, or commercially used without authorization. Schools are logically isolated, access is role-based, company administrator access is limited to authorized support/troubleshooting/maintenance, and critical access should be audit logged.
 - School CRM: lightweight school operations CRM for parent/contact records, admissions enquiries, enquiry stage updates, and follow-up completion.
 - Company CRM: super-admin workspace for school accounts, active subscriptions, support/onboarding tickets, plan catalog, visitor conversion, acquisition/referral attribution, and pipeline visibility.
 - Admin & CRM: admin dashboard for leads, clients, subscriptions, usage, AI usage, AI model settings, schools, admin access, partner enforcement, curriculum reviews, and audit logs.
@@ -66,6 +72,8 @@ Detailed product guide:
 - Payments: pricing supports USD/INR monthly and annual intervals, Stripe checkout/portal, Razorpay subscriptions for India, optional UPI panel, add-ons, AI credit top-ups, extra seats, extra campuses, and paid services by quotation.
 - Billing rules: annual plans are billed as 10x monthly price for two months free; India annual rebate is intended for subscribers joining on or before April. Account-specific billing issues must go to support.
 - Plan limits: plans define grade bands, user limits, AI credits, exports, storage, campuses, support level, teacher training, recalibration level, white-label/API/dedicated onboarding where available.
+- Additional storage: schools can purchase or be allocated add-on storage packs of 25 GB, 50 GB, 100 GB, 250 GB, 500 GB, or custom enterprise storage such as 1 TB, 2 TB, 5 TB, or unlimited subject to fair usage.
+- Fair usage policy: Each subscription plan includes a defined storage allocation. Additional storage may be purchased separately. The company reserves the right to archive inactive academic records and enforce fair usage policies to maintain platform performance.
 - Support email: use support@syllabus-synk.in for account access, billing, payment confirmation, failed checkout, plan assignment, or school-specific data issues.
 
 Pricing:
@@ -123,8 +131,16 @@ Teacher progress monitoring:
 
 AI assistant maintenance rule:
 - The assistant should guide users across every major feature listed above.
-- When PROJECT_STATUS.md is amended, its latest content should be treated as the living project record for current capabilities, recent changes, known gaps, and production-readiness status.
+- Ask SynkAI uses an approved knowledge-index layer plus static fallback knowledge. Company Super Admin can refresh, review, and approve indexed knowledge sources.
+- When PROJECT_STATUS.md is amended, its latest content should be indexed and treated as the living project record for current capabilities, recent changes, known gaps, and production-readiness status.
 - If a question concerns a feature that is marked prototype, partial, blocked, or needing work, clearly explain what currently works and what still requires completion.
+- If a question is beyond the approved Ask SynkAI knowledge base, answer passively, avoid guessing, and escalate it to the Syllabus Synk support queue for review by support@syllabus-synk.in.
+
+School data assurance:
+- All school data stored within Syllabus Synk is protected using industry-standard security practices, access controls, encryption, monitoring, and backup systems.
+- Each school's data remains isolated and confidential.
+- The platform is designed to prevent unauthorized access, cross-school visibility, and accidental disclosure of information.
+- School data remains the property of the respective institution.
 
 Support policy:
 - If user has billing, login, payment, or account-access problems, ask them to contact support@syllabus-synk.in.
@@ -163,8 +179,27 @@ function localAnswer(message: string, page?: string | null) {
   if (q.includes("price") || q.includes("plan") || q.includes("subscription") || q.includes("payment")) {
     return "Plans start from Primary Bundle at Rs. 2,999/month. Plus plans include the AI Leadership Suite. Open Plans from the top menu to compare packages. If a payment has failed or you need billing help, contact support@syllabus-synk.in.";
   }
+  if (q.includes("storage") || q.includes("upload limit") || q.includes("archive") || q.includes("fair usage")) {
+    return "School Storage includes a Super Admin dashboard for allocated, used, and available storage, largest files, category usage, file-type breakdown, user-wise usage, and alerts at 80%, 90%, and 100%. Uploads are paused when the quota is full until files are removed, old academic sessions are archived, or additional storage is purchased. Add-on packs are available for 25 GB, 50 GB, 100 GB, 250 GB, 500 GB, and custom enterprise storage.";
+  }
+  if (q.includes("teacher credit") || q.includes("workload") || q.includes("teacher load") || q.includes("distribution")) {
+    return "School Super Admins can review Teacher Credit Distribution Recommendations inside Academic Execution. The system scores teacher workload using assigned classes, subjects, weekly periods, duties, special projects, and recent teaching activity, then highlights balanced, moderate overload, high overload, or underutilized teachers. These recommendations are advisory; final decisions remain with school management.";
+  }
   if (q.includes("razorpay") || q.includes("pay")) {
     return "For Indian schools, payments are handled through Razorpay. If checkout does not open, refresh the page, confirm you selected INR pricing, and try again. For payment confirmation problems, contact support@syllabus-synk.in.";
+  }
+  if (
+    q.includes("privacy") ||
+    q.includes("security") ||
+    q.includes("confidential") ||
+    q.includes("data leak") ||
+    q.includes("data ownership") ||
+    q.includes("tenant") ||
+    q.includes("isolation") ||
+    q.includes("encryption") ||
+    q.includes("backup")
+  ) {
+    return "Syllabus Synk treats school data as the property of the respective institution. The platform is designed around tenant isolation, role-based access, audit logging, encrypted transmission/storage practices, controlled exports, backups, and confidentiality commitments. Syllabus Synk acts as a technology custodian and should not sell, share, distribute, or commercially use school data without explicit authorization.";
   }
   if (q.includes("calendar") || q.includes("holiday") || q.includes("exam") || q.includes("event")) {
     return "To prepare the academic calendar, first add the academic year dates, weekly offs, holidays, exam windows, and school events. Then generate the annual calendar so Syllabus Synk can calculate real teaching capacity before syllabus planning.";
@@ -181,17 +216,20 @@ function localAnswer(message: string, page?: string | null) {
   if (q.includes("login") || q.includes("sign") || q.includes("password")) {
     return "Use the Sign in page to log in or create an account. If email confirmation is enabled, check your inbox. Never share your password or OTP with anyone. For account access help, contact support@syllabus-synk.in.";
   }
-  return `I am Ask Synk AI. I can help with Syllabus Synk features, academic year setup, syllabus generation, subscriptions, AI Leadership Suite, AI Future Force, one-month demo plans, exports, and visitor guidance${page ? ` on this page (${page})` : ""}. Tell me what you are trying to do, and I will guide you step by step. For demos or urgent support, email support@syllabus-synk.in.`;
+  return `I do not have enough approved information to answer that confidently. I can help with Syllabus Synk features, academic year setup, syllabus generation, subscriptions, AI Leadership Suite, AI Future Force, one-month demo plans, exports, storage, privacy/security, and visitor guidance${page ? ` on this page (${page})` : ""}. I have forwarded this question to the Syllabus Synk support queue for review at support@syllabus-synk.in.`;
 }
 
-async function projectStatusKnowledge() {
+async function approvedKnowledge() {
+  const indexed = await getApprovedAskSynkaiKnowledge();
+  if (indexed) return `Approved Ask SynkAI knowledge index:\n${indexed}`;
+
   try {
     const { readFile } = await import("node:fs/promises");
     const { join } = await import("node:path");
     const content = await readFile(join(process.cwd(), "PROJECT_STATUS.md"), "utf8");
-    return `Living project status document:\n${content.slice(0, 24000)}`;
+    return `Fallback living project status document:\n${content.slice(0, 24000)}`;
   } catch {
-    return "Living project status document: PROJECT_STATUS.md could not be loaded in this environment.";
+    return "Approved Ask SynkAI knowledge index: no approved indexed knowledge could be loaded in this environment.";
   }
 }
 
@@ -218,7 +256,7 @@ async function aiAnswer(data: z.infer<typeof helpInput>) {
     history ? `Recent chat:\n${history}` : "",
     `User question: ${data.message}`,
   ].filter(Boolean).join("\n\n");
-  const statusKnowledge = await projectStatusKnowledge();
+  const statusKnowledge = await approvedKnowledge();
 
   const result = await generateText({
     model: provider(model),
@@ -229,6 +267,7 @@ async function aiAnswer(data: z.infer<typeof helpInput>) {
       "You may explain internal dashboards and monitoring capabilities, but do not claim to operate teacher tracking, curriculum monitoring, progress analysis, or management reporting from the public chat. Direct those actions to authenticated Syllabus Synk dashboards.",
       "When visitors ask for a demo, guide them to the homepage demo form and the one-month AI Future Force demo-plan option.",
       "For broad feature questions, explain what the feature does, who uses it, where to find it, and any current limitations from the living project status.",
+      "If the approved knowledge does not contain enough information, say you do not have enough approved information, avoid guessing, and say the question will be sent to support@syllabus-synk.in for review.",
       "Never ask for passwords, OTPs, service role keys, API secrets, or payment card details.",
       "If unsure or if the issue is billing/account-specific, send the user to support@syllabus-synk.in.",
       KNOWLEDGE_BASE,
@@ -246,10 +285,26 @@ export const askAiHelpAssistant = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     try {
       const ai = await aiAnswer(data);
-      return { answer: ai ?? localAnswer(data.message, data.page), provider: ai ? "ai" : "local" };
+      const answer = ai ?? localAnswer(data.message, data.page);
+      if (answer.includes("I do not have enough approved information")) {
+        await escalateAskSynkaiUnknownQuestion({
+          question: data.message,
+          page: data.page,
+          answer,
+        });
+      }
+      return { answer, provider: ai ? "ai" : "local" };
     } catch (e: any) {
+      const answer = `${localAnswer(data.message, data.page)}\n\nAI provider note: ${e?.message ?? "unavailable"}`;
+      if (answer.includes("I do not have enough approved information")) {
+        await escalateAskSynkaiUnknownQuestion({
+          question: data.message,
+          page: data.page,
+          answer,
+        }).catch(() => undefined);
+      }
       return {
-        answer: `${localAnswer(data.message, data.page)}\n\nAI provider note: ${e?.message ?? "unavailable"}`,
+        answer,
         provider: "local",
       };
     }

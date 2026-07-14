@@ -302,7 +302,8 @@ function PricingPage() {
           <h2 className="text-lg font-semibold mb-3">Add-ons</h2>
           <div className="grid gap-4 md:grid-cols-3">
             {ADD_ONS.filter((a) => !a.id.startsWith("ai_future_force")).map((a) => {
-              const price = a.prices.find((x) => x.currency === currency)!;
+              const price = a.prices.find((x) => x.currency === currency);
+              if (!price) return null;
               return (
                 <Card key={a.id}>
                   <CardHeader>

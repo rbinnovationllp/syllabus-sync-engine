@@ -31,7 +31,7 @@ import {
   getTeacherExecutionWorkspace,
   recordTeachingProgress,
 } from "@/lib/academic-execution.functions";
-import { BookOpenCheck, CalendarCheck, ClipboardCheck, ShieldAlert } from "lucide-react";
+import { BookOpenCheck, CalendarCheck, ClipboardCheck, Scale, ShieldAlert } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/academic-execution")({
   head: () => ({ meta: [{ title: "Academic Execution Monitoring - CurriculumOS" }] }),
@@ -292,6 +292,7 @@ function AcademicExecutionPage() {
             <Metric icon={ShieldAlert} label="Delayed / rescheduled" value={d?.summary.delayedOrRescheduled ?? 0} danger={(d?.summary.delayedOrRescheduled ?? 0) > 0} />
             <Metric icon={ClipboardCheck} label="Missed updates" value={d?.summary.missedProgressUpdates ?? 0} danger={(d?.summary.missedProgressUpdates ?? 0) > 0} />
             <Metric icon={BookOpenCheck} label="Monthly completion" value={`${d?.summary.monthlyCompletionStatus ?? 0}%`} />
+            <Metric icon={Scale} label="Workload alerts" value={d?.summary.overloadedTeachers ?? 0} danger={(d?.summary.overloadedTeachers ?? 0) > 0} />
             <Metric icon={CalendarCheck} label="Today's AI classes" value="Schedule sync pending" />
           </div>
 
@@ -333,6 +334,46 @@ function AcademicExecutionPage() {
                         <ReportLine label="Syllabus impact" value={report.impact} />
                         <ReportLine label="Corrective recommendation" value={report.recommendation} />
                       </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Teacher Credit Distribution Recommendations</CardTitle>
+              <CardDescription>
+                Advisory workload scoring for School Super Admin review across classes, subjects, weekly periods, duties, and additional responsibilities.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {!d?.teacherCreditRecommendations?.length ? (
+                <p className="text-sm text-muted-foreground">No teacher assignment data available for workload recommendations.</p>
+              ) : (
+                <div className="space-y-3">
+                  {d.teacherCreditRecommendations.map((row: any) => (
+                    <div key={row.teacher_user_id} className="rounded-md border p-3 text-sm">
+                      <div className="flex flex-wrap items-start justify-between gap-3">
+                        <div>
+                          <div className="font-medium">{row.teacher}</div>
+                          <div className="mt-1 text-xs text-muted-foreground">
+                            {row.classCount} class{row.classCount === 1 ? "" : "es"} · {row.subjectCount} subject{row.subjectCount === 1 ? "" : "s"} · {row.weeklyPeriods} weekly periods
+                          </div>
+                        </div>
+                        <Badge variant={workloadVariant(row.workloadStatus) as any}>
+                          {workloadLabel(row.workloadStatus)} · Score {row.creditScore}
+                        </Badge>
+                      </div>
+                      <div className="mt-3 grid gap-3 md:grid-cols-2">
+                        <ReportLine label="Academic responsibilities" value={row.academicResponsibilities} />
+                        <ReportLine label="Examination duties" value={row.examinationDuties} />
+                        <ReportLine label="Co-curricular responsibilities" value={row.coCurricularResponsibilities} />
+                        <ReportLine label="Special projects" value={row.specialProjects} />
+                      </div>
+                      <p className="mt-3 text-muted-foreground">{row.recommendation}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">{row.advisoryNote}</p>
                     </div>
                   ))}
                 </div>
@@ -420,6 +461,19 @@ function ReportLine({ label, value }: { label: string; value: any }) {
       <div className="mt-1">{value || "-"}</div>
     </div>
   );
+}
+
+function workloadLabel(status: string) {
+  if (status === "high_overload") return "High overload";
+  if (status === "moderate_overload") return "Moderate overload";
+  if (status === "underutilized") return "Underutilized";
+  return "Balanced";
+}
+
+function workloadVariant(status: string) {
+  if (status === "high_overload" || status === "underutilized") return "destructive";
+  if (status === "moderate_overload") return "secondary";
+  return "outline";
 }
 
 function Metric({ icon: Icon, label, value, danger }: { icon: any; label: string; value: any; danger?: boolean }) {

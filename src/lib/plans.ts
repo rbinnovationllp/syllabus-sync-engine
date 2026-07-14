@@ -395,6 +395,11 @@ export type AddOnId =
   | "ai_credits_10k"
   | "extra_campus"
   | "extra_user"
+  | "extra_storage_25gb"
+  | "extra_storage_50gb"
+  | "extra_storage_100gb"
+  | "extra_storage_250gb"
+  | "extra_storage_500gb"
   | "ai_future_force_primary"
   | "ai_future_force_middle"
   | "ai_future_force_higher"
@@ -477,6 +482,56 @@ export const ADD_ONS: AddOn[] = [
     ],
   },
   {
+    id: "extra_storage_25gb",
+    name: "Additional Storage - 25 GB",
+    description: "Add 25 GB storage to the school's document and academic record storage quota. Recurring monthly.",
+    creditsGranted: 0,
+    recurring: true,
+    prices: [
+      { priceId: "extra_storage_25gb_monthly_inr", amount: 25000, currency: "inr", display: "Rs. 250 / mo", interval: "monthly" },
+    ],
+  },
+  {
+    id: "extra_storage_50gb",
+    name: "Additional Storage - 50 GB",
+    description: "Add 50 GB storage to the school's document and academic record storage quota. Recurring monthly.",
+    creditsGranted: 0,
+    recurring: true,
+    prices: [
+      { priceId: "extra_storage_50gb_monthly_inr", amount: 50000, currency: "inr", display: "Rs. 500 / mo", interval: "monthly" },
+    ],
+  },
+  {
+    id: "extra_storage_100gb",
+    name: "Additional Storage - 100 GB",
+    description: "Add 100 GB storage to the school's document and academic record storage quota. Recurring monthly.",
+    creditsGranted: 0,
+    recurring: true,
+    prices: [
+      { priceId: "extra_storage_100gb_monthly_inr", amount: 90000, currency: "inr", display: "Rs. 900 / mo", interval: "monthly" },
+    ],
+  },
+  {
+    id: "extra_storage_250gb",
+    name: "Additional Storage - 250 GB",
+    description: "Add 250 GB storage to the school's document and academic record storage quota. Recurring monthly.",
+    creditsGranted: 0,
+    recurring: true,
+    prices: [
+      { priceId: "extra_storage_250gb_monthly_inr", amount: 200000, currency: "inr", display: "Rs. 2,000 / mo", interval: "monthly" },
+    ],
+  },
+  {
+    id: "extra_storage_500gb",
+    name: "Additional Storage - 500 GB",
+    description: "Add 500 GB storage to the school's document and academic record storage quota. Recurring monthly.",
+    creditsGranted: 0,
+    recurring: true,
+    prices: [
+      { priceId: "extra_storage_500gb_monthly_inr", amount: 350000, currency: "inr", display: "Rs. 3,500 / mo", interval: "monthly" },
+    ],
+  },
+  {
     id: "ai_credits_500",
     name: "AI Credits - 500",
     description: "Top-up pack: 500 additional AI credits, never expires.",
@@ -515,10 +570,23 @@ const ADDON_PRICE_TO_CREDITS: Record<string, number> = Object.fromEntries(
   ADD_ONS.flatMap((a) => a.prices.map((pr) => [pr.priceId, a.creditsGranted] as const)),
 );
 
+const ADDON_PRICE_TO_STORAGE_GB: Record<string, number> = {
+  extra_storage_25gb_monthly_inr: 25,
+  extra_storage_50gb_monthly_inr: 50,
+  extra_storage_100gb_monthly_inr: 100,
+  extra_storage_250gb_monthly_inr: 250,
+  extra_storage_500gb_monthly_inr: 500,
+};
+
 export function creditsForAddOnPrice(priceId: string | null | undefined): number | null {
   if (!priceId) return null;
   const v = ADDON_PRICE_TO_CREDITS[priceId];
   return v && v > 0 ? v : null;
+}
+
+export function storageGbForAddOnPrice(priceId: string | null | undefined): number | null {
+  if (!priceId) return null;
+  return ADDON_PRICE_TO_STORAGE_GB[priceId] ?? null;
 }
 
 export const PAID_SERVICES = [
@@ -529,6 +597,7 @@ export const PAID_SERVICES = [
   { name: "Custom software feature", price: "Separate quotation" },
   { name: "On-site visit", price: "Travel + consulting fee" },
   { name: "Data migration", price: "Rs. 10,000 - 50,000" },
+  { name: "Additional storage - 1 TB", price: "Custom Pricing" },
 ] as const;
 
 const PRICE_TO_TIER: Record<string, TierId> = Object.fromEntries(

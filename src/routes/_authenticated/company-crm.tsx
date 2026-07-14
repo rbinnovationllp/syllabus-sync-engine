@@ -4,6 +4,11 @@ import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { getCompanyCrmOperations, createCompanySupportTicket, updateCompanySupportTicketStatus } from "@/lib/company-crm.functions";
+import {
+  approveAskSynkaiKnowledgeSource,
+  listAskSynkaiKnowledgeBase,
+  refreshAskSynkaiKnowledgeBase,
+} from "@/lib/ask-synkai-knowledge.functions";
 import { getVisitorConversionReport } from "@/lib/site-analytics.functions";
 import { getAcquisitionReport } from "@/lib/acquisition.functions";
 import { acquisitionSourceLabel } from "@/lib/acquisition";
@@ -15,7 +20,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Briefcase, Building2, Eye, Headphones, IndianRupee, Loader2, Plus, ShieldCheck, UsersRound } from "lucide-react";
+import { Brain, Briefcase, Building2, CheckCircle2, Eye, Headphones, IndianRupee, Loader2, Plus, RefreshCw, ShieldCheck, UsersRound } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/company-crm")({
@@ -75,19 +80,154 @@ function CompanyCrmPage() {
         <AcquisitionReportPanel report={acquisition.data} isLoading={acquisition.isLoading} />
 
         <Tabs defaultValue="subscriptions" className="space-y-4">
-          <TabsList className="grid w-full max-w-4xl grid-cols-4">
+          <TabsList className="grid w-full max-w-5xl grid-cols-5">
             <TabsTrigger value="subscriptions">Subscriptions</TabsTrigger>
             <TabsTrigger value="support">Support</TabsTrigger>
+            <TabsTrigger value="knowledge">Ask SynkAI</TabsTrigger>
             <TabsTrigger value="accounts">Accounts</TabsTrigger>
             <TabsTrigger value="catalog">Plan catalog</TabsTrigger>
           </TabsList>
           <TabsContent value="subscriptions"><SubscriptionPanel data={d} /></TabsContent>
           <TabsContent value="support"><SupportPanel data={d} /></TabsContent>
+          <TabsContent value="knowledge"><AskSynkaiKnowledgePanel /></TabsContent>
           <TabsContent value="accounts"><AccountsPanel accounts={d.accounts} /></TabsContent>
           <TabsContent value="catalog"><CatalogPanel rows={d.catalog} /></TabsContent>
         </Tabs>
       </div>
     </AppShell>
+  );
+}
+
+function AskSynkaiKnowledgePanel() {
+  const listFn = useServerFn(listAskSynkaiKnowledgeBase);
+  const refreshFn = useServerFn(refreshAskSynkaiKnowledgeBase);
+  const approveFn = useServerFn(approveAskSynkaiKnowledgeSource);
+  const qc = useQueryClient();
+  const q = useQuery({ queryKey: ["ask-synkai-knowledge"], queryFn: () => listFn(), retry: false });
+  const refresh = () => {
+    qc.invalidateQueries({ queryKey: ["ask-synkai-knowledge"] });
+    qc.invalidateQueries({ queryKey: ["company-crm-ops"] });
+  };
+  const refreshKb = useMutation({
+    mutationFn: () => refreshFn(),
+    onSuccess: (run: any) => {
+      toast.success(run?.pending_count ? "Knowledge refreshed; critical updates need approval" : "Ask SynkAI knowledge refreshed");
+      refresh();
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+  const approve = useMutation({
+    mutationFn: (id: string) => approveFn({ data: { id } }),
+    onSuccess: () => {
+      toast.success("Knowledge source approved");
+      refresh();
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  if (q.isLoading) {
+    return (
+      <Card>
+        <CardContent className="flex items-center gap-3 p-5 text-sm text-muted-foreground">
+          <Loader2 className="h-4 w-4 animate-spin" /> Loading Ask SynkAI knowledge status...
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const data = q.data;
+  return (
+    <div className="space-y-4">
+      <div className="grid gap-4 md:grid-cols-4">
+        <Metric icon={Brain} label="Indexed sources" value={data?.summary.total ?? 0} />
+        <Metric icon={CheckCircle2} label="Approved" value={data?.summary.approved ?? 0} />
+        <Metric icon={RefreshCw} label="Pending" value={data?.summary.pending ?? 0} />
+        <Metric icon={ShieldCheck} label="Critical pending" value={data?.summary.criticalPending ?? 0} />
+      </div>
+
+      <Card>
+        <CardHeader>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <CardTitle>Ask SynkAI Knowledge Synchronization</CardTitle>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Refresh indexed platform knowledge from approved project documentation, pricing, policies, and security framework. Critical changes remain pending until approved.
+              </p>
+            </div>
+            <Button onClick={() => refreshKb.mutate()} disabled={refreshKb.isPending}>
+              {refreshKb.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
+              Refresh knowledge
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Source</TableHead>
+                <TableHead>Category</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Validation</TableHead>
+                <TableHead>Preview</TableHead>
+                <TableHead>Action</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {(data?.sources ?? []).map((source: any) => (
+                <TableRow key={source.id}>
+                  <TableCell className="min-w-52">
+                    <div className="font-medium">{source.title}</div>
+                    <div className="text-xs text-muted-foreground">{source.source_key}</div>
+                  </TableCell>
+                  <TableCell>{source.category}</TableCell>
+                  <TableCell>
+                    <Badge variant={source.status === "approved" ? "default" : source.status === "pending" ? "secondary" : "destructive"}>
+                      {source.status}{source.critical ? " · critical" : ""}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <div>{source.validation_status}</div>
+                    {source.validation_notes ? <div className="text-xs text-muted-foreground">{source.validation_notes}</div> : null}
+                  </TableCell>
+                  <TableCell className="max-w-md">
+                    <p className="max-h-20 overflow-hidden text-xs text-muted-foreground">{source.preview}</p>
+                  </TableCell>
+                  <TableCell>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={source.status === "approved" || approve.isPending}
+                      onClick={() => approve.mutate(source.id)}
+                    >
+                      Approve
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader><CardTitle>Recent synchronization runs</CardTitle></CardHeader>
+        <CardContent className="space-y-2">
+          {(data?.runs ?? []).length === 0 ? (
+            <p className="text-sm text-muted-foreground">No sync runs yet. Click Refresh knowledge to create the first index.</p>
+          ) : data.runs.map((run: any) => (
+            <div key={run.id} className="rounded-lg border p-3 text-sm">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="font-medium">{new Date(run.created_at).toLocaleString()}</div>
+                <Badge variant={run.status === "success" ? "default" : "secondary"}>{run.status}</Badge>
+              </div>
+              <div className="mt-1 text-muted-foreground">
+                Indexed {run.sources_indexed}, approved {run.approved_count}, pending {run.pending_count}. {run.notes}
+              </div>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+    </div>
   );
 }
 

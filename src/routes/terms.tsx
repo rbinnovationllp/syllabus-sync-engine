@@ -56,6 +56,17 @@ function TermsPage() {
             <p>Audit records may include user name, user role, school name, date, time, action performed, device information, and IP address where legally permissible. These logs are retained according to the company data retention policy and are used for security, accountability, quality assurance, dispute resolution, and regulatory compliance.</p>
           </CardContent>
         </Card>
+
+        <Card>
+          <CardHeader><CardTitle>School data privacy, security, and confidentiality</CardTitle></CardHeader>
+          <CardContent className="space-y-3 text-sm leading-6 text-slate-700">
+            <p>All academic, administrative, student, teacher, examination, and operational data uploaded by a school remains the property of that respective school. Syllabus Synk acts only as a technology platform and custodian of the data.</p>
+            <p>The company shall not sell, share, distribute, or use school data for commercial purposes without explicit authorization. Data access is restricted to authorized users and role-based permissions.</p>
+            <p>Each school&apos;s data is designed to remain logically separated from every other school. Users of one school must never be able to view, search, export, or retrieve information belonging to another school.</p>
+            <p>Company administrator access to school data should occur only when necessary for authorized support, troubleshooting, or maintenance, and such access should be recorded in audit logs where implemented.</p>
+            <p>All school data stored within Syllabus Synk is protected using industry-standard security practices, access controls, encryption, monitoring, and backup systems. Each school&apos;s data remains isolated and confidential. The platform is designed to prevent unauthorized access, cross-school visibility, and accidental disclosure of information. School data remains the property of the respective institution.</p>
+          </CardContent>
+        </Card>
       </section>
     </main>
   );

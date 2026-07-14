@@ -23,6 +23,7 @@ Mandatory gaps:
 - There is no complete role matrix for Company Super Admin, School Super Admin, Principal, Coordinator, Teacher, Administrative Staff, and Viewer.
 - Logout, recovery, role denial, expired invitation, and invalid token flows need end-to-end tests.
 - Failed direct access attempts are not consistently logged.
+- Tenant isolation, cross-school access denial, export authorization, and role-scoped data visibility must be tested across every school-owned table and workflow.
 
 ## 2. Razorpay Integration
 
@@ -143,6 +144,24 @@ Mandatory gaps:
 - CRM permissions are not yet granular by role or feature.
 - Several new CRM tables are missing from generated Supabase TypeScript types, causing TypeScript failures.
 
+## 7. School Data Privacy, Security, and Ask SynkAI Knowledge Governance
+
+Status: Framework added; not independently production-verified.
+
+Current implementation:
+- School Data Privacy, Security & Confidentiality Framework is documented in Terms, School Governance, Ask SynkAI knowledge, and database seed policy.
+- The framework states school data ownership, platform custodian role, no unauthorized sale/sharing/commercial use, tenant isolation, role-based access, company-admin support access limits, encryption expectations, audit logging, backups, secure exports, and future security principles.
+- Ask SynkAI has a managed knowledge-index foundation with Company Super Admin refresh/review/approval controls and unknown-question support-ticket escalation.
+
+Mandatory gaps:
+- Verify tenant isolation through automated tests for every school-scoped table.
+- Verify teachers can only access assigned classes/subjects and cannot infer another school's data through search, export, dashboard, CRM, storage, or AI workflows.
+- Verify Company Super Admin support/troubleshooting access is explicitly authorized, scoped, and audit logged.
+- Verify sensitive exports are permission-controlled, scoped to authorized data, and audit tracked.
+- Document operational backup, restore, incident-response, and disaster-recovery procedures.
+- Confirm production database, backups, object storage, and transport encryption settings with the hosting providers.
+- Add scheduled or release-triggered Ask SynkAI knowledge refresh and approval workflow after deployments.
+
 ## Release Gate Summary
 
 Production readiness is blocked until:
@@ -152,5 +171,6 @@ Production readiness is blocked until:
 - Question-paper generation is tied to approved syllabus coverage only.
 - School Super Admin gets module-wise and feature-wise permission delegation.
 - School CRM and Master CRM are completed and covered by role-based permissions.
+- School data privacy/security controls, tenant-isolation tests, export audits, backup/recovery procedures, and Ask SynkAI knowledge approval process are production verified.
 - Supabase generated types are refreshed for all new tables.
 - Full TypeScript, lint, build, and end-to-end checks pass.

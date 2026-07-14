@@ -10,13 +10,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import {
+  archiveAcademicSessionStorage,
   completeSchoolFileUpload,
   createSchoolFileDownload,
   createSchoolFileUpload,
   deleteSchoolFile,
   getSchoolStorageDashboard,
 } from "@/lib/school-storage.functions";
-import { Download, HardDrive, Loader2, Trash2, UploadCloud } from "lucide-react";
+import { Archive, Bell, Download, FileBarChart, HardDrive, Loader2, Trash2, UploadCloud } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/school-storage")({
   component: SchoolStoragePage,
@@ -39,6 +40,7 @@ function SchoolStoragePage() {
   const completeUploadFn = useServerFn(completeSchoolFileUpload);
   const downloadFn = useServerFn(createSchoolFileDownload);
   const deleteFn = useServerFn(deleteSchoolFile);
+  const archiveFn = useServerFn(archiveAcademicSessionStorage);
 
   const storage = useQuery({
     queryKey: ["school-storage-dashboard"],
@@ -89,6 +91,15 @@ function SchoolStoragePage() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["school-storage-dashboard"] }),
   });
 
+  const archiveSession = useMutation({
+    mutationFn: (academicYearId: string) => archiveFn({ data: { academicYearId, storageClass: "archive" } }),
+    onSuccess: async (result) => {
+      const archivedFiles = (result as { archivedFiles?: number }).archivedFiles ?? 0;
+      setMessage(`Academic session archived. ${archivedFiles} file(s) marked for lower-cost archive storage.`);
+      await queryClient.invalidateQueries({ queryKey: ["school-storage-dashboard"] });
+    },
+  });
+
   async function downloadFile(id: string) {
     const result = await downloadFn({ data: { id } });
     window.location.href = result.url;
@@ -122,6 +133,24 @@ function SchoolStoragePage() {
             </Alert>
           ) : null}
 
+          {storage.data?.alertLevel ? (
+            <Alert variant={storage.data.alertLevel >= 100 ? "destructive" : "default"} className="border-amber-200 bg-amber-50 text-amber-950">
+              <Bell className="h-4 w-4" />
+              <AlertTitle>Storage usage alert: {storage.data.alertLevel}% threshold reached</AlertTitle>
+              <AlertDescription>
+                {storage.data.alertLevel >= 100
+                  ? "Further uploads are blocked until storage is freed, archived, or additional storage is purchased."
+                  : "Review large files, archive inactive sessions, or buy additional storage before the upload limit is reached."}
+              </AlertDescription>
+            </Alert>
+          ) : null}
+
+          <div className="grid gap-4 md:grid-cols-3">
+            <StorageMetric label="Total Allocated Storage" value={`${storage.data?.quotaGb ?? 0} GB`} />
+            <StorageMetric label="Used Storage" value={formatBytes(storage.data?.usedBytes ?? 0)} />
+            <StorageMetric label="Available Storage" value={formatBytes(storage.data?.availableBytes ?? 0)} />
+          </div>
+
           <div className="grid gap-6 xl:grid-cols-[0.85fr_1.15fr]">
             <Card>
               <CardHeader>
@@ -141,13 +170,18 @@ function SchoolStoragePage() {
                   </div>
                   <Progress value={percentUsed} className="mt-3" />
                   <p className="mt-2 text-xs text-slate-500">
-                    Plan: {storage.data?.planCode ?? "loading"} Â· Files are stored in AWS, while only metadata is stored in Supabase.
+                    Plan: {storage.data?.planCode ?? "loading"} · Base {storage.data?.baseQuotaGb ?? 0} GB + extra {storage.data?.extraStorageGb ?? 0} GB.
                   </p>
                 </div>
-                <Button disabled={!file || upload.isPending} onClick={() => upload.mutate()} className="w-full sm:w-auto">
+                <Button disabled={!file || upload.isPending || storage.data?.uploadBlocked} onClick={() => upload.mutate()} className="w-full sm:w-auto">
                   {upload.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <UploadCloud className="mr-2 h-4 w-4" />}
                   Upload file
                 </Button>
+                {storage.data?.uploadBlocked ? (
+                  <p className="text-xs font-medium text-red-700">
+                    Uploads are paused because the allocated storage limit has been reached.
+                  </p>
+                ) : null}
               </CardContent>
             </Card>
 
@@ -182,7 +216,10 @@ function SchoolStoragePage() {
                             <td className="py-3 pr-4 font-medium text-slate-900">{item.file_name}</td>
                             <td className="py-3 pr-4 text-slate-600">{formatBytes(Number(item.size_bytes))}</td>
                             <td className="py-3 pr-4">
-                              <Badge variant={item.status === "active" ? "default" : "secondary"}>{item.status}</Badge>
+                              <div className="flex flex-wrap gap-1">
+                                <Badge variant={item.status === "active" ? "default" : "secondary"}>{item.status}</Badge>
+                                {item.archived_at ? <Badge variant="outline">archived</Badge> : null}
+                              </div>
                             </td>
                             <td className="py-3 pr-4 text-slate-600">{new Date(item.created_at).toLocaleDateString()}</td>
                             <td className="py-3">
@@ -210,8 +247,168 @@ function SchoolStoragePage() {
               </CardContent>
             </Card>
           </div>
+
+          <div className="grid gap-6 xl:grid-cols-2">
+            <BreakdownCard title="Usage by Category" rows={storage.data?.categoryBreakdown ?? []} />
+            <BreakdownCard title="File Type Breakdown" rows={storage.data?.fileTypeBreakdown ?? []} />
+          </div>
+
+          <div className="grid gap-6 xl:grid-cols-2">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FileBarChart className="h-5 w-5 text-blue-600" />
+                  Largest Files
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <StorageRows
+                  rows={(storage.data?.largestFiles ?? []).map((file: any) => ({
+                    label: file.file_name,
+                    detail: file.archived_at ? "Archived" : file.category || "File",
+                    bytes: Number(file.size_bytes ?? 0),
+                  }))}
+                  empty="No large files found."
+                />
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <HardDrive className="h-5 w-5 text-blue-600" />
+                  User-wise Storage Usage
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <StorageRows
+                  rows={(storage.data?.userUsage ?? []).map((row: any) => ({
+                    label: row.userName,
+                    detail: `${row.count} file${row.count === 1 ? "" : "s"}`,
+                    bytes: Number(row.bytes ?? 0),
+                  }))}
+                  empty="No user usage found."
+                />
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Archive className="h-5 w-5 text-blue-600" />
+                  Academic Session Archive
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <p className="text-sm text-slate-600">
+                  Previous sessions can be archived after they end. Archived data remains available, while metadata marks it for lower-cost archive storage.
+                </p>
+                {(storage.data?.sessions ?? []).length ? (
+                  <div className="space-y-2">
+                    {storage.data.sessions.map((session: any) => {
+                      const ended = session.end_date ? new Date(session.end_date) < new Date() : false;
+                      const archived = session.status === "archived";
+                      return (
+                        <div key={session.id} className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-slate-200 bg-white p-3">
+                          <div>
+                            <div className="font-medium text-slate-900">{session.label}</div>
+                            <div className="text-xs text-slate-500">{session.start_date} to {session.end_date}</div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Badge variant={archived ? "secondary" : ended ? "outline" : "default"}>{archived ? "Archived" : ended ? "Ready to archive" : "Active"}</Badge>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              disabled={!ended || archived || archiveSession.isPending}
+                              onClick={() => archiveSession.mutate(session.id)}
+                            >
+                              <Archive className="mr-2 h-4 w-4" />
+                              Archive
+                            </Button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <p className="text-sm text-slate-500">No academic sessions found.</p>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Fair Usage & Add-on Storage</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4 text-sm text-slate-700">
+                <p>{storage.data?.fairUsagePolicy}</p>
+                <div>
+                  <div className="font-medium text-slate-950">Available add-on packs</div>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {(storage.data?.storagePacksGb ?? [25, 50, 100, 250, 500]).map((pack: number) => (
+                      <Badge key={pack} variant="outline">{pack >= 1024 ? `${pack / 1024} TB` : `${pack} GB`}</Badge>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <div className="font-medium text-slate-950">Enterprise dedicated storage</div>
+                  <p className="mt-1">{(storage.data?.enterpriseStoragePlans ?? []).join(", ")}.</p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </section>
       </main>
     </AppShell>
+  );
+}
+
+function StorageMetric({ label, value }: { label: string; value: string }) {
+  return (
+    <Card>
+      <CardContent className="p-5">
+        <div className="text-sm font-medium text-slate-500">{label}</div>
+        <div className="mt-2 text-2xl font-semibold text-slate-950">{value}</div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function BreakdownCard({ title, rows }: { title: string; rows: Array<{ label: string; bytes: number; count: number }> }) {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>{title}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <StorageRows
+          rows={rows.map((row) => ({
+            label: row.label,
+            detail: `${row.count} file${row.count === 1 ? "" : "s"}`,
+            bytes: Number(row.bytes ?? 0),
+          }))}
+          empty="No storage usage found."
+        />
+      </CardContent>
+    </Card>
+  );
+}
+
+function StorageRows({ rows, empty }: { rows: Array<{ label: string; detail: string; bytes: number }>; empty: string }) {
+  if (!rows.length) return <p className="text-sm text-slate-500">{empty}</p>;
+  return (
+    <div className="space-y-3">
+      {rows.map((row) => (
+        <div key={`${row.label}-${row.detail}`} className="flex items-center justify-between gap-4 rounded-md border border-slate-200 bg-white p-3">
+          <div className="min-w-0">
+            <div className="truncate font-medium text-slate-900">{row.label}</div>
+            <div className="text-xs text-slate-500">{row.detail}</div>
+          </div>
+          <div className="shrink-0 font-semibold text-slate-950">{formatBytes(row.bytes)}</div>
+        </div>
+      ))}
+    </div>
   );
 }

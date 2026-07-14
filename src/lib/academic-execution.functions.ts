@@ -69,6 +69,109 @@ function buildCorrectiveRecommendation(log: any, delayDays: number) {
   return "Monitor the next update and close the pending portion before moving to the next chapter.";
 }
 
+function buildTeacherCreditRecommendations(assignments: any[], logs: any[]) {
+  const teachers = new Map<string, any>();
+
+  for (const assignment of assignments) {
+    const teacherId = assignment.teacher_user_id;
+    const row = teachers.get(teacherId) ?? {
+      teacher_user_id: teacherId,
+      teacher: assignment.profiles?.display_name || assignment.profiles?.email || "Teacher",
+      classes: new Set<string>(),
+      subjects: new Set<string>(),
+      weeklyPeriods: 0,
+      academicResponsibilities: 0,
+      examinationDuties: 0,
+      coCurricularResponsibilities: 0,
+      specialProjects: 0,
+      recentTeachingPeriods: 0,
+    };
+    row.classes.add(`${assignment.grade}-${assignment.section ?? ""}`);
+    row.subjects.add(assignment.subject);
+    row.weeklyPeriods += Number(assignment.periods_per_week ?? assignment.weekly_periods ?? 5);
+    teachers.set(teacherId, row);
+  }
+
+  for (const log of logs) {
+    const teacherId = log.teacher_user_id;
+    const row = teachers.get(teacherId) ?? {
+      teacher_user_id: teacherId,
+      teacher: log.profiles?.display_name || log.profiles?.email || "Teacher",
+      classes: new Set<string>(),
+      subjects: new Set<string>(),
+      weeklyPeriods: 0,
+      academicResponsibilities: 0,
+      examinationDuties: 0,
+      coCurricularResponsibilities: 0,
+      specialProjects: 0,
+      recentTeachingPeriods: 0,
+    };
+    row.classes.add(`${log.grade}-${log.section ?? ""}`);
+    row.subjects.add(log.subject);
+    row.recentTeachingPeriods += Number(log.periods_taken ?? 1);
+    teachers.set(teacherId, row);
+  }
+
+  const prepared = [...teachers.values()].map((teacher) => {
+    const classCount = teacher.classes.size;
+    const subjectCount = teacher.subjects.size;
+    const weeklyPeriods = teacher.weeklyPeriods || Math.max(teacher.recentTeachingPeriods, classCount * 5);
+    const creditScore = Math.round(
+      classCount * 12 +
+      subjectCount * 10 +
+      weeklyPeriods * 2 +
+      teacher.academicResponsibilities * 6 +
+      teacher.examinationDuties * 5 +
+      teacher.coCurricularResponsibilities * 4 +
+      teacher.specialProjects * 5,
+    );
+    return {
+      teacher_user_id: teacher.teacher_user_id,
+      teacher: teacher.teacher,
+      classCount,
+      subjectCount,
+      weeklyPeriods,
+      academicResponsibilities: teacher.academicResponsibilities,
+      examinationDuties: teacher.examinationDuties,
+      coCurricularResponsibilities: teacher.coCurricularResponsibilities,
+      specialProjects: teacher.specialProjects,
+      creditScore,
+    };
+  });
+
+  const averageScore = prepared.length
+    ? Math.round(prepared.reduce((sum, teacher) => sum + teacher.creditScore, 0) / prepared.length)
+    : 0;
+
+  return prepared
+    .map((teacher) => {
+      const ratio = averageScore ? teacher.creditScore / averageScore : 1;
+      const workloadStatus =
+        ratio >= 1.25 ? "high_overload" :
+          ratio >= 1.1 ? "moderate_overload" :
+            ratio <= 0.75 ? "underutilized" :
+              "balanced";
+      const recommendation =
+        workloadStatus === "high_overload"
+          ? `${teacher.teacher} is handling significantly more workload than the teacher average. Consider redistributing one class, subject, exam duty, or project.`
+          : workloadStatus === "moderate_overload"
+            ? `${teacher.teacher} has a moderate workload pressure. Monitor weekly periods and avoid adding extra duties without adjustment.`
+            : workloadStatus === "underutilized"
+              ? `${teacher.teacher} may be available for additional academic support, substitution, remedial work, or shared responsibility.`
+              : `Current allocation for ${teacher.teacher} is balanced and requires no immediate action.`;
+
+      return {
+        ...teacher,
+        averageScore,
+        workloadStatus,
+        indicator: workloadStatus === "balanced" ? "green" : workloadStatus === "moderate_overload" ? "yellow" : "red",
+        recommendation,
+        advisoryNote: "Advisory recommendation only; final workload decisions remain with the School Super Admin and school management.",
+      };
+    })
+    .sort((a, b) => b.creditScore - a.creditScore);
+}
+
 async function notifyExecutionException(args: {
   supabaseAdmin: any;
   orgId: string;
@@ -405,6 +508,7 @@ export const getAcademicExecutionDashboard = createServerFn({ method: "GET" })
           trackUntilCompleted: true,
         };
       });
+    const teacherCreditRecommendations = buildTeacherCreditRecommendations(assignments, logs);
 
     return {
       year,
@@ -418,10 +522,14 @@ export const getAcademicExecutionDashboard = createServerFn({ method: "GET" })
         monthlyCompletionStatus: averageCompletion,
         exceptionReports: exceptionReports.length,
         pendingPortions: exceptionReports.filter((report) => report.pendingPortion).length,
+        overloadedTeachers: teacherCreditRecommendations.filter((row) =>
+          ["moderate_overload", "high_overload"].includes(row.workloadStatus),
+        ).length,
       },
       rows,
       logs: logs.slice(0, 30),
       exceptionReports,
+      teacherCreditRecommendations,
     };
   });
 

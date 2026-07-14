@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
 import { type StripeEnv, verifyWebhook, createStripeClient } from "@/lib/stripe.server";
-import { creditsForAddOnPrice } from "@/lib/plans";
+import { creditsForAddOnPrice, storageGbForAddOnPrice } from "@/lib/plans";
 import {
   accrueCommission,
   ensureAttribution,
@@ -27,12 +27,63 @@ function resolvePriceId(item: any): string | undefined {
     || item?.price?.id;
 }
 
+async function resolveUserOrgId(userId: string): Promise<string | null> {
+  const { data } = await getSupabase()
+    .from("org_members")
+    .select("org_id")
+    .eq("user_id", userId)
+    .limit(1)
+    .maybeSingle();
+  return data?.org_id ?? null;
+}
+
+async function upsertStorageAddonSubscription(args: {
+  userId: string;
+  subscriptionId: string;
+  priceId: string;
+  storageGb: number;
+  status: string;
+  currentPeriodEnd: number | null | undefined;
+}) {
+  const orgId = await resolveUserOrgId(args.userId);
+  if (!orgId) return;
+  await getSupabase()
+    .from("organization_storage_addons")
+    .upsert(
+      {
+        org_id: orgId,
+        user_id: args.userId,
+        provider: "stripe",
+        stripe_subscription_id: args.subscriptionId,
+        stripe_price_id: args.priceId,
+        storage_gb: args.storageGb,
+        status: args.status,
+        current_period_end: args.currentPeriodEnd ? new Date(args.currentPeriodEnd * 1000).toISOString() : null,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "stripe_subscription_id" },
+    );
+}
+
 async function handleSubscriptionCreated(subscription: any, env: StripeEnv) {
   const userId = subscription.metadata?.userId;
   if (!userId) { console.error("No userId in subscription metadata"); return; }
   const item = subscription.items?.data?.[0];
   const periodStart = item?.current_period_start ?? subscription.current_period_start;
   const periodEnd = item?.current_period_end ?? subscription.current_period_end;
+  const priceId = resolvePriceId(item);
+  const storageGb = storageGbForAddOnPrice(priceId);
+  if (priceId && storageGb) {
+    await upsertStorageAddonSubscription({
+      userId,
+      subscriptionId: subscription.id,
+      priceId,
+      storageGb,
+      status: subscription.status,
+      currentPeriodEnd: periodEnd,
+    });
+    return;
+  }
 
   await getSupabase().from("subscriptions").upsert(
     {
@@ -40,7 +91,7 @@ async function handleSubscriptionCreated(subscription: any, env: StripeEnv) {
       stripe_subscription_id: subscription.id,
       stripe_customer_id: subscription.customer,
       product_id: item?.price?.product,
-      price_id: resolvePriceId(item),
+      price_id: priceId,
       status: subscription.status,
       current_period_start: periodStart ? new Date(periodStart * 1000).toISOString() : null,
       current_period_end: periodEnd ? new Date(periodEnd * 1000).toISOString() : null,
@@ -91,12 +142,26 @@ async function handleSubscriptionUpdated(subscription: any, env: StripeEnv) {
   const item = subscription.items?.data?.[0];
   const periodStart = item?.current_period_start ?? subscription.current_period_start;
   const periodEnd = item?.current_period_end ?? subscription.current_period_end;
+  const priceId = resolvePriceId(item);
+  const storageGb = storageGbForAddOnPrice(priceId);
+  const userId = subscription.metadata?.userId;
+  if (userId && priceId && storageGb) {
+    await upsertStorageAddonSubscription({
+      userId,
+      subscriptionId: subscription.id,
+      priceId,
+      storageGb,
+      status: subscription.status,
+      currentPeriodEnd: periodEnd,
+    });
+    return;
+  }
   await getSupabase()
     .from("subscriptions")
     .update({
       status: subscription.status,
       product_id: item?.price?.product,
-      price_id: resolvePriceId(item),
+      price_id: priceId,
       current_period_start: periodStart ? new Date(periodStart * 1000).toISOString() : null,
       current_period_end: periodEnd ? new Date(periodEnd * 1000).toISOString() : null,
       cancel_at_period_end: subscription.cancel_at_period_end || false,
@@ -107,6 +172,19 @@ async function handleSubscriptionUpdated(subscription: any, env: StripeEnv) {
 }
 
 async function handleSubscriptionDeleted(subscription: any, env: StripeEnv) {
+  const { data: storageAddon } = await getSupabase()
+    .from("organization_storage_addons")
+    .select("id")
+    .eq("stripe_subscription_id", subscription.id)
+    .maybeSingle();
+  if (storageAddon?.id) {
+    await getSupabase()
+      .from("organization_storage_addons")
+      .update({ status: "canceled", updated_at: new Date().toISOString() })
+      .eq("id", storageAddon.id);
+    return;
+  }
+
   await getSupabase()
     .from("subscriptions")
     .update({ status: "canceled", updated_at: new Date().toISOString() })
@@ -115,7 +193,7 @@ async function handleSubscriptionDeleted(subscription: any, env: StripeEnv) {
 }
 
 async function handleCheckoutCompleted(session: any, env: StripeEnv) {
-  // One-time AI credit pack purchases
+  // One-time and recurring add-on purchases
   if (session.mode !== "payment") return;
   const userId = session.metadata?.userId;
   if (!userId) return;
@@ -128,20 +206,24 @@ async function handleCheckoutCompleted(session: any, env: StripeEnv) {
       || (li.price as any)?.metadata?.lovable_external_id
       || li.price?.id;
     const credits = creditsForAddOnPrice(priceId);
-    if (!credits) continue;
     const qty = li.quantity ?? 1;
-    const total = credits * qty;
-    await getSupabase().from("ai_credit_grants").upsert(
-      {
-        user_id: userId,
-        stripe_session_id: session.id,
-        stripe_payment_intent_id: session.payment_intent ?? null,
-        credits_granted: total,
-        credits_remaining: total,
-        environment: env,
-      },
-      { onConflict: "stripe_session_id" },
-    );
+    if (credits) {
+      const total = credits * qty;
+      await getSupabase().from("ai_credit_grants").upsert(
+        {
+          user_id: userId,
+          stripe_session_id: session.id,
+          stripe_payment_intent_id: session.payment_intent ?? null,
+          credits_granted: total,
+          credits_remaining: total,
+          environment: env,
+        },
+        { onConflict: "stripe_session_id" },
+      );
+    }
+
+    const storageGb = storageGbForAddOnPrice(priceId);
+    if (storageGb) console.warn("Storage add-on checkout completed in payment mode; expected subscription mode.", { priceId, storageGb, qty });
   }
 }
 

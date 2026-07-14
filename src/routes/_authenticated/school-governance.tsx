@@ -192,6 +192,31 @@ function SchoolGovernancePage() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-base">
+                  <ShieldCheck className="h-4 w-4" /> Data Privacy & Confidentiality Framework
+                </CardTitle>
+                <CardDescription>
+                  School-facing assurance for ownership, tenant isolation, role-based access, auditability, exports, and recovery.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3 text-sm text-muted-foreground">
+                <p>
+                  All academic, administrative, student, teacher, examination, and operational data remains the property of the respective school. Syllabus Synk acts as a technology platform and custodian.
+                </p>
+                <p>
+                  School data is designed to remain logically separated between institutions. Users should only access records allowed by their role, school membership, and assigned responsibilities.
+                </p>
+                <p>
+                  Company administrator access should be limited to authorized support, troubleshooting, and maintenance, with important administrative actions recorded in audit logs where implemented.
+                </p>
+                <div className="rounded-md border bg-muted/30 p-3 text-foreground">
+                  All school data stored within Syllabus Synk is protected using industry-standard security practices, access controls, encryption, monitoring, and backup systems. Each school&apos;s data remains isolated and confidential. The platform is designed to prevent unauthorized access, cross-school visibility, and accidental disclosure of information.
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-base">
                   <Monitor className="h-4 w-4" /> Active Session Registry
                 </CardTitle>
                 <CardDescription>

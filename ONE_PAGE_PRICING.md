@@ -41,6 +41,20 @@ AI Future Force is an optional future-ready AI education curriculum planner for 
 - Extra user seat: Rs. 199/month per seat or $2.50/month per seat.
 - Extra campus: Rs. 4,999/month or $59/month.
 - AI credit top-ups: Rs. 499 for 500 credits, Rs. 1,999 for 2,000 credits, Rs. 6,999 for 10,000 credits.
+- Additional storage:
+
+| Additional Storage | Monthly Price |
+| --- | ---: |
+| 25 GB | Rs. 250/month |
+| 50 GB | Rs. 500/month |
+| 100 GB | Rs. 900/month |
+| 250 GB | Rs. 2,000/month |
+| 500 GB | Rs. 3,500/month |
+| 1 TB | Custom Pricing |
+
+- Enterprise dedicated storage options: 1 TB, 2 TB, 5 TB, or unlimited storage subject to fair usage and custom quotation.
+- Fair usage policy: Each subscription plan includes a defined storage allocation. Additional storage may be purchased separately. The company reserves the right to archive inactive academic records and enforce fair usage policies to maintain platform performance.
+
 - Professional services: teacher training workshops, curriculum consulting, board compliance audit, custom reports, data migration, on-site visits, and custom software features are quoted separately.
 
 For demos, implementation discussion, or a one-month AI Future Force demo plan, contact Syllabus Synk support or submit the homepage demo request form.

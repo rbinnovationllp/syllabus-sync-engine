@@ -18,7 +18,7 @@ Syllabus Synk / CurriculumOS is both:
 
 Implemented or partially implemented areas include:
 - Public marketing website, demo lead capture, partner/referral landing page, visitor proof counters, AI Leadership Suite messaging, and AI Future Workforce homepage section.
-- Floating homepage visitor assistant renamed to Ask Synk AI, with local fallback answers and optional AI-provider answers.
+- Floating homepage visitor assistant renamed to Ask Synk AI, with local fallback answers, optional AI-provider answers, approved knowledge-index loading, and support-ticket escalation for unknown questions.
 - Authentication with email/password, Google sign-in, reset-password flow, invitation preview, and invitation acceptance.
 - Authenticated dashboard and app shell navigation.
 - Institution onboarding for school profile, board, fees, textbooks, teaching matrix, calendar, holidays, events, exams, and teacher training days.
@@ -28,12 +28,12 @@ Implemented or partially implemented areas include:
 - Teacher curriculum proposal workflow for proposed changes, AI review, finalization, teacher acknowledgement, and admin review.
 - AI Leadership Suite V2: principal dashboard, teacher copilot, content studio, assessment generator, academic digital twin, teacher intelligence, student intelligence, and parent communication drafts.
 - AI Future Workforce / AI Future Force add-on with a web-based Class 1-12 curriculum planner, grade-wise AI curriculum previews, one/two weekly AI class planning, one-month demo plan request flow, monthly releases, foundation module for late-session enrollment, teacher enablement messaging, and future-career positioning.
-- Academic Execution module for daily teacher progress logging, expanded lesson/session statuses, and principal/school-admin monitoring.
+- Academic Execution module for daily teacher progress logging, expanded lesson/session statuses, principal/school-admin monitoring, daily exception reports, and Teacher Credit Distribution Recommendations.
 - Teacher assignment management.
-- School Governance module for official School Super Admin declaration, delegated authority visibility, session registry foundation, and recycle-bin governance.
+- School Governance module for official School Super Admin declaration, delegated authority visibility, school data privacy/security assurance, session registry foundation, and recycle-bin governance.
 - Seat invitations and member management with role assignment and subscription seat limits.
 - School Profile read-only source of truth for academic setup and audit visibility.
-- School Storage backed by AWS S3 signed upload/download URLs and subscription storage quotas.
+- School Storage backed by AWS S3 signed upload/download URLs, subscription storage quotas, Super Admin storage analytics, threshold alerts, additional storage allocation support, and academic-session archive metadata.
 - School CRM for contacts, admissions enquiries, admission stage updates, and open follow-ups.
 - Company CRM for super-admin operations, school accounts, subscriptions, support/onboarding tickets, plan catalog, visitor conversion, acquisition/referral attribution, and pipeline metrics.
 - Admin & CRM dashboard for leads, clients, subscriptions, usage, AI usage, AI model settings, schools, admin access, partner enforcement, curriculum reviews, and audit logs.
@@ -45,6 +45,15 @@ Implemented or partially implemented areas include:
 ## Recent Work Completed
 
 Recent changes completed through 2026-07-15:
+- Added Ask SynkAI Knowledge Base Auto-Update architecture: indexed knowledge sources, validation status, critical-update approval, sync-run history, Company Super Admin refresh/review/approve controls, and approved-index loading for assistant answers.
+- Added Ask SynkAI unknown-question escalation: when the assistant lacks approved knowledge, it gives a passive non-guessing response and creates a Company CRM support-review ticket for support@syllabus-synk.in follow-up.
+- Added School Data Privacy, Security & Confidentiality Framework covering school data ownership, tenant isolation, role-based access, company admin support access, encryption expectations, audit logging, backups, secure exports, and confidentiality commitments.
+- Added school-facing privacy/security assurance content to Terms and School Governance.
+- Added School Super Admin Storage Management controls: allocated/used/available storage metrics, largest files, file-type breakdown, category breakdown, user-wise usage, fair usage policy display, enterprise storage options, and academic-session archive controls.
+- Added storage threshold handling for 80%, 90%, and 100% usage; uploads are blocked when quota is reached unless storage is freed, archived, or additional storage is purchased.
+- Added Company Super Admin server support to allocate additional storage packs and extended storage metadata for archived academic-session records.
+- Added Teacher Credit Distribution Recommendations in Academic Execution for School Super Admin review, including advisory workload scores, balanced/moderate/high-overload/underutilized indicators, and recommendation text.
+- Added additional storage pricing policy: 25 GB, 50 GB, 100 GB, 250 GB, 500 GB monthly storage add-ons, 1 TB custom pricing, storage add-on checkout catalog entries, and organization-level `extra_storage_gb` quota support.
 - Added daily syllabus progress exception reporting: assigned-vs-completed comparison, automatic exception reports, delay duration, syllabus target impact, corrective recommendations, pending-portion tracking, and in-app alerts for incomplete/rescheduled/not-started teacher updates.
 - Fixed the `/auth` page tab wiring so Sign in and Create account are separate forms with the correct submit handlers; signup now has its own name, email, password, and acquisition-source fields.
 - Added `ONE_PAGE_PRICING.md`, a concise one-page subscription pricing sheet aligned with the current plan catalog, storage quotas, add-ons, AI Future Force pricing, and paid services.
@@ -76,16 +85,25 @@ Recent changes completed through 2026-07-15:
 
 ## Ask Synk AI Knowledge Maintenance
 
-Ask Synk AI now uses two knowledge layers:
+Ask Synk AI now uses three knowledge layers:
 - Static product knowledge in `src/lib/ai-help.functions.ts` for core workflows and safe local fallback answers.
-- Dynamic living project context from `PROJECT_STATUS.md`, loaded on the server for AI-provider answers.
+- Managed approved knowledge index in `ask_synkai_knowledge_sources`, refreshed from project documentation, pricing, production-readiness notes, support policy, and school privacy/security framework.
+- Fallback dynamic living project context from `PROJECT_STATUS.md` if approved indexed knowledge is not yet available.
+
+Company Super Admin controls:
+- Trigger manual Ask SynkAI knowledge refresh in Company CRM.
+- Review indexed knowledge sources, validation status, critical flags, previews, and sync-run history.
+- Approve critical or changed knowledge sources before they are published into assistant answers.
+- Monitor pending critical knowledge and synchronization status.
 
 Maintenance rule:
 - After any minor or major feature change, update this file in the same work session.
+- After updating this file or pricing/security/curriculum documents, Company Super Admin should run Ask SynkAI knowledge refresh and approve critical pending sources.
 - If a feature is added, renamed, moved, gated by plan, or still prototype/partial, record that here.
 - If pricing, plan limits, support policy, payment behavior, or AI Future Workforce curriculum details change, update both the relevant source file and this document.
 - If a production blocker is completed or newly discovered, update both this file and `PRODUCTION_READINESS_REVIEW.md`.
 - The assistant should clearly distinguish implemented features from prototypes, blocked areas, and planned work.
+- If Ask SynkAI cannot answer from approved knowledge, it should avoid guessing and create a support-review ticket for the team at support@syllabus-synk.in.
 
 ## Module Status
 
@@ -110,15 +128,18 @@ Working:
 - Floating visitor assistant on the homepage/root layout.
 - Starter prompts, conversation history, local fallback answers, AI-provider answer path, safety rules, and support escalation.
 - Knowledge now covers major product modules and AI Future Workforce.
-- AI-provider answers load `PROJECT_STATUS.md` as living context.
+- AI-provider answers load approved indexed knowledge first, with `PROJECT_STATUS.md` as fallback living context.
+- Company CRM includes Ask SynkAI knowledge refresh, indexed-source review, critical approval, and sync-run monitoring.
+- Unknown or out-of-knowledge questions create support-review tickets for support@syllabus-synk.in follow-up.
 - Renamed to Ask Synk AI.
 - Guides visitors to the one-month AI Future Force demo-plan request option.
 - Explains internal dashboards without operating authenticated monitoring or reporting from public chat.
+- Explains the School Data Privacy, Security & Confidentiality Framework in visitor-safe language.
 
 Needs work:
 - Add automated regression tests for common user questions.
-- Consider a structured knowledge file or admin-editable knowledge table if non-developers need to update assistant content.
-- Ensure every future feature change amends this status file.
+- Add a scheduled/CI-triggered knowledge refresh job so production deployments can refresh the index automatically after approved releases.
+- Ensure every future feature change amends this status file and gets refreshed/approved in the Ask SynkAI knowledge panel.
 - If true lead capture inside the chat widget is required later, add a dedicated chat-to-lead submission flow with explicit consent.
 
 ### Authentication and Access Control
@@ -209,7 +230,10 @@ Working:
 - Principals and school admins can monitor class-wise, subject-wise, teacher-wise completion, delayed/rescheduled lessons, missed updates, and monthly completion status.
 - Daily Syllabus Exception Reports compare assigned work with completed work, show pending portion, delay duration, syllabus completion impact, and corrective recommendation.
 - Incomplete, not-started, rescheduled, or not-covered teacher updates create in-app alerts for school leadership roles using notification dedupe keys.
+- Teacher Credit Distribution Recommendations give School Super Admins advisory workload scores based on assigned classes, subjects, weekly periods, responsibilities, duties, projects, and recent teaching activity.
+- Workload indicators identify balanced, moderate overload, high overload, and underutilized teachers with recommendation text; final decisions remain with school management.
 - School Super Admin declaration and member authority visibility.
+- School Data Privacy, Security & Confidentiality Framework is documented in Terms, School Governance, Ask SynkAI knowledge, and database seed policy.
 - Session registry foundation and recycle-bin governance display.
 
 Needs work:
@@ -217,6 +241,8 @@ Needs work:
 - Student assessment result integration in the execution dashboard.
 - Timetable-driven cron alerts for completely missed teacher updates before any progress record exists.
 - Forced logout/session management policy.
+- Expand audit coverage for every sensitive export, permission change, company-admin support access event, and large-scale data transfer.
+- Validate tenant isolation and role-based access through automated tests across all modules.
 - More granular permission delegation.
 - School-level audit logs and activity monitoring.
 - Stronger linkage between execution logs and generated curriculum schedule.
@@ -292,18 +318,27 @@ Needs work:
 
 ### Storage
 
-Status: Implemented core upload/download flow.
+Status: Implemented with Super Admin management controls; production storage operations still need hardening.
 
 Working:
 - AWS S3 signed upload/download flow.
 - File metadata in Supabase.
 - Quota display based on plan.
 - Delete action.
+- Allocated, used, and available storage dashboard.
+- Largest files, category usage, file-type breakdown, and user-wise usage analytics.
+- 80%, 90%, and 100% storage usage alerts through dashboard and notification records.
+- Upload blocking when storage quota is reached.
+- Add-on storage packs and Company Super Admin server function for manual storage allocation.
+- Fair usage policy and enterprise dedicated storage options displayed.
+- Academic session archive action marks previous-session records for archive/deep-archive storage class and updates session status.
 
 Needs work:
 - S3 CORS and production bucket validation.
-- File category/retention policies.
+- Actual background compression/lower-cost object-tier transition job for archived files.
+- More complete file category/retention policies.
 - Granular file permissions and audit trail.
+- Company CRM UI for selecting a school and allocating storage packs centrally.
 
 ### Partner and Referral Program
 
@@ -334,6 +369,7 @@ Primary blockers:
 - Razorpay integration does not yet cover payment failure events, invoice records, renewals, replay-safe webhook auditing, or complete payment lifecycle tests.
 - Assessment/question-paper generation is still a draft generator and does not yet enforce approved syllabus coverage.
 - School Super Admin delegation is not granular module-wise and feature-wise.
+- Full tenant-isolation, export-permission, company-admin support-access audit, and security/privacy regression tests are still required before presenting the framework as independently verified compliance.
 - School CRM and Company CRM are useful prototypes but not complete operational systems.
 - Supabase generated TypeScript types are stale for newer CRM, analytics, and subscription tables.
 - Full TypeScript/build checks still fail or cannot complete cleanly in the current sandbox environment.
