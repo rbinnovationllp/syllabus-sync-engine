@@ -51,7 +51,7 @@ interface PendingCheckout {
 }
 
 function PricingPage() {
-  const [currency, setCurrency] = useState<Currency>("usd");
+  const [currency, setCurrency] = useState<Currency>("inr");
   const [interval, setInterval] = useState<BillingInterval>("monthly");
   const [pending, setPending] = useState<PendingCheckout | null>(null);
   const [acknowledged, setAcknowledged] = useState(false);
@@ -61,6 +61,7 @@ function PricingPage() {
   const [showAiFutureForce, setShowAiFutureForce] = useState(false);
   const { subscription, plan: currentPlan, isActive } = useSubscription();
   const portalFn = useServerFn(createPortalSession);
+  const isRazorpaySubscription = subscription?.provider === "razorpay";
 
   const annualEligible = useMemo(() => annualRebateEligible(currency), [currency]);
   // If user toggled annual then switched to INR mid-May+, force back to monthly.
@@ -122,7 +123,7 @@ function PricingPage() {
         <div className="text-center">
           <h1 className="text-3xl font-bold tracking-tight">Choose your plan</h1>
           <p className="text-sm text-muted-foreground mt-2">
-            Tiered by grade band. Upgrade, downgrade, or cancel anytime from the billing portal.
+            Tiered by grade band. India payments use Razorpay as the primary gateway; international checkout remains ready for Stripe when activated.
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-3 mt-6">
@@ -191,10 +192,16 @@ function PricingPage() {
                   <Badge variant="secondary" className="ml-2">Cancels at period end</Badge>
                 )}
               </div>
-              <Button size="sm" variant="outline" onClick={openPortal} disabled={portalLoading}>
-                {portalLoading ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <ExternalLink className="h-4 w-4 mr-1" />}
-                Manage billing
-              </Button>
+              {isRazorpaySubscription ? (
+                <Button size="sm" variant="outline" asChild>
+                  <a href="mailto:support@syllabus-synk.in">Manage via support</a>
+                </Button>
+              ) : (
+                <Button size="sm" variant="outline" onClick={openPortal} disabled={portalLoading}>
+                  {portalLoading ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <ExternalLink className="h-4 w-4 mr-1" />}
+                  Manage billing
+                </Button>
+              )}
             </CardContent>
           </Card>
         )}
@@ -245,17 +252,23 @@ function PricingPage() {
                   </ul>
                   <div className="mt-auto">
                     {isCurrent ? (
-                      <Button className="w-full" variant="outline" onClick={openPortal} disabled={portalLoading}>
-                        Manage
-                      </Button>
+                      isRazorpaySubscription ? (
+                        <Button className="w-full" variant="outline" asChild>
+                          <a href="mailto:support@syllabus-synk.in">Manage via support</a>
+                        </Button>
+                      ) : (
+                        <Button className="w-full" variant="outline" onClick={openPortal} disabled={portalLoading}>
+                          Manage
+                        </Button>
+                      )
                     ) : isActive ? (
                       <Button
                         className="w-full"
                         variant={isUpgrade ? "default" : "outline"}
-                        onClick={openPortal}
+                        onClick={isRazorpaySubscription ? () => window.location.href = "mailto:support@syllabus-synk.in" : openPortal}
                         disabled={portalLoading}
                       >
-                        {isUpgrade ? "Upgrade" : isDowngrade ? "Downgrade" : "Switch"} via portal
+                        {isRazorpaySubscription ? "Change via support" : `${isUpgrade ? "Upgrade" : isDowngrade ? "Downgrade" : "Switch"} via portal`}
                       </Button>
                     ) : (
                       <Button className="w-full" onClick={() => startCheckout(p)}>
@@ -312,13 +325,17 @@ function PricingPage() {
                     <div className="text-xl font-bold pt-2">{price.display}</div>
                   </CardHeader>
                   <CardContent>
-                    <Button
-                      className="w-full"
-                      variant="outline"
-                      onClick={() => setCheckoutPriceId(price.priceId)}
-                    >
-                      Buy
-                    </Button>
+                    {currency === "inr" ? (
+                      <RazorpaySubscriptionButton priceId={price.priceId} label="Pay with Razorpay" />
+                    ) : (
+                      <Button
+                        className="w-full"
+                        variant="outline"
+                        onClick={() => setCheckoutPriceId(price.priceId)}
+                      >
+                        Buy
+                      </Button>
+                    )}
                   </CardContent>
                 </Card>
               );

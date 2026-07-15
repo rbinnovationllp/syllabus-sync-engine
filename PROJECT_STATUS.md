@@ -33,19 +33,22 @@ Implemented or partially implemented areas include:
 - School Governance module for official School Super Admin declaration, delegated authority visibility, school data privacy/security assurance, session registry foundation, and recycle-bin governance.
 - Seat invitations and member management with role assignment and subscription seat limits.
 - School Profile read-only source of truth for academic setup and audit visibility.
-- School Storage backed by AWS S3 signed upload/download URLs, subscription storage quotas, Super Admin storage analytics, threshold alerts, additional storage allocation support, and academic-session archive metadata.
+- School Storage backed by AWS S3 signed upload/download URLs, with Supabase metadata, subscription storage quotas, Super Admin storage analytics, threshold alerts, additional storage allocation support, and academic-session archive metadata.
 - School CRM for contacts, admissions enquiries, admission stage updates, and open follow-ups.
 - Company CRM for super-admin operations, school accounts, subscriptions, support/onboarding tickets, plan catalog, visitor conversion, acquisition/referral attribution, and pipeline metrics.
 - Admin & CRM dashboard for leads, clients, subscriptions, usage, AI usage, AI model settings, schools, admin access, partner enforcement, curriculum reviews, and audit logs.
 - Partner program with referral code/link, statistics, commission records, and enforcement workflow.
 - Notifications and cron foundations for reminders, curriculum risk, disruption notices, unread counts, and mark-read/delete actions.
 - Platform health, audit logs, activity records, AI model policy/settings, and review-confirmation logs.
-- Pricing and billing screens for USD/INR monthly and annual plans, Stripe checkout/portal, Razorpay subscriptions, optional UPI panel, add-ons, AI credit top-ups, extra seats, extra campuses, and separately quoted services.
+- Pricing and billing screens for USD/INR monthly and annual plans, Razorpay-first India checkout, future-ready Stripe international checkout/portal, optional UPI panel, add-ons, AI credit top-ups, extra seats, extra campuses, and separately quoted services.
 
 ## Recent Work Completed
 
 Recent changes completed through 2026-07-15:
+- Reversed the Google Workspace / Google Drive storage direction and restored AWS S3 as the primary storage provider for school files; removed the Google-specific provider registry migration, Company CRM storage-provider panel, provider-allocation dashboard, and Google storage messaging.
 - Updated Ask Synk AI storage-pricing knowledge and added deterministic priority handling so storage price questions bypass AI-provider drift and always state exact additional storage add-on prices: 25 GB Rs. 250/month, 50 GB Rs. 500/month, 100 GB Rs. 900/month, 250 GB Rs. 2,000/month, 500 GB Rs. 3,500/month, and 1 TB+ custom enterprise pricing via support.
+- Added Razorpay-first payment strategy for Indian operations while keeping provider-independent hooks for future Stripe/international gateways.
+- Added automatic additional-storage allocation: verified Razorpay payment events now activate purchased storage packs for India, record CRM allocation events, notify School Super Admins, write audit logs, and create urgent Company CRM support tickets plus company notifications if allocation fails; Stripe hooks remain future-ready for international markets.
 - Added Ask SynkAI Knowledge Base Auto-Update architecture: indexed knowledge sources, validation status, critical-update approval, sync-run history, Company Super Admin refresh/review/approve controls, and approved-index loading for assistant answers.
 - Added Ask SynkAI unknown-question escalation: when the assistant lacks approved knowledge, it gives a passive non-guessing response and creates a Company CRM support-review ticket for support@syllabus-synk.in follow-up.
 - Added School Data Privacy, Security & Confidentiality Framework covering school data ownership, tenant isolation, role-based access, company admin support access, encryption expectations, audit logging, backups, secure exports, and confidentiality commitments.
@@ -285,7 +288,7 @@ Status: Partially implemented; one issue fixed on 2026-07-11.
 
 Working:
 - Company CRM for super admins.
-- School accounts, active subscriptions, support tickets, plan catalog, acquisition attribution, visitor conversion, and pipeline metrics.
+- School accounts, active subscriptions, support tickets, plan catalog, acquisition attribution, visitor conversion, storage automation reporting, and pipeline metrics.
 - Admin dashboard for leads, clients, subscriptions, usage, AI usage, AI model settings, schools, admin access, partners, proposals, and audit logs.
 - Company CRM visitor conversion query bug fixed.
 
@@ -305,8 +308,8 @@ Working:
 - USD/INR monthly and annual pricing.
 - AI credit limits and action costs.
 - Add-ons for AI credits, extra users, extra campus, and AI Future Force bands.
-- Stripe checkout/portal infrastructure.
-- Razorpay subscription creation and webhook status updates.
+- Razorpay-first subscription, recurring add-on, one-time add-on, and webhook status-update infrastructure for Indian operations.
+- Stripe checkout/portal infrastructure retained for future international activation.
 - UPI panel placeholder/path.
 - Usage and AI credit reporting.
 
@@ -315,7 +318,7 @@ Needs work:
 - Invoice storage and invoice UI.
 - Renewal and failure audit trail.
 - Webhook idempotency/replay tracking.
-- End-to-end payment lifecycle tests across Stripe, Razorpay, UPI, add-ons, and plan changes.
+- End-to-end payment lifecycle tests across Razorpay, UPI fallback, add-ons, plan changes, and future Stripe international activation.
 
 ### Storage
 
@@ -331,6 +334,9 @@ Working:
 - 80%, 90%, and 100% storage usage alerts through dashboard and notification records.
 - Upload blocking when storage quota is reached.
 - Add-on storage packs and Company Super Admin server function for manual storage allocation.
+- Automatic storage allocation after verified Razorpay storage add-on payment for Indian operations, with provider-independent support retained for future international gateways.
+- CRM storage automation reporting for recent upgrades, storage sold, storage revenue, school-wise usage, and failed/pending allocation events.
+- Exception handling creates urgent Company CRM support tickets, company notifications, platform audit logs, and failed allocation events.
 - Fair usage policy and enterprise dedicated storage options displayed.
 - Academic session archive action marks previous-session records for archive/deep-archive storage class and updates session status.
 
@@ -339,7 +345,8 @@ Needs work:
 - Actual background compression/lower-cost object-tier transition job for archived files.
 - More complete file category/retention policies.
 - Granular file permissions and audit trail.
-- Company CRM UI for selecting a school and allocating storage packs centrally.
+- Automated tests for cross-school file isolation, quota enforcement, archive behavior, and storage permissions.
+- End-to-end webhook tests for automatic storage add-on allocation, duplicate payment events, failed allocation recovery, and CRM reports.
 
 ### Partner and Referral Program
 
@@ -367,7 +374,7 @@ Primary blockers:
 - Controlled role-assumption/troubleshooting access is not implemented.
 - Hidden company admin login exists only as a protected route; it does not yet require a separate secret PIN/security code.
 - Failed company admin access attempts are not fully logged.
-- Razorpay integration does not yet cover payment failure events, invoice records, renewals, replay-safe webhook auditing, or complete payment lifecycle tests.
+- Razorpay integration still needs complete invoice records, renewals, replay-safe webhook auditing, and complete payment lifecycle tests.
 - Assessment/question-paper generation is still a draft generator and does not yet enforce approved syllabus coverage.
 - School Super Admin delegation is not granular module-wise and feature-wise.
 - Full tenant-isolation, export-permission, company-admin support-access audit, and security/privacy regression tests are still required before presenting the framework as independently verified compliance.

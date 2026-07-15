@@ -8,6 +8,7 @@ import {
   reverseCommissionForCharge,
   reverseCommissionForInvoice,
 } from "@/lib/referral-webhook.server";
+import { handleAutomaticStorageAllocation } from "@/lib/storage-allocation.server";
 
 
 let _supabase: ReturnType<typeof createClient> | null = null;
@@ -44,25 +45,28 @@ async function upsertStorageAddonSubscription(args: {
   storageGb: number;
   status: string;
   currentPeriodEnd: number | null | undefined;
+  paymentVerified?: boolean;
+  paymentReference?: string | null;
+  providerPaymentId?: string | null;
+  transactionAmountMinor?: number | null;
+  currency?: string | null;
 }) {
-  const orgId = await resolveUserOrgId(args.userId);
-  if (!orgId) return;
-  await getSupabase()
-    .from("organization_storage_addons")
-    .upsert(
-      {
-        org_id: orgId,
-        user_id: args.userId,
-        provider: "stripe",
-        stripe_subscription_id: args.subscriptionId,
-        stripe_price_id: args.priceId,
-        storage_gb: args.storageGb,
-        status: args.status,
-        current_period_end: args.currentPeriodEnd ? new Date(args.currentPeriodEnd * 1000).toISOString() : null,
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: "stripe_subscription_id" },
-    );
+  await handleAutomaticStorageAllocation({
+    provider: "stripe",
+    userId: args.userId,
+    orgId: await resolveUserOrgId(args.userId),
+    priceId: args.priceId,
+    storageGb: args.storageGb,
+    status: args.status,
+    paymentVerified: Boolean(args.paymentVerified),
+    providerSubscriptionId: args.subscriptionId,
+    providerPaymentId: args.providerPaymentId,
+    paymentReference: args.paymentReference ?? args.subscriptionId,
+    transactionAmountMinor: args.transactionAmountMinor ?? null,
+    currency: args.currency ?? null,
+    currentPeriodEnd: args.currentPeriodEnd ? new Date(args.currentPeriodEnd * 1000).toISOString() : null,
+    metadata: { source: "stripe_webhook", priceId: args.priceId },
+  });
 }
 
 async function handleSubscriptionCreated(subscription: any, env: StripeEnv) {
@@ -79,8 +83,9 @@ async function handleSubscriptionCreated(subscription: any, env: StripeEnv) {
       subscriptionId: subscription.id,
       priceId,
       storageGb,
-      status: subscription.status,
+      status: "pending_payment",
       currentPeriodEnd: periodEnd,
+      paymentVerified: false,
     });
     return;
   }
@@ -128,6 +133,24 @@ async function handleInvoicePaymentSucceeded(invoice: any, env: StripeEnv) {
   const amount = invoice.amount_paid ?? 0;
   const currency = invoice.currency ?? "usd";
   const charge = typeof invoice.charge === "string" ? invoice.charge : invoice.charge?.id ?? null;
+  for (const line of invoice.lines?.data ?? []) {
+    const priceId = resolvePriceId(line);
+    const storageGb = storageGbForAddOnPrice(priceId);
+    if (!priceId || !storageGb) continue;
+    await upsertStorageAddonSubscription({
+      userId,
+      subscriptionId: String(line.subscription ?? invoice.subscription ?? invoice.id),
+      priceId,
+      storageGb: storageGb * Number(line.quantity ?? 1),
+      status: "active",
+      currentPeriodEnd: line.period?.end ?? null,
+      paymentVerified: true,
+      paymentReference: invoice.id,
+      providerPaymentId: charge,
+      transactionAmountMinor: Number(line.amount ?? amount ?? 0),
+      currency,
+    });
+  }
   await accrueCommission({
     userId,
     invoiceId: invoice.id,
@@ -151,8 +174,9 @@ async function handleSubscriptionUpdated(subscription: any, env: StripeEnv) {
       subscriptionId: subscription.id,
       priceId,
       storageGb,
-      status: subscription.status,
+      status: subscription.status === "canceled" ? "canceled" : "pending_payment",
       currentPeriodEnd: periodEnd,
+      paymentVerified: false,
     });
     return;
   }

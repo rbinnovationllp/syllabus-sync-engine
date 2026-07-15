@@ -4,6 +4,8 @@ Syllabus Synk is an academic planning and future-ready education platform for sc
 
 Prices below are current platform prices. Indian pricing is exclusive of GST. Annual billing is charged at 10 months for a 12-month subscription where applicable.
 
+Payment gateway note: Indian school payments are currently designed around Razorpay as the primary gateway for subscriptions, annual plans, additional storage, add-ons, and future services. Stripe remains future-ready for international markets when activated.
+
 | Plan | Best For | Monthly Price | Annual Price | Storage Included | Key Limits |
 | --- | --- | ---: | ---: | ---: | --- |
 | Retail Single Access | Individual teachers, tutors, coaching faculty | Rs. 499 + GST / $9 | Rs. 4,990 + GST / $90 | 1 GB | 1 user, 1 class, 1 subject, 500 AI credits/month |

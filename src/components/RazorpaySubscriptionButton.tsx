@@ -49,12 +49,14 @@ export function RazorpaySubscriptionButton({
       if (!result.ok) throw new Error(result.error);
       const checkout = new window.Razorpay!({
         key: result.keyId,
-        subscription_id: result.subscriptionId,
+        ...(result.mode === "subscription" ? { subscription_id: result.subscriptionId } : { order_id: result.orderId }),
         name: "Syllabus Sync",
         description: result.planName,
         notes: { priceId: result.priceId },
         handler: () => {
-          toast.success("Payment received. Your subscription will activate after Razorpay confirmation.");
+          toast.success(result.mode === "subscription"
+            ? "Payment received. Your subscription will activate after Razorpay confirmation."
+            : "Payment received. Your purchase will activate after Razorpay confirmation.");
           onStarted?.();
         },
         modal: {

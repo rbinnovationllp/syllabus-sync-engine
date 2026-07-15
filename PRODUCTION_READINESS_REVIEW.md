@@ -34,10 +34,11 @@ Current implementation:
 - Checkout is launched by `src/components/RazorpaySubscriptionButton.tsx`.
 - Webhook signature verification and subscription status upsert exist in `src/lib/razorpay.webhook.server.ts`.
 - Webhook route exists at `/api/public/razorpay/webhook`.
+- Verified Razorpay storage add-on payment events can automatically activate additional storage for Indian operations, write CRM allocation events, notify School Super Admins, and create support/audit records on failure. Stripe hooks remain future-ready for international markets when activated.
 - Subscription gating uses `has_active_subscription`.
 
 Mandatory gaps:
-- Payment failure events are not handled in the Razorpay webhook.
+- Razorpay payment failure events are partially handled for subscription access and storage allocation exceptions, but the full billing lifecycle still needs production testing.
 - Invoice records and invoice viewing are not implemented.
 - Payment status, renewals, cancellations, pauses, resumes, and failures need full test coverage.
 - Webhook replay/idempotency handling should be explicit.
@@ -152,6 +153,7 @@ Current implementation:
 - School Data Privacy, Security & Confidentiality Framework is documented in Terms, School Governance, Ask SynkAI knowledge, and database seed policy.
 - The framework states school data ownership, platform custodian role, no unauthorized sale/sharing/commercial use, tenant isolation, role-based access, company-admin support access limits, encryption expectations, audit logging, backups, secure exports, and future security principles.
 - Ask SynkAI has a managed knowledge-index foundation with Company Super Admin refresh/review/approval controls and unknown-question support-ticket escalation.
+- School Storage uses AWS S3 signed upload/download URLs for large school files, while Supabase remains the application data and metadata system.
 
 Mandatory gaps:
 - Verify tenant isolation through automated tests for every school-scoped table.

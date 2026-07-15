@@ -1,5 +1,7 @@
 ﻿import { createClient } from "@supabase/supabase-js";
 import { createHmac, timingSafeEqual } from "node:crypto";
+import { creditsForAddOnPrice, storageGbForAddOnPrice } from "@/lib/plans";
+import { handleAutomaticStorageAllocation } from "@/lib/storage-allocation.server";
 
 function env(name: string) {
   const value = process.env[name];
@@ -29,6 +31,24 @@ export async function upsertRazorpaySubscriptionFromEvent(event: any) {
 
   const supabase = getSupabaseAdmin() as any;
   const status = subscription.status ?? "created";
+  const storageGb = storageGbForAddOnPrice(priceId);
+  if (storageGb) {
+    await handleAutomaticStorageAllocation({
+      provider: "razorpay",
+      userId,
+      priceId,
+      storageGb,
+      status: event?.event === "subscription.charged" ? "active" : status,
+      paymentVerified: event?.event === "subscription.charged",
+      providerSubscriptionId: subscription.id,
+      paymentReference: subscription.id,
+      transactionAmountMinor: null,
+      currency: "inr",
+      currentPeriodEnd: subscription.current_end ? new Date(subscription.current_end * 1000).toISOString() : null,
+      metadata: { source: "razorpay_subscription_webhook", event: event?.event, planId: subscription.plan_id ?? null },
+    });
+    return;
+  }
   const isPending = status === "pending";
   const isPaymentBlocked = ["halted", "cancelled"].includes(status);
   const graceUntil = isPending ? new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() : null;
@@ -63,11 +83,57 @@ export async function updateRazorpayPaymentFromEvent(event: any) {
   if (!payment?.id) return;
 
   const subscriptionId = payment.subscription_id;
-  if (!subscriptionId) return;
 
   const supabase = getSupabaseAdmin() as any;
   const status = event?.event === "payment.failed" ? "pending" : "active";
   const failure = payment.error_description ?? payment.error_reason ?? payment.error_code ?? null;
+  if (!subscriptionId) {
+    const priceId = payment.notes?.priceId ?? null;
+    const userId = payment.notes?.userId ?? null;
+    const credits = creditsForAddOnPrice(priceId);
+    if (event?.event === "payment.captured" && userId && credits) {
+      await supabase.from("ai_credit_grants").upsert(
+        {
+          user_id: userId,
+          stripe_session_id: `razorpay:${payment.id}`,
+          stripe_payment_intent_id: payment.id,
+          credits_granted: credits,
+          credits_remaining: credits,
+          environment: process.env.RAZORPAY_ENV ?? "live",
+        },
+        { onConflict: "stripe_session_id" },
+      );
+    }
+    return;
+  }
+  const { data: storageAddon } = await supabase
+    .from("organization_storage_addons")
+    .select("user_id, storage_gb, stripe_price_id")
+    .eq("razorpay_subscription_id", subscriptionId)
+    .maybeSingle();
+
+  const fallbackPriceId = payment.notes?.priceId ?? null;
+  const fallbackStorageGb = storageGbForAddOnPrice(fallbackPriceId);
+  const fallbackUserId = payment.notes?.userId ?? null;
+
+  if ((storageAddon?.user_id && storageAddon?.storage_gb) || (fallbackUserId && fallbackStorageGb)) {
+    await handleAutomaticStorageAllocation({
+      provider: "razorpay",
+      userId: storageAddon?.user_id ?? fallbackUserId,
+      priceId: storageAddon?.stripe_price_id ?? fallbackPriceId,
+      storageGb: Number(storageAddon?.storage_gb ?? fallbackStorageGb),
+      status,
+      paymentVerified: event?.event !== "payment.failed",
+      providerSubscriptionId: subscriptionId,
+      providerPaymentId: payment.id,
+      paymentReference: payment.id,
+      transactionAmountMinor: Number(payment.amount ?? 0),
+      currency: payment.currency ?? "inr",
+      currentPeriodEnd: null,
+      metadata: { source: "razorpay_payment_webhook", event: event?.event, failure },
+    });
+    return;
+  }
 
   await supabase
     .from("subscriptions")
@@ -84,4 +150,55 @@ export async function updateRazorpayPaymentFromEvent(event: any) {
       updated_at: new Date().toISOString(),
     })
     .eq("razorpay_subscription_id", subscriptionId);
+}
+
+export async function updateRazorpayRefundFromEvent(event: any) {
+  const refund = event?.payload?.refund?.entity;
+  const payment = event?.payload?.payment?.entity;
+  const paymentId = refund?.payment_id ?? payment?.id;
+  if (!paymentId) return;
+
+  const supabase = getSupabaseAdmin() as any;
+  const now = new Date().toISOString();
+
+  const { data: addon } = await supabase
+    .from("organization_storage_addons")
+    .select("org_id, user_id, storage_gb, payment_reference, razorpay_subscription_id")
+    .eq("razorpay_payment_id", paymentId)
+    .maybeSingle();
+
+  if (addon?.org_id) {
+    await supabase
+      .from("organization_storage_addons")
+      .update({
+        status: "refunded",
+        allocation_status: "cancelled",
+        allocation_error: "Payment was refunded through Razorpay.",
+        updated_at: now,
+      })
+      .eq("razorpay_payment_id", paymentId);
+
+    await supabase.from("organization_storage_allocation_events").insert({
+      org_id: addon.org_id,
+      user_id: addon.user_id,
+      provider: "razorpay",
+      storage_provider: "aws_s3",
+      storage_purchased_gb: Number(addon.storage_gb ?? 0),
+      payment_status: "refunded",
+      payment_reference: addon.payment_reference ?? paymentId,
+      provider_subscription_id: addon.razorpay_subscription_id ?? null,
+      provider_payment_id: paymentId,
+      system_action_status: "cancelled",
+      failure_reason: "Payment was refunded through Razorpay.",
+      metadata: { source: "razorpay_refund_webhook", event: event?.event, refundId: refund?.id ?? null },
+    });
+  }
+
+  await supabase
+    .from("subscriptions")
+    .update({
+      status: "refunded",
+      updated_at: now,
+    })
+    .eq("razorpay_payment_id", paymentId);
 }

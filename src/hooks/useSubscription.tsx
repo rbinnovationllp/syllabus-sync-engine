@@ -15,6 +15,8 @@ interface SubscriptionRow {
   last_payment_failure_reason?: string | null;
   cancel_at_period_end: boolean | null;
   stripe_customer_id: string;
+  provider?: string | null;
+  razorpay_subscription_id?: string | null;
 }
 
 async function fetchSubscription(userId: string): Promise<SubscriptionRow | null> {

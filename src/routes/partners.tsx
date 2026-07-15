@@ -207,8 +207,8 @@ function HowItPays() {
         ))}
       </div>
       <p className="mt-6 text-center text-xs text-slate-500">
-        Indicative figures. Final commission is calculated as 10% of the net invoice value Stripe
-        settles for each referred school.
+        Indicative figures. Final commission is calculated as 10% of the net invoice value the
+        active payment gateway settles for each referred school.
       </p>
     </section>
   );
@@ -317,7 +317,7 @@ function Steps() {
 
 function Terms() {
   const items = [
-    "Commission is 10% of the net invoice amount Stripe successfully settles. Refunds and chargebacks reverse the corresponding commission.",
+    "Commission is 10% of the net invoice amount successfully settled by the active payment gateway. Refunds and chargebacks reverse the corresponding commission.",
     "Attribution is sticky: the first valid referral code captured at signup wins, for the full lifetime of that school's subscription.",
     'Cookie window: 90 days from first click. Self-referrals, fraudulent traffic, paid brand bidding on "CurriculumOS" keywords, and incentivised signups are not permitted.',
     "Payouts are released monthly once your ledger crosses Rs 2,000 (or equivalent). Below the threshold, balance rolls forward.",

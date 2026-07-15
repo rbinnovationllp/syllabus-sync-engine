@@ -80,14 +80,16 @@ function CompanyCrmPage() {
         <AcquisitionReportPanel report={acquisition.data} isLoading={acquisition.isLoading} />
 
         <Tabs defaultValue="subscriptions" className="space-y-4">
-          <TabsList className="grid w-full max-w-5xl grid-cols-5">
+          <TabsList className="grid w-full max-w-6xl grid-cols-6">
             <TabsTrigger value="subscriptions">Subscriptions</TabsTrigger>
+            <TabsTrigger value="storage">Storage</TabsTrigger>
             <TabsTrigger value="support">Support</TabsTrigger>
             <TabsTrigger value="knowledge">Ask SynkAI</TabsTrigger>
             <TabsTrigger value="accounts">Accounts</TabsTrigger>
             <TabsTrigger value="catalog">Plan catalog</TabsTrigger>
           </TabsList>
           <TabsContent value="subscriptions"><SubscriptionPanel data={d} /></TabsContent>
+          <TabsContent value="storage"><StorageAutomationPanel data={d} /></TabsContent>
           <TabsContent value="support"><SupportPanel data={d} /></TabsContent>
           <TabsContent value="knowledge"><AskSynkaiKnowledgePanel /></TabsContent>
           <TabsContent value="accounts"><AccountsPanel accounts={d.accounts} /></TabsContent>
@@ -290,6 +292,14 @@ function Metric({ icon: Icon, label, value }: any) {
   );
 }
 
+function formatBytes(bytes: number) {
+  if (!bytes) return "0 GB";
+  const gb = bytes / 1024 / 1024 / 1024;
+  if (gb >= 1) return `${gb.toFixed(gb >= 10 ? 0 : 1)} GB`;
+  const mb = bytes / 1024 / 1024;
+  return `${mb.toFixed(mb >= 10 ? 0 : 1)} MB`;
+}
+
 function SiteAnalyticsPanel({ data }: any) {
   return (
     <div className="grid gap-4 xl:grid-cols-2">
@@ -359,6 +369,81 @@ function SubscriptionPanel({ data }: any) {
                   <TableCell className="font-mono text-xs">{s.price_id}</TableCell>
                   <TableCell>{s.environment}</TableCell>
                   <TableCell>{s.current_period_end ? new Date(s.current_period_end).toLocaleDateString() : "-"}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+function StorageAutomationPanel({ data }: any) {
+  const automation = data.storageAutomation ?? {};
+  const recentEvents = automation.recentEvents ?? [];
+  const consumption = automation.consumptionByOrg ?? [];
+  return (
+    <div className="space-y-4">
+      <div className="grid gap-4 md:grid-cols-3">
+        <Metric icon={Briefcase} label="Storage sold" value={`${data.metrics.storageSoldGb ?? 0} GB`} />
+        <Metric icon={IndianRupee} label="Storage revenue" value={`Rs ${Math.round(data.metrics.storageRevenueInr ?? 0).toLocaleString()}`} />
+        <Metric icon={Headphones} label="Pending / failed events" value={data.metrics.storagePendingOrFailed ?? 0} />
+      </div>
+
+      <Card>
+        <CardHeader><CardTitle>Recent Storage Upgrades</CardTitle></CardHeader>
+        <CardContent className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>School</TableHead>
+                <TableHead>Storage</TableHead>
+                <TableHead>Payment</TableHead>
+                <TableHead>Reference</TableHead>
+                <TableHead>Action</TableHead>
+                <TableHead>Time</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {recentEvents.length === 0 ? (
+                <TableRow><TableCell colSpan={6} className="text-muted-foreground">No storage automation events yet.</TableCell></TableRow>
+              ) : recentEvents.map((event: any) => (
+                <TableRow key={event.id}>
+                  <TableCell className="font-medium">{event.organizations?.name || event.school_name || event.org_id || "-"}</TableCell>
+                  <TableCell>{event.storage_purchased_gb} GB</TableCell>
+                  <TableCell>
+                    <div>{event.currency ? `${String(event.currency).toUpperCase()} ${Math.round(Number(event.transaction_amount_minor ?? 0) / 100).toLocaleString()}` : "-"}</div>
+                    <div className="text-xs text-muted-foreground">{event.payment_status}</div>
+                  </TableCell>
+                  <TableCell className="font-mono text-xs">{event.payment_reference || event.provider_subscription_id || "-"}</TableCell>
+                  <TableCell>
+                    <Badge variant={event.system_action_status === "allocated" ? "default" : event.system_action_status === "failed" ? "destructive" : "secondary"}>
+                      {event.system_action_status}
+                    </Badge>
+                    {event.failure_reason ? <div className="mt-1 max-w-xs text-xs text-red-700">{event.failure_reason}</div> : null}
+                  </TableCell>
+                  <TableCell>{new Date(event.created_at).toLocaleString()}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader><CardTitle>School-wise Storage Consumption</CardTitle></CardHeader>
+        <CardContent className="overflow-x-auto">
+          <Table>
+            <TableHeader><TableRow><TableHead>School</TableHead><TableHead>Used storage</TableHead><TableHead>Files</TableHead></TableRow></TableHeader>
+            <TableBody>
+              {consumption.length === 0 ? (
+                <TableRow><TableCell colSpan={3} className="text-muted-foreground">No school storage files recorded yet.</TableCell></TableRow>
+              ) : consumption.map((row: any) => (
+                <TableRow key={row.orgId}>
+                  <TableCell className="font-medium">{row.schoolName}</TableCell>
+                  <TableCell>{formatBytes(Number(row.usedBytes ?? 0))}</TableCell>
+                  <TableCell>{row.fileCount}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

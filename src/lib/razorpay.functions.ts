@@ -1,10 +1,11 @@
 ﻿import { createServerFn } from "@tanstack/react-start";
 import { createClient } from "@supabase/supabase-js";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { PLANS, tierForPriceId } from "@/lib/plans";
+import { ADD_ONS, PLANS, tierForPriceId } from "@/lib/plans";
 
 type RazorpaySubResult =
-  | { ok: true; keyId: string; subscriptionId: string; planName: string; priceId: string }
+  | { ok: true; keyId: string; mode: "subscription"; subscriptionId: string; planName: string; priceId: string }
+  | { ok: true; keyId: string; mode: "order"; orderId: string; planName: string; priceId: string; amount: number; currency: string }
   | { ok: false; error: string };
 
 function env(name: string) {
@@ -30,7 +31,11 @@ function planMap(): Record<string, string> {
 function findPrice(priceId: string) {
   for (const plan of PLANS) {
     const price = plan.prices.find((p) => p.priceId === priceId);
-    if (price) return { plan, price };
+    if (price) return { item: plan, price, kind: "plan" as const, recurring: true };
+  }
+  for (const addOn of ADD_ONS) {
+    const price = addOn.prices.find((p) => p.priceId === priceId);
+    if (price) return { item: addOn, price, kind: "addon" as const, recurring: addOn.recurring };
   }
   return null;
 }
@@ -68,20 +73,44 @@ export const createRazorpaySubscription = createServerFn({ method: "POST" })
       if (!found) throw new Error("Plan price not found");
       if (found.price.currency !== "inr") throw new Error("Razorpay is enabled only for INR plans");
 
+      const userId = context?.userId;
+      if (!userId) throw new Error("Authentication context is missing.");
+      const notes = {
+        userId,
+        priceId: data.priceId,
+        tierId: tierForPriceId(data.priceId) ?? "",
+        planName: found.item.name,
+        itemKind: found.kind,
+      };
+
+      if (!found.recurring) {
+        const order = await razorpay("/orders", {
+          method: "POST",
+          body: JSON.stringify({
+            amount: found.price.amount,
+            currency: found.price.currency.toUpperCase(),
+            receipt: `${data.priceId}_${Date.now()}`.slice(0, 40),
+            notes,
+          }),
+        });
+
+        return {
+          ok: true,
+          keyId: env("RAZORPAY_KEY_ID"),
+          mode: "order",
+          orderId: order.id,
+          planName: found.item.name,
+          priceId: data.priceId,
+          amount: found.price.amount,
+          currency: found.price.currency,
+        };
+      }
+
       const map = planMap();
       const razorpayPlanId = map[data.priceId];
       if (!razorpayPlanId) {
         throw new Error(`Razorpay plan id missing for ${data.priceId}. Add it to RAZORPAY_PLAN_MAP_JSON.`);
       }
-
-      const userId = context.userId;
-      const email = (context.claims as { email?: string } | undefined)?.email ?? "";
-      const notes = {
-        userId,
-        priceId: data.priceId,
-        tierId: tierForPriceId(data.priceId) ?? "",
-        planName: found.plan.name,
-      };
 
       const subscription = await razorpay("/subscriptions", {
         method: "POST",
@@ -95,32 +124,35 @@ export const createRazorpaySubscription = createServerFn({ method: "POST" })
       });
 
       const supabase = getSupabaseAdmin() as any;
-      await supabase.from("subscriptions").upsert(
-        {
-          user_id: userId,
-          provider: "razorpay",
-          razorpay_subscription_id: subscription.id,
-          razorpay_plan_id: razorpayPlanId,
-          razorpay_short_url: subscription.short_url ?? null,
-          stripe_subscription_id: null,
-          stripe_customer_id: null,
-          product_id: razorpayPlanId,
-          price_id: data.priceId,
-          status: subscription.status ?? "created",
-          current_period_start: subscription.current_start ? new Date(subscription.current_start * 1000).toISOString() : null,
-          current_period_end: subscription.current_end ? new Date(subscription.current_end * 1000).toISOString() : null,
-          cancel_at_period_end: false,
-          environment: process.env.RAZORPAY_ENV ?? "live",
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: "razorpay_subscription_id" },
-      );
+      if (found.kind === "plan") {
+        await supabase.from("subscriptions").upsert(
+          {
+            user_id: userId,
+            provider: "razorpay",
+            razorpay_subscription_id: subscription.id,
+            razorpay_plan_id: razorpayPlanId,
+            razorpay_short_url: subscription.short_url ?? null,
+            stripe_subscription_id: null,
+            stripe_customer_id: null,
+            product_id: razorpayPlanId,
+            price_id: data.priceId,
+            status: subscription.status ?? "created",
+            current_period_start: subscription.current_start ? new Date(subscription.current_start * 1000).toISOString() : null,
+            current_period_end: subscription.current_end ? new Date(subscription.current_end * 1000).toISOString() : null,
+            cancel_at_period_end: false,
+            environment: process.env.RAZORPAY_ENV ?? "live",
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: "razorpay_subscription_id" },
+        );
+      }
 
       return {
         ok: true,
         keyId: env("RAZORPAY_KEY_ID"),
+        mode: "subscription",
         subscriptionId: subscription.id,
-        planName: found.plan.name,
+        planName: found.item.name,
         priceId: data.priceId,
       };
     } catch (e: any) {

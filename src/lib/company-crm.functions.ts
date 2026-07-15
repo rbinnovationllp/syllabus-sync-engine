@@ -30,7 +30,7 @@ export const getCompanyCrmOperations = createServerFn({ method: "GET" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const since24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
     const since7d = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-    const [accounts, deals, subscriptions, profiles, tickets, catalog, pageViews, recentPageViews] = await Promise.all([
+    const [accounts, deals, subscriptions, profiles, tickets, catalog, pageViews, recentPageViews, storageEvents, storageObjects] = await Promise.all([
       supabaseAdmin.from("crm_accounts").select("id, name, board, city, country, created_at").order("created_at", { ascending: false }).limit(200),
       supabaseAdmin.from("crm_deals").select("id, name, amount_inr, stage, status, expected_close_date").limit(500),
       supabaseAdmin.from("subscriptions").select("id, user_id, status, price_id, current_period_end, environment, created_at").order("created_at", { ascending: false }).limit(500),
@@ -39,6 +39,8 @@ export const getCompanyCrmOperations = createServerFn({ method: "GET" })
       supabaseAdmin.from("subscription_plan_catalog").select("*").order("monthly_inr", { ascending: true }),
       supabaseAdmin.from("site_page_views").select("visitor_id, path, created_at").gte("created_at", since7d).limit(10000),
       supabaseAdmin.from("site_page_views").select("visitor_id, path, page_title, referrer, created_at").order("created_at", { ascending: false }).limit(25),
+      supabaseAdmin.from("organization_storage_allocation_events").select("*, organizations(name)").order("created_at", { ascending: false }).limit(200),
+      supabaseAdmin.from("school_storage_objects").select("org_id, size_bytes, status").neq("status", "deleted").limit(20000),
     ]);
     if (tickets.error) throw new Error(tickets.error.message);
     const subRows = subscriptions.data ?? [];
@@ -59,6 +61,16 @@ export const getCompanyCrmOperations = createServerFn({ method: "GET" })
     }, {})).map((row: any) => ({ path: row.path, views: row.views, visitors: row.visitors.size })).sort((a: any, b: any) => b.views - a.views).slice(0, 10);
     const openTickets = (tickets.data ?? []).filter((t: any) => !["resolved","closed"].includes(t.status));
     const openDeals = (deals.data ?? []).filter((d: any) => d.status === "open");
+    const storageEventRows = storageEvents.data ?? [];
+    const successfulStorageEvents = storageEventRows.filter((row: any) => row.system_action_status === "allocated");
+    const schoolNamesByOrg = new Map((profiles.data ?? []).map((profile: any) => [profile.org_id, profile.organizations?.name ?? profile.org_id]));
+    const storageConsumptionByOrg = Object.values((storageObjects.data ?? []).reduce((acc: Record<string, any>, row: any) => {
+      const orgId = row.org_id ?? "unknown";
+      acc[orgId] ??= { orgId, schoolName: schoolNamesByOrg.get(orgId) ?? orgId, usedBytes: 0, fileCount: 0 };
+      acc[orgId].usedBytes += Number(row.size_bytes ?? 0);
+      acc[orgId].fileCount += 1;
+      return acc;
+    }, {})).sort((a: any, b: any) => b.usedBytes - a.usedBytes).slice(0, 25);
     return {
       accounts: accounts.data ?? [],
       subscriptions: subRows,
@@ -74,11 +86,20 @@ export const getCompanyCrmOperations = createServerFn({ method: "GET" })
         visitors7d: uniqueVisitors,
         visits24h: views24h,
         visitors24h,
+        storageSoldGb: successfulStorageEvents.reduce((sum: number, row: any) => sum + Number(row.storage_purchased_gb ?? 0), 0),
+        storageRevenueInr: successfulStorageEvents
+          .filter((row: any) => String(row.currency ?? "").toLowerCase() === "inr")
+          .reduce((sum: number, row: any) => sum + Number(row.transaction_amount_minor ?? 0) / 100, 0),
+        storagePendingOrFailed: storageEventRows.filter((row: any) => ["pending", "failed"].includes(row.system_action_status)).length,
       },
       byPlan,
       siteAnalytics: {
         topPages,
         recent: recentPageViews.data ?? [],
+      },
+      storageAutomation: {
+        recentEvents: storageEventRows,
+        consumptionByOrg: storageConsumptionByOrg,
       },
     };
   });
