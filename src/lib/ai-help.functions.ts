@@ -219,6 +219,30 @@ function localAnswer(message: string, page?: string | null) {
   return `I do not have enough approved information to answer that confidently. I can help with Syllabus Synk features, academic year setup, syllabus generation, subscriptions, AI Leadership Suite, AI Future Force, one-month demo plans, exports, storage, privacy/security, and visitor guidance${page ? ` on this page (${page})` : ""}. I have forwarded this question to the Syllabus Synk support queue for review at support@syllabus-synk.in.`;
 }
 
+function priorityAnswer(message: string) {
+  const q = message.toLowerCase();
+  const asksStorage =
+    q.includes("storage") ||
+    q.includes("gb") ||
+    q.includes("quota") ||
+    q.includes("upload limit");
+  const asksPrice =
+    q.includes("price") ||
+    q.includes("pricing") ||
+    q.includes("cost") ||
+    q.includes("rate") ||
+    q.includes("charges") ||
+    q.includes("add-on") ||
+    q.includes("addon") ||
+    q.includes("additional");
+
+  if (asksStorage && asksPrice) {
+    return "Additional storage add-on prices for Syllabus Synk are: 25 GB - Rs. 250/month, 50 GB - Rs. 500/month, 100 GB - Rs. 900/month, 250 GB - Rs. 2,000/month, and 500 GB - Rs. 3,500/month. For 1 TB or more, custom enterprise pricing is available through support@syllabus-synk.in. These add-ons increase the school's available storage quota and can be used when uploads are blocked because the current plan quota is full.";
+  }
+
+  return null;
+}
+
 async function approvedKnowledge() {
   const indexed = await getApprovedAskSynkaiKnowledge();
   if (indexed) return `Approved Ask SynkAI knowledge index:\n${indexed}`;
@@ -284,6 +308,9 @@ export const askAiHelpAssistant = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => helpInput.parse(input))
   .handler(async ({ data }) => {
     try {
+      const priority = priorityAnswer(data.message);
+      if (priority) return { answer: priority, provider: "local" };
+
       const ai = await aiAnswer(data);
       const answer = ai ?? localAnswer(data.message, data.page);
       if (answer.includes("I do not have enough approved information")) {
