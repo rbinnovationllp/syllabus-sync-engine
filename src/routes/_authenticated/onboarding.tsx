@@ -81,7 +81,7 @@ function ProfileTypeChooser({ onChoose }: { onChoose: (t: ProfileType) => void }
             <div className="text-lg font-semibold mb-1">School / Coaching Institute</div>
             <p className="text-sm text-muted-foreground">
               Multiple classes, subjects and teachers. Full setup: school profile, board, fees,
-              textbooks, calendar, teaching matrix, exams and events.
+              book details, chapter lists, calendar, teaching matrix, exams and events.
             </p>
           </button>
           <button
@@ -91,7 +91,7 @@ function ProfileTypeChooser({ onChoose }: { onChoose: (t: ProfileType) => void }
           >
             <div className="text-lg font-semibold mb-1">Private Tutor</div>
             <p className="text-sm text-muted-foreground">
-              You teach one class / one subject from a textbook. Quick 2-step setup: book details,
+              You teach one class / one subject. Quick 2-step setup: book or chapter details,
               period duration, holidays and exam dates â€” no school profile required.
             </p>
           </button>
@@ -277,8 +277,8 @@ function OnboardingWizard({ onSwitchType }: { onSwitchType?: () => void }) {
         {step === 2 && (
           <Card>
             <CardHeader>
-              <CardTitle>Fees & textbooks</CardTitle>
-              <CardDescription>Leave textbooks blank to let AI suggest a tier-matched set later.</CardDescription>
+              <CardTitle>Fees & book details</CardTitle>
+              <CardDescription>Full textbook uploads are not required. Add book metadata or chapter-list details where available; private publisher content should be used only with school authorization.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -301,14 +301,14 @@ function OnboardingWizard({ onSwitchType }: { onSwitchType?: () => void }) {
               </div>
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <Label>Textbooks (optional)</Label>
+                  <Label>Book / chapter details (optional)</Label>
                   <Button type="button" size="sm" variant="outline"
                     onClick={() => setS2({ ...s2, textbooks: [...s2.textbooks, { grade: "1", subject: "Mathematics", title: "", author: "", publisher: "" }] })}>
-                    <Plus className="h-3 w-3 mr-1" /> Add textbook
+                    <Plus className="h-3 w-3 mr-1" /> Add book details
                   </Button>
                 </div>
                 {s2.textbooks.length === 0 ? (
-                  <p className="text-xs text-muted-foreground p-3 border rounded">No books added â€” AI will recommend a tier-matched set.</p>
+                  <p className="text-xs text-muted-foreground p-3 border rounded">No book details added. Syllabus Synk can start from board-prescribed structure and official/open resources where available; school should review the plan against its prescribed book.</p>
                 ) : (
                   <div className="space-y-2">
                     {s2.textbooks.map((tb, i) => (
@@ -848,7 +848,7 @@ function TutorWizard({ onSwitchType }: { onSwitchType?: () => void }) {
         {step === 1 && (
           <Card>
             <CardHeader>
-              <CardTitle>Your class & textbook</CardTitle>
+              <CardTitle>Your class & book details</CardTitle>
               <CardDescription>
                 Built for individual tutors and coaching institutes â€” only the essentials needed
                 to plan your course schedule.
@@ -871,7 +871,7 @@ function TutorWizard({ onSwitchType }: { onSwitchType?: () => void }) {
               </div>
 
               <div className="border rounded p-3 space-y-3">
-                <Label className="text-sm font-medium">Textbook details</Label>
+                <Label className="text-sm font-medium">Book details</Label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <SmallInput label="Book title" value={book.title} onChange={(v) => setBook({ ...book, title: v })} />
                   <SmallInput label="Author" value={book.author} onChange={(v) => setBook({ ...book, author: v })} />

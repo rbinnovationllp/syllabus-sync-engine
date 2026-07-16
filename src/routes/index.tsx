@@ -36,7 +36,7 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Plan an entire academic year in minutes. Capacity-aware scheduling, textbook alignment, multi-teacher balance, and exam-ready syllabus completion - for CBSE, ICSE, IB, Cambridge, Common Core and more.",
+          "Plan an entire academic year in minutes. Capacity-aware scheduling, board-aligned chapter planning, multi-teacher balance, and exam-ready syllabus completion - for CBSE, ICSE, IB, Cambridge, Common Core and more.",
       },
       { property: "og:title", content: "CurriculumOS - AI Curriculum Planning for K-12 Schools" },
       {
@@ -151,7 +151,7 @@ function Hero() {
         </h1>
 
         <p className="mx-auto mt-6 max-w-2xl text-base text-white/70 sm:text-lg">
-          CurriculumOS turns holidays, exams, events, and textbooks into a capacity-aware curriculum
+          CurriculumOS turns holidays, exams, events, and chapter lists into a capacity-aware curriculum
           that guarantees syllabus completion across every class, teacher, and stream.
         </p>
 
@@ -307,8 +307,8 @@ const FEATURES = [
   },
   {
     icon: BookOpen,
-    title: "Textbook intelligence",
-    body: "Aligns plans to your exact edition, author and publisher. Auto-recommends books by region & fee tier.",
+    title: "Chapter-list planning",
+    body: "Plans from official board structures, NCERT/state resources where available, and school-entered book details or chapter lists - no full textbook upload required.",
     color: "from-fuchsia-500 to-pink-500",
   },
   {
@@ -523,8 +523,8 @@ function HowItWorks() {
     },
     {
       n: "02",
-      t: "Drop in your textbooks",
-      d: "Or let AI recommend books by region.",
+      t: "Add book or chapter details",
+      d: "Use official/open resources where available, or enter chapter lists for private publisher books.",
       icon: BookOpen,
     },
     {

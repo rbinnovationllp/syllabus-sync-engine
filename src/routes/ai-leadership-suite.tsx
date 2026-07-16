@@ -26,8 +26,8 @@ const modules = [
   },
   {
     icon: FileText,
-    title: "Content Studio",
-    text: "Creates editable worksheets, notes, flashcards, projects, revision material, and answer keys for classroom use.",
+    title: "Teaching Resource Studio",
+    text: "Creates chapter-list mapped teaching packs, worksheets, quizzes, slide outlines, activities, interactive templates, and answer keys using existing AI credits.",
   },
   {
     icon: ClipboardCheck,

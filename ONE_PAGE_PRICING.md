@@ -27,6 +27,27 @@ Payment gateway note: Indian school payments are currently designed around Razor
 - Teacher assignment, progress monitoring, governance, storage, CRM, and admin dashboards where enabled.
 - Plus plans include the AI Leadership Suite: principal dashboard, teacher copilot, content studio, assessment generator, academic digital twin, teacher intelligence, student intelligence, and parent communication drafts.
 
+## Teaching Resource Expansion Without Base Price Increase
+
+To bring Syllabus Synk closer to advanced teaching-learning ecosystems, Plus and eligible plans may use the AI Teaching Assistant and AI Teaching Resource Studio to create:
+
+- Chapter-list mapped teaching packs.
+- Activity-based lesson packs.
+- Worksheets, quizzes, flashcards, question banks, and answer keys.
+- Slide outlines, revision notes, projects, experiments, demonstrations, and real-life example banks.
+- Interactive classroom templates such as diagram labeling, timelines, concept maps, matching tasks, observation diaries, and role-play cards.
+- Remedial practice packs, teacher training micro-modules, and AI Future Force lab activities.
+
+Base subscription prices are not increased for this teaching-resource expansion. Normal usage is adjusted within each school's included monthly AI credits. Schools with heavy AI generation needs can use the existing AI credit top-up packs listed below.
+
+## Book Content and Copyright-Safe Planning
+
+Syllabus Synk does not require schools to upload full textbooks for syllabus planning. The platform plans from official curriculum frameworks, NCERT/state-board resources where officially available, school-entered book details, chapter lists, unit structures, learning objectives, prescribed syllabus outlines, teaching periods, holidays, exams, and teacher inputs.
+
+For private publisher books, schools may enter the book name, publisher, class, subject, chapter list, and unit structure. If a teacher needs deeper chapter-specific teaching assistance, the teacher may upload or paste only the relevant permitted section for internal academic support. Syllabus Synk plans from curriculum structure and chapter lists, not from copyrighted textbook scraping.
+
+The Curriculum Mapping Module maps chapter lists to recognized/open curriculum-style references where available, returns confidence/status for each chapter, estimates teaching and revision periods, and asks for summary, learning objectives, topics covered, or key concepts only when a chapter cannot reasonably be mapped.
+
 ## AI Future Force / AI Future Workforce Add-On
 
 AI Future Force is an optional future-ready AI education curriculum planner for Classes 1 to 12. It helps schools introduce AI education without disturbing the regular academic timetable.
@@ -43,6 +64,7 @@ AI Future Force is an optional future-ready AI education curriculum planner for 
 - Extra user seat: Rs. 199/month per seat or $2.50/month per seat.
 - Extra campus: Rs. 4,999/month or $59/month.
 - AI credit top-ups: Rs. 499 for 500 credits, Rs. 1,999 for 2,000 credits, Rs. 6,999 for 10,000 credits.
+- AI teaching-resource generation uses included AI credits first; top-ups are optional for high-volume generation.
 - Additional storage:
 
 | Additional Storage | Monthly Price |

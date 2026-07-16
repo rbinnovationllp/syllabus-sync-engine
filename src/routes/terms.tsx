@@ -20,7 +20,7 @@ function TermsPage() {
             <ShieldCheck className="mr-2 h-4 w-4" /> Terms, AI governance, and human review policy
           </div>
           <h1 className="mt-4 text-4xl font-semibold tracking-tight">Terms & Conditions</h1>
-          <p className="mt-2 text-slate-600">Last updated: July 2, 2026</p>
+          <p className="mt-2 text-slate-600">Last updated: July 17, 2026</p>
         </div>
 
         <Card>
@@ -38,6 +38,15 @@ function TermsPage() {
             <p>Schools and users must independently review, verify, modify, and approve all generated outputs before implementation, including curriculum plans, lesson plans, academic calendars, training modules, worksheets, reports, class tests, and examination papers.</p>
             <p>The platform should not be used as a substitute for professional academic judgment, board requirements, school policies, or applicable legal and regulatory obligations.</p>
             <p>Use of the platform constitutes acceptance that AI-generated outputs require human validation before practical implementation.</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader><CardTitle>Book content and copyright-safe use</CardTitle></CardHeader>
+          <CardContent className="space-y-3 text-sm leading-6 text-slate-700">
+            <p>Syllabus Synk does not require schools to upload full textbooks for normal syllabus planning. The platform may plan from official curriculum frameworks, NCERT/state-board resources where officially available, school-entered book details, chapter lists, unit structures, learning objectives, prescribed syllabus outlines, teaching periods, holidays, exams, and teacher inputs.</p>
+            <p>For private publisher books, users should provide only chapter lists, unit structure, learning objectives, or permitted extracts unless the school has authorization to use broader content. Users are responsible for ensuring that any uploaded or pasted content is legally permitted for the school&apos;s internal academic use.</p>
+            <p>The platform must not be used for unauthorized textbook scraping, redistribution of copyrighted material, or access to publisher content without appropriate rights or permission.</p>
           </CardContent>
         </Card>
 

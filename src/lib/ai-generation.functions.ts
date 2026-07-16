@@ -82,6 +82,17 @@ async function loadContext(
     .eq("user_id", userId)
     .maybeSingle();
   if (!membership) throw new Error("Academic year not found");
+  let curriculumMappings: any[] = [];
+  try {
+    const { data: mappings } = await supabaseAdmin
+      .from("curriculum_mapping_runs")
+      .select("*, curriculum_chapter_mappings(*)")
+      .eq("academic_year_id", yearId)
+      .eq("status", "approved");
+    curriculumMappings = mappings ?? [];
+  } catch {
+    curriculumMappings = [];
+  }
   return {
     year: yearRes.data,
     capacity: capRes.data,
@@ -92,6 +103,7 @@ async function loadContext(
     events: eventsRes.data ?? [],
     training: trainingRes.data ?? [],
     textbooks: booksRes.data ?? [],
+    curriculumMappings,
   };
 }
 
@@ -316,6 +328,14 @@ export const generateSubjectCurriculum = createServerFn({ method: "POST" })
     const gs = ctx.gradeSubjects.find((g: any) => String(g.grade) === data.grade && g.subject.toLowerCase() === data.subject.toLowerCase());
     if (!gs) return { error: "SUBJECT_NOT_FOUND" as const };
     const books = ctx.textbooks.filter((b: any) => String(b.grade) === data.grade && b.subject?.toLowerCase() === data.subject.toLowerCase());
+    const approvedMapping = (ctx.curriculumMappings ?? [])
+      .find((run: any) => String(run.grade).toLowerCase() === data.grade.toLowerCase() && String(run.subject).toLowerCase() === data.subject.toLowerCase());
+    const mappingRows = (approvedMapping?.curriculum_chapter_mappings ?? []) as any[];
+    const mappingClause = mappingRows.length
+      ? `Approved curriculum mapping for this grade-subject:
+${mappingRows.map((row: any, index: number) => `${index + 1}. ${row.chapter_name} -> ${row.matched_chapter_name || "school-specific/unique chapter"} (${row.mapping_status}, confidence ${Math.round(Number(row.confidence ?? 0) * 100)}%, estimated periods ${row.estimated_periods ?? "review"})`).join("\n")}
+Use this approved mapping as the chapter structure. Unique/school-specific chapters should be planned from school-provided metadata only, not from copyrighted full-text content.`
+      : "No approved curriculum mapping is available yet. Use board-prescribed syllabus structure, official/open references where available, and school-entered book/chapter metadata.";
 
     // Capacity sizing: preview = ~30 days from today; paid = remaining session days.
     const today = new Date();
@@ -340,7 +360,9 @@ export const generateSubjectCurriculum = createServerFn({ method: "POST" })
     const system = `You are CurriculumOS, a senior academic coordinator. Produce a chapter-by-chapter teaching plan for ONE grade-subject that:
 - Fits within total_periods AND leaves a buffer of ~15% for revision/recovery.
 - Tags each chapter difficulty (simple/medium/tough). Avoid placing two 'tough' chapters in consecutive weeks.
-- Aligns with the board (${ctx.year.schools?.board}) and the listed textbooks if any.
+- Aligns with the board (${ctx.year.schools?.board}), official/open curriculum resources where legally available, and the listed textbooks or chapter lists if any.
+- Does not claim access to copyrighted private-publisher textbook content unless the school has provided authorized chapter details or permitted extracts. For private publishers, plan from book name, publisher, chapter list, unit structure, learning objectives, and school/teacher inputs.
+- Full textbook upload is not required for syllabus planning. If no textbook/chapter list is specified, use a board-appropriate canonical syllabus structure and add a warning that the school should review chapter names against its prescribed book.
 - Sequences foundation chapters before dependent ones.
 - Respects any "already completed" chapters listed by the teacher and continues from the next chapter.
 Return strictly the JSON schema; no extra prose.`;
@@ -359,6 +381,8 @@ School day: ${(ctx.year as any).school_start_time ?? "?"} – ${(ctx.year as any
 ${seniorClause}
 Textbooks: ${books.length === 0 ? "(none specified — choose board-appropriate canonical chapter list)" : books.map((b: any) => `${b.book_name ?? b.title} by ${b.author} (${b.publisher}, ${b.edition_year})`).join("; ")}
 Year window: ${ctx.year.start_date} → ${ctx.year.end_date}.
+Copyright-safe planning rule: Do not scrape or assume full private-publisher content. Use chapter names, unit structure, learning objectives, school-provided details, and authorized/public resources only.
+${mappingClause}
 ${completedNote}
 ${previewClause}`;
 

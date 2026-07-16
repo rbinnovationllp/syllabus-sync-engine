@@ -1,6 +1,6 @@
 # Project Status
 
-Date: 2026-07-16
+Date: 2026-07-17
 
 Project: CurriculumOS / Syllabus Synk
 
@@ -14,20 +14,32 @@ Syllabus Synk / CurriculumOS is both:
 - An Academic Planning Platform for school calendars, teaching capacity, syllabus completion, curriculum generation, exports, execution monitoring, governance, and academic operations.
 - A Future-Ready Education Ecosystem through AI Leadership Suite and AI Future Workforce / AI Future Force, helping schools prepare students and teachers for AI-enabled careers and emerging technologies.
 
+It is best described for schools as a cloud-based, web-based software platform / web-based application. It helps schools prepare capacity-aware syllabus plans, track teacher progress, monitor syllabus completion, manage academic workflows, and support future-ready AI education programs through secure online dashboards.
+
+The project uses AI assistant and agent-style capabilities in several areas, though not every part is a fully autonomous agent. Main AI/agent-style areas include Ask Synk AI, AI Curriculum Generation, AI Leadership Suite, AI Future Force / AI Future Workforce, AI Teaching Assistant, Teacher Credit Recommendation Engine, and Ask SynkAI Knowledge Sync. The next higher level can include autonomous agents for syllabus-delay recovery, daily teacher progress checks, principal reports, post-deployment knowledge refresh, and lead/support-ticket follow-up.
+
+Teachers can access their dashboard from mobile phones, tablets, or computers through a browser. This is useful when teachers are not expected or allowed to carry laptops into classrooms. Teachers can use mobile phones for daily lesson status updates, topics taught, syllabus progress, and quick AI teaching support. For the best experience, school administrators should use laptops or desktops for larger planning, reporting, setup, and review tasks.
+
+Book-content positioning: Syllabus Synk does not require schools to upload full textbooks for syllabus planning and must not claim access to all publisher book content on the internet. It plans from official curriculum frameworks, NCERT/state-board resources where officially available, school-entered book details, chapter lists, unit structures, learning objectives, prescribed syllabus outlines, teaching periods, holidays, exams, and teacher inputs. For private publisher books, schools can enter book name, publisher, class, subject, chapter list, and unit structure. The Curriculum Mapping Module maps private-publisher chapter lists against recognized/open curriculum-style references where available, assigns confidence/status, estimates periods, and asks for summary/objectives/topics/key concepts only when a chapter cannot reasonably be mapped. If deeper chapter-specific teaching assistance is needed, teachers may upload or paste only the relevant permitted section for internal academic support. Syllabus Synk plans from curriculum structure and chapter lists, not from copyrighted textbook scraping.
+
 ## Current Product Scope
 
 Implemented or partially implemented areas include:
 - Public marketing website, demo lead capture, partner/referral landing page, visitor proof counters, AI Leadership Suite messaging, and AI Future Workforce homepage section.
 - Floating homepage visitor assistant renamed to Ask Synk AI, with local fallback answers, optional AI-provider answers, approved knowledge-index loading, and support-ticket escalation for unknown questions.
+- Ask Synk AI can describe Syllabus Synk as a cloud-based/web-based school software platform, explain AI assistant/agent-style capabilities, and clarify mobile teacher-dashboard usage.
 - Authentication with email/password, Google sign-in, reset-password flow, invitation preview, and invitation acceptance.
 - Authenticated dashboard and app shell navigation.
 - Institution onboarding for school profile, board, fees, textbooks, teaching matrix, calendar, holidays, events, exams, and teacher training days.
 - Tutor/coaching onboarding for retail single-access users with one class, one subject, textbook, class duration, holidays, and exams.
 - Capacity-aware academic planning that subtracts holidays, vacations, weekly offs, exams, events, training days, and buffer days.
 - AI annual calendar generation, per-subject curriculum generation, schedule recalculation, AI credit accounting, run history, PDF/DOCX exports, demo watermarking, version history, and soft-delete/recycle-bin foundations.
+- Curriculum Mapping Module for copyright-safe private publisher planning: chapter-level mapping, recognized/open curriculum comparison, confidence scoring, unique-chapter information requests, school approval, and approved mapping use inside syllabus generation.
 - Teacher curriculum proposal workflow for proposed changes, AI review, finalization, teacher acknowledgement, and admin review.
 - AI Leadership Suite V2: principal dashboard, teacher copilot, content studio, assessment generator, academic digital twin, teacher intelligence, student intelligence, and parent communication drafts.
 - AI Teaching Assistant / Teacher Copilot for activity-based learning, demonstrations, stories, role-play, project ideas, local examples, visual learning, interactive exercises, syllabus-aware daily lesson help, school-controlled AI Teaching Credits, and reusable AI Teaching Innovation Library.
+- AI Teaching Resource Studio / Content Studio for chapter-list mapped teaching packs, activity-based lesson packs, worksheets, quizzes, answer keys, flashcards, question banks, revision notes, slide outlines, projects, experiments/demonstrations, real-life example banks, diagram-labeling activities, timeline activities, concept maps, interactive classroom templates, remedial practice packs, teacher micro-training modules, and AI Future Force lab activities.
+- Tata ClassEdge gap-closer positioning: Syllabus Synk is being strengthened toward a richer teaching-learning ecosystem, but base subscription prices remain unchanged; normal usage is adjusted through included monthly AI credits and optional AI credit top-ups for high-volume generation.
 - AI Future Workforce / AI Future Force add-on with a web-based Class 1-12 curriculum planner, grade-wise AI curriculum previews, one/two weekly AI class planning, one-month demo plan request flow, monthly releases, foundation module for late-session enrollment, teacher enablement messaging, and future-career positioning.
 - Academic Execution module for daily teacher progress logging, expanded lesson/session statuses, principal/school-admin monitoring, daily exception reports, and Teacher Credit Distribution Recommendations.
 - Teacher assignment management.
@@ -46,7 +58,12 @@ Implemented or partially implemented areas include:
 
 ## Recent Work Completed
 
-Recent changes completed through 2026-07-16:
+Recent changes completed through 2026-07-17:
+- Added Curriculum Mapping Module foundation: Supabase tables for curriculum standard references, mapping runs, chapter mappings, and unique-chapter information requests; server-side mapping engine; authenticated school mapping page; AppShell navigation; and syllabus-generation integration with approved mappings.
+- Added copyright-safe book-content policy across planning, homepage positioning, onboarding, pricing/status docs, and Ask Synk AI: no full textbook upload required, NCERT/state/open resources used only where officially available, and private publisher planning uses chapter lists, unit structure, and permitted extracts only.
+- Expanded AI Content Studio into AI Teaching Resource Studio positioning with chapter-list mapped teaching packs, activity-based lesson packs, worksheets, quizzes, answer keys, slide outlines, interactive classroom templates, teacher micro-training modules, and AI Future Force lab activities.
+- Added base-price-protection policy for Tata-style teaching-support enhancements: current subscription prices remain unchanged, normal usage consumes included monthly AI credits, and optional AI credit top-ups handle heavy AI generation.
+- Updated Ask Synk AI knowledge and project positioning so it can answer questions about Syllabus Synk as a cloud-based/web-based software platform, the project's AI assistant/agent-style workflows, future autonomous-agent opportunities, and teacher dashboard access from mobile phones.
 - Fixed homepage public visitor proof counter instability: removed the artificial `currentOpen` addition and replaced fallback numeric counts with loading placeholders so the count no longer flashes from the baseline value such as 177 to the live database value after refresh.
 - Added AI Teaching Assistant premium workflow inside the Teacher Copilot page: teachers can ask "How can I teach this topic effectively?" for any chapter, topic, sub-topic, or learning objective and receive activity-based teaching methods, classroom demonstrations, practical examples, stories, role-play, group activities, projects, local environment examples, real-world applications, visual ideas, and interactive exercises.
 - Added multi-subject support for teaching suggestions across Science, Mathematics, Social Science, English, Hindi, languages, Computer Science, Environmental Studies, Commerce, Economics, Geography, History, Physics, Chemistry, Biology, and future subjects.
@@ -206,7 +223,7 @@ Status: Prototype to partially implemented depending on module.
 Working:
 - Principal Dashboard.
 - AI Teaching Assistant / Teacher Copilot with activity-based teaching suggestions, premium AI Teaching Credits, admin allocation controls, and reusable teaching library.
-- Content Studio.
+- AI Teaching Resource Studio / Content Studio with expanded resource types for chapter-list mapped teaching packs, worksheets, quizzes, activity packs, slide outlines, interactive templates, teacher micro-training modules, and AI Future Force lab activities.
 - Assessment Generator.
 - Academic Digital Twin.
 - Teacher Intelligence.

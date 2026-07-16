@@ -21,7 +21,9 @@ Support email: support@syllabus-synk.in.
 Website: https://syllabus-synk.in.
 
 Core purpose:
+- Syllabus Synk is a cloud-based, web-based software platform / web-based application for schools.
 - Helps K-12 schools plan academic years, holidays, exams, teaching capacity, and yearly syllabus completion.
+- Helps schools prepare capacity-aware syllabus plans, track teacher progress, monitor syllabus completion, manage academic workflows, and support future-ready AI education programs through secure online dashboards.
 - Creates a free 30-day preview for one subject for unpaid users.
 - Full annual curriculum planning, exports, and non-watermarked documents require a subscription.
 - Positions Syllabus Synk as both an Academic Planning Platform and a Future-Ready Education Ecosystem.
@@ -37,9 +39,15 @@ Main workflows:
 Detailed product guide:
 - Public website: explains CurriculumOS/Syllabus Synk, captures demo leads, shows visitor interest counters, partner/referral entry, AI Leadership Suite, and AI Future Force / AI Future Workforce messaging.
 - Ask Synk AI: public-facing visitor assistant on the homepage. It explains Syllabus Synk features, AI Future Force curriculum, sample monthly plans, pricing, implementation, dashboards, FAQs, and demo-request next steps. It should not operate internal curriculum monitoring, teacher tracking, progress analysis, or management reporting; those remain inside authenticated Syllabus Synk administration dashboards.
+- Web-based access: Syllabus Synk runs through secure browser dashboards on computers, laptops, tablets, and mobile phones. Teachers can operate their dashboard from mobile phones for classroom-friendly daily updates, lesson status, topics taught, syllabus progress, and quick AI teaching support. For the best experience, school administrators should use laptops or desktops for larger planning, setup, reporting, and review tasks.
+- AI assistant and agent-style work: the project uses AI assistant and agent-like workflows, though not every feature is a fully autonomous agent. Main AI areas include Ask Synk AI, AI Curriculum Generation, AI Leadership Suite, AI Future Force / AI Future Workforce curriculum planning, AI Teaching Assistant, Teacher Credit Recommendation Engine, and Ask SynkAI Knowledge Sync.
+- Future autonomous-agent opportunities: the next higher level can include an agent that monitors syllabus delays and suggests recovery, an agent that checks teacher progress daily, an agent that prepares principal reports, an agent that updates Ask SynkAI knowledge after deployments, and an agent that follows up leads or support tickets.
 - Authentication: email/password sign-up, sign-in, Google sign-in, invitation acceptance, password recovery, and protected routes.
 - Onboarding for schools: choose institution profile; enter school name, country, region, state, city, board, acquisition source, fee tier, currency, textbooks, academic year dates, weekly offs, working days, periods per day, period duration, school timings, lunch timings, senior extra classes, grade-subject rows, teachers, completed chapters, holidays, vacations, events with prep days, exam windows, and teacher training days.
 - Onboarding for tutors: retail single-access flow for one grade and subject, book details, class duration, classes per week, course dates, holidays, vacations, and exam dates.
+- Book and publisher content policy: Syllabus Synk does not require schools to upload full textbooks for syllabus planning and must not claim access to all publisher book content on the internet. The platform plans from official curriculum frameworks, NCERT/state-board resources where officially/publicly available, school-entered book details, chapter lists, unit structures, learning objectives, prescribed syllabus outlines, teaching periods, holidays, exams, and teacher inputs. For private publisher books, schools can enter book name, publisher, class, subject, chapter list, unit structure, and learning objectives. If deeper chapter-specific teaching assistance is needed, teachers may paste or upload only the relevant permitted section for internal academic support, and the school/teacher is responsible for ensuring they have the right to use that content.
+- Copyright-safe positioning: Syllabus Synk plans from curriculum structure and chapter lists, not from copyrighted textbook scraping. No full book upload is required for normal syllabus planning.
+- Curriculum Mapping Module: authenticated school admins/coordinators can enter board, class, subject, book name, publisher, chapter names, topic names, and learning objectives. The system maps each private-publisher chapter list against recognized/open curriculum-style references such as NCERT, state-board structures, CBSE learning outcomes, ICSE curriculum, and public educational frameworks where available. Each chapter receives a mapped/partial/needs-information status, confidence score, comparable standard chapter, estimated teaching periods, revision periods, and examination-planning signal. Chapters that cannot be reasonably mapped create a unique-chapter information request asking for summary, learning objectives, topics covered, and key concepts instead of full copyrighted content. Approved mappings are then used by syllabus generation as the chapter structure.
 - Dashboard: lists academic years and links to results, plan usage, partner program, school profile, assignments, curriculum proposals, and new academic year setup.
 - Results page: shows teaching-day capacity, total periods, utilization, AI credit balance, capacity breakdown, annual calendar generation, subject curriculum generation, 30-day preview limitations, paid full-year generation, reschedule/recalibration, PDF/DOCX export, demo watermarking, version history, teacher curriculum proposals, and AI run history.
 - Capacity engine: subtracts government holidays, school holidays, vacations, events, exams, teacher training, weekly offs, and buffer days before planning curriculum.
@@ -52,7 +60,8 @@ Detailed product guide:
 - AI Teaching Credits: this premium teaching-assistance feature uses a school-controlled credit model. Each school has a monthly AI Teaching Credit pool, with purchased credits able to extend the pool when commercial top-up packs are configured. Example costs are Simple Activity Suggestion = 1 credit, Detailed Activity Plan = 2 credits, Complete Teaching Toolkit = 5 credits, Project-Based Learning Plan = 5 credits, and Multi-Day Activity Module = 10 credits. School Super Admins can allocate monthly AI Teaching Credits to teachers, monitor consumption, and increase or reduce teacher allocations according to school policy. Teachers can see available credits, used credits, history, and estimated cost before generating.
 - Syllabus-aware daily teaching assistance: inside Academic Execution, teachers can see today's planned topics from their assigned class/subject and generated subject curriculum. The Daily Teaching Assistant automatically uses available Syllabus Synk context such as class, subject, board, book, chapter, topic, learning objectives, and academic calendar week. Teachers can click Explain Full Topic, Explain Selected Portion, Generate Activity, Generate Real-Life Examples, Generate Teacher Notes, Student Question Help, Beyond Textbook Explanation, or Revision Summary without repeatedly entering chapter details. Advanced daily help consumes AI Teaching Credits according to school policy.
 - AI Teaching Innovation Library: useful generated activities can be saved, bookmarked, searched, and reused by teachers without consuming additional credits. This reduces repeated AI cost and helps schools build a practical internal repository of activity-based learning methods.
-- Content Studio: creates editable school resources, practice tasks, definitions, worksheets, and support material.
+- AI Teaching Resource Studio / Content Studio: creates editable chapter-list mapped teaching packs, activity-based lesson packs, worksheets, quizzes with answer keys, flashcards, mind maps, question banks, revision notes, slide outlines, projects, experiments/demonstrations, real-life example banks, diagram-labeling tasks, timeline activities, concept maps, interactive classroom templates, remedial practice packs, teacher training micro-modules, and AI Future Force lab activities.
+- Tata-style teaching-support gap closer: Syllabus Synk is being strengthened toward a richer teaching-learning ecosystem through chapter-list mapped resources, activity packs, AI-generated worksheets/quizzes, interactive classroom templates, AI Future Force lab activities, and teacher micro-training. This does not require increasing base subscription prices; AI-heavy generation should be managed through the existing monthly AI credits and optional AI credit top-ups.
 - Assessment Generator: creates editable class tests/exam papers with exam type, grade, subject, chapter range, marks, duration, difficulty mix, question format, answer key, and human review confirmation before download.
 - Academic Digital Twin: simulates disruptions such as lost teaching days, affected teachers, exam shifts, recovery recommendations, teacher load pressure, revision risk, and projected readiness.
 - Teacher Intelligence: highlights teachers tracked, average completion, high-risk/watch status, pending rows, and pacing interventions.
@@ -76,6 +85,7 @@ Detailed product guide:
 - Paid pilot subscription benefit workflow: approved pilot schools are recorded by Company Super Admin as paid pilot subscriptions with pilot dates, plan, MOU reference/link, monthly base amount, GST, gateway/bank/other charges, total paid, and refund/credit eligibility. This must not be described as a free trial. After the two-month pilot, School Super Admin can request either "Continue Subscription and Claim Pilot Credit" or "Discontinue Subscription and Request Refund." Requests remain Pending Company Super Admin Approval until reviewed in Company CRM. Refund and credit calculations are server-side, show base amount and deductions, and support GST treatment as refundable, non-refundable, or manual review. Approved refunds are initiated through Razorpay using the original Razorpay payment ID; approved continuation credits are posted to a school credit ledger and applied to future invoices until exhausted. Company Super Admin approvals require a secure admin code, mandatory reasons for extra deductions, CRM/audit logging, school notifications, and permanent records.
 - Billing rules: annual plans are billed as 10x monthly price for two months free; India annual rebate is intended for subscribers joining on or before April. Account-specific billing issues must go to support.
 - Plan limits: plans define grade bands, user limits, AI credits, exports, storage, campuses, support level, teacher training, recalibration level, white-label/API/dedicated onboarding where available.
+- Base-price protection: planned teaching-support enhancements such as chapter-list mapped teaching packs, worksheets, quizzes, slide outlines, activity packs, and interactive classroom templates should not increase current base subscription prices. Schools use included monthly AI credits first; high-volume use can be handled by existing AI credit top-ups.
 - Additional storage: schools can purchase or be allocated add-on storage packs of 25 GB at Rs. 250/month, 50 GB at Rs. 500/month, 100 GB at Rs. 900/month, 250 GB at Rs. 2,000/month, and 500 GB at Rs. 3,500/month. For 1 TB or larger storage needs, custom enterprise pricing is available through support@syllabus-synk.in.
 - Fair usage policy: Each subscription plan includes a defined storage allocation. Additional storage may be purchased separately. The company reserves the right to archive inactive academic records and enforce fair usage policies to maintain platform performance.
 - Support email: use support@syllabus-synk.in for account access, billing, payment confirmation, failed checkout, plan assignment, or school-specific data issues.
@@ -155,6 +165,57 @@ Support policy:
 
 function localAnswer(message: string, page?: string | null) {
   const q = message.toLowerCase();
+  if (
+    q.includes("web based") ||
+    q.includes("web-based") ||
+    q.includes("cloud based") ||
+    q.includes("cloud-based") ||
+    q.includes("web application") ||
+    q.includes("web app") ||
+    q.includes("software platform") ||
+    q.includes("browser based") ||
+    q.includes("browser-based")
+  ) {
+    return "Syllabus Synk is a cloud-based, web-based software platform for schools to plan, monitor, and manage academic execution throughout the year. It helps schools prepare capacity-aware syllabus plans, track teacher progress, monitor syllabus completion, manage academic workflows, and support future-ready AI education programs through secure online dashboards. It is best described as an AI-powered school operating platform and web-based application.";
+  }
+  if (
+    q.includes("mobile") ||
+    q.includes("phone") ||
+    q.includes("smartphone") ||
+    q.includes("tablet") ||
+    q.includes("teacher dashboard") ||
+    q.includes("laptop in class") ||
+    q.includes("laptop in classes")
+  ) {
+    return "Teachers can access their Syllabus Synk dashboard from mobile phones, tablets, or computers through a browser. This is useful when teachers are not expected or allowed to carry laptops into classrooms. From mobile, teachers can quickly update lesson status, record topics taught, mark syllabus progress, and access AI teaching support. For larger planning, reporting, setup, and administrative review, school administrators should preferably use laptops or desktops.";
+  }
+  if (
+    q.includes("ai agent") ||
+    q.includes("ai agents") ||
+    q.includes("agent-style") ||
+    q.includes("agent style") ||
+    q.includes("autonomous agent") ||
+    q.includes("agent capabilities")
+  ) {
+    return "Yes. Syllabus Synk involves AI assistant and agent-style work in several places, although not every part is a fully autonomous agent. Main areas include Ask Synk AI for website visitors, AI Curriculum Generation for annual calendars and syllabus plans, AI Leadership Suite, AI Future Force / AI Future Workforce curriculum planning for Classes 1-12, AI Teaching Assistant for daily syllabus-aware teaching help, Teacher Credit Recommendation Engine for workload advice, and Ask SynkAI Knowledge Sync for keeping assistant knowledge aligned with platform changes. It is best described as an AI-powered school operating platform with multiple assistant and agent-like workflows. Future autonomous agents can monitor syllabus delays, check teacher progress daily, prepare principal reports, update Ask SynkAI knowledge after deployments, and follow up leads or support tickets.";
+  }
+  if (
+    q.includes("publisher") ||
+    q.includes("private book") ||
+    q.includes("private publisher") ||
+    q.includes("full book") ||
+    q.includes("whole book") ||
+    q.includes("upload book") ||
+    q.includes("upload textbook") ||
+    q.includes("ncert") ||
+    q.includes("state board") ||
+    q.includes("state-board") ||
+    q.includes("copyright") ||
+    q.includes("chapter list") ||
+    q.includes("book content")
+  ) {
+    return "Syllabus Synk follows a Curriculum Mapping approach. It does not require schools to upload full textbooks for syllabus planning and does not claim that all publisher book content is available online. School admins can enter board, class, subject, book name, publisher, chapter names, topic names, and learning objectives. The system maps each chapter against recognized/open curriculum-style references such as NCERT, state-board structures, CBSE learning outcomes, ICSE curriculum, and public educational frameworks where available. It returns mapped, partial-match, or needs-information status with confidence score, comparable standard chapter, teaching-period estimate, revision-period estimate, and examination-planning signal. For unique private-publisher chapters, the system asks only for summary, learning objectives, topics covered, or key concepts, not full copyrighted content. Approved mappings are used by syllabus generation.";
+  }
   if (q.includes("one-month") || q.includes("one month") || q.includes("monthly ai course") || q.includes("demo plan")) {
     return "Schools can request a one-month AI Future Force demo plan from the homepage demo form. Select \"Request a One-Month AI Future Force Course Demo Plan\" and share the school name, board/location, classes, preferred frequency once or twice a week, available periods during the month, and contact person details. A simple sample structure is: once weekly - concept, demonstration, classroom activity, recap/assessment; twice weekly - concept plus hands-on demo, tool/data activity, mini-project work, presentation, and assessment.";
   }
@@ -184,7 +245,7 @@ function localAnswer(message: string, page?: string | null) {
     return "You can test quality with one free 30-day preview syllabus plan for one subject. Create your academic year, add at least one grade-subject row, then open the results page and click Generate for one subject. Full annual planning and unwatermarked exports require a subscription.";
   }
   if (q.includes("price") || q.includes("plan") || q.includes("subscription") || q.includes("payment")) {
-    return "Plans start from Primary Bundle at Rs. 2,999/month. Plus plans include the AI Leadership Suite. For Indian schools, Razorpay is the primary payment gateway for subscriptions, annual plans, add-ons, and additional storage. Stripe remains future-ready for international markets when activated. Open Plans from the top menu to compare packages. If a payment has failed or you need billing help, contact support@syllabus-synk.in.";
+    return "Plans start from Primary Bundle at Rs. 2,999/month. Plus plans include the AI Leadership Suite. Syllabus Synk's teaching-support enhancements such as chapter-list mapped teaching packs, worksheets, quizzes, activity packs, slide outlines, and interactive classroom templates are intended to use included monthly AI credits first, so base subscription prices do not need to increase for normal usage. Heavy AI usage can be handled through optional AI credit top-ups. For Indian schools, Razorpay is the primary payment gateway. If a payment has failed or you need billing help, contact support@syllabus-synk.in.";
   }
   if (q.includes("storage") || q.includes("upload limit") || q.includes("archive") || q.includes("fair usage")) {
     return "School Storage uses AWS S3-backed protected storage for large school files, with Supabase storing application data and file metadata. The School Super Admin dashboard shows allocated, used, and available storage, largest files, category usage, file-type breakdown, user-wise usage, archive usage, and alerts at 80%, 90%, and 100%. Uploads are paused when the quota is full until files are removed, old academic sessions are archived, or additional storage is purchased. Paid storage add-ons are automatically activated after verified payment, and the School Super Admin receives a confirmation notification with previous and new storage limits. Additional storage prices are: 25 GB - Rs. 250/month, 50 GB - Rs. 500/month, 100 GB - Rs. 900/month, 250 GB - Rs. 2,000/month, and 500 GB - Rs. 3,500/month. For 1 TB or more, custom enterprise pricing is available through support@syllabus-synk.in.";
@@ -195,6 +256,18 @@ function localAnswer(message: string, page?: string | null) {
   if (
     q.includes("teach this topic") ||
     q.includes("teaching assistant") ||
+    q.includes("teaching resource") ||
+    q.includes("content studio") ||
+    q.includes("textbook mapped") ||
+    q.includes("textbook-mapped") ||
+    q.includes("chapter-list") ||
+    q.includes("chapter list") ||
+    q.includes("worksheet") ||
+    q.includes("quiz") ||
+    q.includes("slide outline") ||
+    q.includes("interactive template") ||
+    q.includes("tata") ||
+    q.includes("classedge") ||
     q.includes("activity based") ||
     q.includes("activity-based") ||
     q.includes("teaching credits") ||
@@ -203,7 +276,7 @@ function localAnswer(message: string, page?: string | null) {
     q.includes("role play") ||
     q.includes("project based")
   ) {
-    return "The AI Teaching Assistant helps teachers answer: \"How can I teach this topic effectively?\" For any chapter, topic, sub-topic, or learning objective, it can generate activity-based methods, demonstrations, practical examples, stories, role-play, group activities, projects, local environment examples, real-world applications, visual ideas, and interactive exercises across subjects. It is a premium credit-based feature: Simple Activity Suggestion costs 1 AI Teaching Credit, Detailed Activity Plan 2, Complete Teaching Toolkit 5, Project-Based Learning Plan 5, and Multi-Day Activity Module 10. School Super Admins allocate monthly credits to teachers and monitor usage. Saved activities can be reused from the AI Teaching Innovation Library without consuming extra credits.";
+    return "Syllabus Synk is being strengthened toward a richer teaching-support ecosystem. The AI Teaching Assistant and AI Teaching Resource Studio can help teachers create chapter-list mapped teaching packs, activity-based lesson packs, worksheets, quizzes with answer keys, slide outlines, projects, demonstrations, real-life example banks, diagram-labeling tasks, timelines, concept maps, remedial practice, teacher micro-training modules, and AI Future Force lab activities. The platform does not require full book uploads for normal planning; for private publisher books it uses school-provided chapter lists or permitted extracts. This is designed to come closer to advanced teaching platforms while protecting base subscription prices: normal use draws from included monthly AI credits, and heavy use can be handled through optional AI credit top-ups. Saved resources can be reused from the AI Teaching Innovation Library without consuming additional credits.";
   }
   if (q.includes("daily teaching") || q.includes("today") && q.includes("topic") || q.includes("planned lesson") || q.includes("syllabus-aware")) {
     return "Syllabus-aware Teaching Assistance is available inside Academic Execution. When teachers open their daily teaching plan, Syllabus Synk can show today's planned topics from assigned class/subject and generated curriculum context. Against each planned topic, teachers can request Explain Full Topic, Explain Selected Portion, Generate Activity, Real-Life Examples, Teacher Notes, Student Question Help, Beyond Textbook Explanation, or Revision Summary. The assistant automatically uses class, subject, board, book, chapter, topic, learning objectives, and academic calendar context, so the teacher does not need to repeatedly enter details already planned in Syllabus Synk. Advanced help consumes AI Teaching Credits as controlled by the School Super Admin.";
