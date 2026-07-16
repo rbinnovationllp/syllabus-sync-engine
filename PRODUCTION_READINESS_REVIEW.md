@@ -41,6 +41,8 @@ Current implementation:
 Mandatory gaps:
 - Razorpay payment failure events are partially handled for subscription access and storage allocation exceptions, but the full billing lifecycle still needs production testing.
 - Paid pilot refund workflow must be tested in Razorpay test mode and staging with real test payment IDs before live use.
+- AI Teaching Credit top-up purchase and monthly allocation replenishment still need billing automation if schools will purchase separate teaching-credit packs beyond manual School Super Admin allocation.
+- Syllabus-aware Daily Teaching Assistant is implemented from assigned teacher subjects and generated curriculum week numbers; production rollout should validate exact timetable/date matching once per-period lesson scheduling is fully connected.
 - Invoice records and invoice viewing are not implemented.
 - Payment status, renewals, cancellations, pauses, resumes, and failures need full test coverage.
 - Webhook replay/idempotency handling should be explicit.

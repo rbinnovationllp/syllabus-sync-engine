@@ -48,7 +48,10 @@ Detailed product guide:
 - Version history and recycle bin: annual calendars and subject curricula can be versioned, restored, soft-deleted, and governed through retention workflows where implemented.
 - AI Leadership Suite: available in Plus/eligible plans; includes Principal Dashboard, Teacher Copilot, Content Studio, Assessment Generator, Academic Digital Twin, Teacher Intelligence, Student Intelligence, and Parent Communication Hub.
 - Principal Dashboard: summarizes academic health, syllabus completion, classes behind, AI reliability, alerts, upcoming exams/events, readiness indicators, and teacher intervention needs.
-- Teacher Copilot: generates editable lesson strategies, activities, homework, rubrics, projects, and differentiated classroom support.
+- AI Teaching Assistant / Teacher Copilot: premium teaching-assistance workspace for teachers. For any chapter, topic, sub-topic, or learning objective, teachers can ask "How can I teach this topic effectively?" and receive age-appropriate activity-based teaching methods, classroom demonstrations, practical examples, story-based explanations, role-play suggestions, group activities, project ideas, local environment examples, real-world applications, visual learning ideas, and interactive exercises. It supports Science, Mathematics, Social Science, English, Hindi, languages, Computer Science, Environmental Studies, Commerce, Economics, Geography, History, Physics, Chemistry, Biology, and future subjects.
+- AI Teaching Credits: this premium teaching-assistance feature uses a school-controlled credit model. Each school has a monthly AI Teaching Credit pool, with purchased credits able to extend the pool when commercial top-up packs are configured. Example costs are Simple Activity Suggestion = 1 credit, Detailed Activity Plan = 2 credits, Complete Teaching Toolkit = 5 credits, Project-Based Learning Plan = 5 credits, and Multi-Day Activity Module = 10 credits. School Super Admins can allocate monthly AI Teaching Credits to teachers, monitor consumption, and increase or reduce teacher allocations according to school policy. Teachers can see available credits, used credits, history, and estimated cost before generating.
+- Syllabus-aware daily teaching assistance: inside Academic Execution, teachers can see today's planned topics from their assigned class/subject and generated subject curriculum. The Daily Teaching Assistant automatically uses available Syllabus Synk context such as class, subject, board, book, chapter, topic, learning objectives, and academic calendar week. Teachers can click Explain Full Topic, Explain Selected Portion, Generate Activity, Generate Real-Life Examples, Generate Teacher Notes, Student Question Help, Beyond Textbook Explanation, or Revision Summary without repeatedly entering chapter details. Advanced daily help consumes AI Teaching Credits according to school policy.
+- AI Teaching Innovation Library: useful generated activities can be saved, bookmarked, searched, and reused by teachers without consuming additional credits. This reduces repeated AI cost and helps schools build a practical internal repository of activity-based learning methods.
 - Content Studio: creates editable school resources, practice tasks, definitions, worksheets, and support material.
 - Assessment Generator: creates editable class tests/exam papers with exam type, grade, subject, chapter range, marks, duration, difficulty mix, question format, answer key, and human review confirmation before download.
 - Academic Digital Twin: simulates disruptions such as lost teaching days, affected teachers, exam shifts, recovery recommendations, teacher load pressure, revision risk, and projected readiness.
@@ -188,6 +191,22 @@ function localAnswer(message: string, page?: string | null) {
   }
   if (q.includes("teacher credit") || q.includes("workload") || q.includes("teacher load") || q.includes("distribution")) {
     return "School Super Admins can review Teacher Credit Distribution Recommendations inside Academic Execution. The system scores teacher workload using assigned classes, subjects, weekly periods, duties, special projects, and recent teaching activity, then highlights balanced, moderate overload, high overload, or underutilized teachers. These recommendations are advisory; final decisions remain with school management.";
+  }
+  if (
+    q.includes("teach this topic") ||
+    q.includes("teaching assistant") ||
+    q.includes("activity based") ||
+    q.includes("activity-based") ||
+    q.includes("teaching credits") ||
+    q.includes("teaching idea") ||
+    q.includes("classroom demonstration") ||
+    q.includes("role play") ||
+    q.includes("project based")
+  ) {
+    return "The AI Teaching Assistant helps teachers answer: \"How can I teach this topic effectively?\" For any chapter, topic, sub-topic, or learning objective, it can generate activity-based methods, demonstrations, practical examples, stories, role-play, group activities, projects, local environment examples, real-world applications, visual ideas, and interactive exercises across subjects. It is a premium credit-based feature: Simple Activity Suggestion costs 1 AI Teaching Credit, Detailed Activity Plan 2, Complete Teaching Toolkit 5, Project-Based Learning Plan 5, and Multi-Day Activity Module 10. School Super Admins allocate monthly credits to teachers and monitor usage. Saved activities can be reused from the AI Teaching Innovation Library without consuming extra credits.";
+  }
+  if (q.includes("daily teaching") || q.includes("today") && q.includes("topic") || q.includes("planned lesson") || q.includes("syllabus-aware")) {
+    return "Syllabus-aware Teaching Assistance is available inside Academic Execution. When teachers open their daily teaching plan, Syllabus Synk can show today's planned topics from assigned class/subject and generated curriculum context. Against each planned topic, teachers can request Explain Full Topic, Explain Selected Portion, Generate Activity, Real-Life Examples, Teacher Notes, Student Question Help, Beyond Textbook Explanation, or Revision Summary. The assistant automatically uses class, subject, board, book, chapter, topic, learning objectives, and academic calendar context, so the teacher does not need to repeatedly enter details already planned in Syllabus Synk. Advanced help consumes AI Teaching Credits as controlled by the School Super Admin.";
   }
   if (q.includes("razorpay") || q.includes("pay")) {
     return "For Indian schools, payments are handled primarily through Razorpay. Razorpay payment success, failure, renewal, cancellation, and refund events should drive subscription status, CRM updates, storage upgrades, invoice/payment confirmation, and exception alerts. If checkout does not open, refresh the page, confirm you selected INR pricing, and try again. For payment confirmation problems, contact support@syllabus-synk.in.";

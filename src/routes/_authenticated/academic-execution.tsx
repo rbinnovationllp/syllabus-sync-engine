@@ -31,7 +31,11 @@ import {
   getTeacherExecutionWorkspace,
   recordTeachingProgress,
 } from "@/lib/academic-execution.functions";
-import { BookOpenCheck, CalendarCheck, ClipboardCheck, Scale, ShieldAlert } from "lucide-react";
+import {
+  generateDailyTeachingHelp,
+  getDailyTeachingAssistantPlan,
+} from "@/lib/teaching-assistant.functions";
+import { BookOpenCheck, CalendarCheck, ClipboardCheck, Lightbulb, Scale, ShieldAlert, Sparkles } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/academic-execution")({
   head: () => ({ meta: [{ title: "Academic Execution Monitoring - CurriculumOS" }] }),
@@ -60,6 +64,8 @@ function AcademicExecutionPage() {
   const teacherFn = useServerFn(getTeacherExecutionWorkspace);
   const monitorFn = useServerFn(getAcademicExecutionDashboard);
   const saveFn = useServerFn(recordTeachingProgress);
+  const dailyPlanFn = useServerFn(getDailyTeachingAssistantPlan);
+  const dailyHelpFn = useServerFn(generateDailyTeachingHelp);
 
   const teacher = useQuery({
     queryKey: ["teacher-execution-workspace"],
@@ -68,6 +74,11 @@ function AcademicExecutionPage() {
   const monitor = useQuery({
     queryKey: ["academic-execution-dashboard"],
     queryFn: () => monitorFn(),
+    retry: false,
+  });
+  const dailyPlan = useQuery({
+    queryKey: ["daily-teaching-assistant-plan"],
+    queryFn: () => dailyPlanFn(),
     retry: false,
   });
 
@@ -94,6 +105,12 @@ function AcademicExecutionPage() {
     periods_taken: "1",
     remarks: "",
   });
+  const [dailyHelpOptions, setDailyHelpOptions] = useState({
+    selected_portion: "",
+    student_question: "",
+    local_context: "",
+  });
+  const [dailyHelpResult, setDailyHelpResult] = useState<any>(null);
 
   const save = useMutation({
     mutationFn: () => {
@@ -147,6 +164,34 @@ function AcademicExecutionPage() {
     onError: (e: any) => toast.error(e.message),
   });
 
+  const generateDailyHelp = useMutation({
+    mutationFn: ({ lesson, request_type }: { lesson: any; request_type: string }) => dailyHelpFn({
+      data: {
+        academic_year_id: lesson.academic_year_id,
+        teacher_assignment_id: lesson.teacher_assignment_id,
+        planned_date: lesson.planned_date,
+        grade: lesson.grade,
+        section: lesson.section,
+        subject: lesson.subject,
+        board: lesson.board,
+        book: lesson.book,
+        chapter: lesson.chapter,
+        topic: lesson.topic,
+        learning_objectives: lesson.learning_objectives ?? [],
+        selected_portion: dailyHelpOptions.selected_portion || null,
+        student_question: dailyHelpOptions.student_question || null,
+        local_context: dailyHelpOptions.local_context || null,
+        request_type,
+      } as any,
+    }),
+    onSuccess: (row: any) => {
+      setDailyHelpResult(row);
+      toast.success(`Teaching help generated using ${row.cost} credit${row.cost === 1 ? "" : "s"}`);
+      dailyPlan.refetch();
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
   const d = monitor.data;
 
   return (
@@ -169,6 +214,7 @@ function AcademicExecutionPage() {
       </div>
 
       <div className="grid gap-5 xl:grid-cols-[420px_1fr]">
+        <div className="space-y-5">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
@@ -282,6 +328,15 @@ function AcademicExecutionPage() {
             )}
           </CardContent>
         </Card>
+
+        <DailyTeachingAssistantPanel
+          dailyPlan={dailyPlan}
+          options={dailyHelpOptions}
+          setOptions={setDailyHelpOptions}
+          result={dailyHelpResult}
+          generate={generateDailyHelp}
+        />
+        </div>
 
         <div className="space-y-5">
           <div className="grid gap-4 md:grid-cols-4">
@@ -460,6 +515,121 @@ function ReportLine({ label, value }: { label: string; value: any }) {
       <div className="text-xs font-medium uppercase text-muted-foreground">{label}</div>
       <div className="mt-1">{value || "-"}</div>
     </div>
+  );
+}
+
+const DAILY_HELP_ACTIONS = [
+  { type: "explain_full_topic", label: "Explain Full Topic" },
+  { type: "explain_selected_portion", label: "Explain Selected Portion" },
+  { type: "activity_support", label: "Generate Activity" },
+  { type: "real_life_examples", label: "Real-Life Examples" },
+  { type: "teacher_notes", label: "Teacher Notes" },
+  { type: "student_question_help", label: "Student Question Help" },
+  { type: "beyond_textbook_explanation", label: "Beyond Textbook" },
+  { type: "revision_summary", label: "Revision Summary" },
+];
+
+function DailyTeachingAssistantPanel({ dailyPlan, options, setOptions, result, generate }: any) {
+  const lessons = dailyPlan.data?.lessons ?? [];
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-base">
+          <Lightbulb className="h-4 w-4" /> Daily Teaching Assistant
+        </CardTitle>
+        <CardDescription>
+          Syllabus-aware help for today&apos;s planned lessons. Uses class, subject, board, book, chapter, topic, objectives, and academic calendar context automatically.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {dailyPlan.isLoading ? (
+          <p className="text-sm text-muted-foreground">Loading today&apos;s scheduled topics...</p>
+        ) : dailyPlan.error ? (
+          <p className="text-sm text-muted-foreground">{(dailyPlan.error as Error).message}</p>
+        ) : lessons.length === 0 ? (
+          <p className="text-sm text-muted-foreground">No scheduled lesson was found for your account today. Confirm teacher assignments and generated subject curriculum.</p>
+        ) : (
+          <>
+            <div className="space-y-3">
+              {lessons.map((lesson: any) => (
+                <div key={lesson.id} className="rounded-lg border p-3 text-sm">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                      <div className="font-semibold">
+                        Grade {lesson.grade}{lesson.section ? `-${lesson.section}` : ""} - {lesson.subject}
+                      </div>
+                      <div className="text-muted-foreground">{lesson.chapter}</div>
+                      <div className="mt-1 text-xs text-muted-foreground">
+                        {lesson.board || "Board not set"} · {lesson.book || "Book not linked"} · Week {lesson.current_week_no}
+                      </div>
+                    </div>
+                    <Badge variant="outline">{lesson.source === "subject_curriculum_week" ? "Planned topic" : "Assignment fallback"}</Badge>
+                  </div>
+                  {lesson.learning_objectives?.length ? (
+                    <ul className="mt-2 list-disc space-y-1 pl-5 text-xs text-muted-foreground">
+                      {lesson.learning_objectives.slice(0, 3).map((objective: string, index: number) => <li key={`${lesson.id}-${index}`}>{objective}</li>)}
+                    </ul>
+                  ) : null}
+                  <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                    {DAILY_HELP_ACTIONS.map((action) => (
+                      <Button
+                        key={action.type}
+                        size="sm"
+                        variant={action.type === "activity_support" ? "default" : "outline"}
+                        disabled={generate.isPending}
+                        onClick={() => generate.mutate({ lesson, request_type: action.type })}
+                      >
+                        {generate.isPending ? <Sparkles className="mr-2 h-3.5 w-3.5 animate-pulse" /> : null}
+                        {action.label}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="space-y-3 rounded-lg border bg-muted/20 p-3">
+              <div className="space-y-1.5">
+                <Label>Selected portion, heading, formula, definition, diagram, or paragraph</Label>
+                <Textarea
+                  rows={3}
+                  value={options.selected_portion}
+                  onChange={(e) => setOptions({ ...options, selected_portion: e.target.value })}
+                  placeholder="Use before Explain Selected Portion, or leave blank for full topic."
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Student question beyond the prescribed book</Label>
+                <Textarea
+                  rows={3}
+                  value={options.student_question}
+                  onChange={(e) => setOptions({ ...options, student_question: e.target.value })}
+                  placeholder="Students asked..."
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Local context</Label>
+                <Input
+                  value={options.local_context}
+                  onChange={(e) => setOptions({ ...options, local_context: e.target.value })}
+                  placeholder="School campus, local market, farms, weather, community..."
+                />
+              </div>
+            </div>
+
+            {result ? (
+              <div className="rounded-lg border p-3">
+                <div className="mb-2 flex items-center justify-between gap-3">
+                  <div className="font-medium">Generated Teaching Help</div>
+                  <Badge variant="secondary">{result.credits_spent ?? result.cost ?? 0} credits</Badge>
+                </div>
+                <pre className="whitespace-pre-wrap font-sans text-sm leading-6">{result.response}</pre>
+              </div>
+            ) : null}
+          </>
+        )}
+      </CardContent>
+    </Card>
   );
 }
 

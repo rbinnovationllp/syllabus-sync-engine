@@ -27,6 +27,7 @@ Implemented or partially implemented areas include:
 - AI annual calendar generation, per-subject curriculum generation, schedule recalculation, AI credit accounting, run history, PDF/DOCX exports, demo watermarking, version history, and soft-delete/recycle-bin foundations.
 - Teacher curriculum proposal workflow for proposed changes, AI review, finalization, teacher acknowledgement, and admin review.
 - AI Leadership Suite V2: principal dashboard, teacher copilot, content studio, assessment generator, academic digital twin, teacher intelligence, student intelligence, and parent communication drafts.
+- AI Teaching Assistant / Teacher Copilot for activity-based learning, demonstrations, stories, role-play, project ideas, local examples, visual learning, interactive exercises, syllabus-aware daily lesson help, school-controlled AI Teaching Credits, and reusable AI Teaching Innovation Library.
 - AI Future Workforce / AI Future Force add-on with a web-based Class 1-12 curriculum planner, grade-wise AI curriculum previews, one/two weekly AI class planning, one-month demo plan request flow, monthly releases, foundation module for late-session enrollment, teacher enablement messaging, and future-career positioning.
 - Academic Execution module for daily teacher progress logging, expanded lesson/session statuses, principal/school-admin monitoring, daily exception reports, and Teacher Credit Distribution Recommendations.
 - Teacher assignment management.
@@ -46,6 +47,16 @@ Implemented or partially implemented areas include:
 ## Recent Work Completed
 
 Recent changes completed through 2026-07-16:
+- Added AI Teaching Assistant premium workflow inside the Teacher Copilot page: teachers can ask "How can I teach this topic effectively?" for any chapter, topic, sub-topic, or learning objective and receive activity-based teaching methods, classroom demonstrations, practical examples, stories, role-play, group activities, projects, local environment examples, real-world applications, visual ideas, and interactive exercises.
+- Added multi-subject support for teaching suggestions across Science, Mathematics, Social Science, English, Hindi, languages, Computer Science, Environmental Studies, Commerce, Economics, Geography, History, Physics, Chemistry, Biology, and future subjects.
+- Added AI Teaching Credits as a separate school-controlled premium credit model with a monthly school credit pool, purchased-credit extension field, teacher allocation controls, and request costs: Simple Activity Suggestion = 1 credit, Detailed Activity Plan = 2 credits, Complete Teaching Toolkit = 5 credits, Project-Based Learning Plan = 5 credits, and Multi-Day Activity Module = 10 credits.
+- Added School Super Admin credit allocation controls in the teaching assistant workspace, including teacher-wise monthly allocation, increase/reduction within used-credit limits, and consumption monitoring.
+- Added teacher-facing credit visibility: available credits, used credits, monthly allocation, estimated cost before generation, and credit transaction history.
+- Added AI Teaching Innovation Library so teachers can bookmark, search, save, and reuse effective teaching methods without consuming additional credits.
+- Added syllabus-aware Daily Teaching Assistant integration inside Academic Execution: teachers see today's planned topics derived from assigned class/subject and generated subject curriculum week, then can request Explain Full Topic, Explain Selected Portion, Generate Activity, Real-Life Examples, Teacher Notes, Student Question Help, Beyond Textbook Explanation, or Revision Summary without re-entering class, subject, board, book, chapter, topic, objectives, or academic calendar context.
+- Added daily planned-topic AI help generation with AI Teaching Credit deduction, teacher assignment validation, syllabus context metadata, and storage in the teaching-generation history.
+- Added Supabase migration `20260716000200_ai_teaching_assistant_credits.sql` for teaching credit allocations, teaching credit transactions, generated teaching suggestions, and reusable library items with tenant-aware RLS and service-role controls.
+- Updated Ask Synk AI knowledge so it can explain the AI Teaching Assistant, AI Teaching Credits, credit costs, School Super Admin allocation controls, and reuse-without-credit library behavior.
 - Added Paid Pilot Subscription Benefit workflow: Company Super Admin can mark schools as Approved Pilot School with MOU reference/link, pilot dates, approved plan, monthly base subscription amount, GST, gateway/bank/other charges, total paid, GST treatment, eligibility status, and internal notes.
 - Added school-side pilot benefit request controls in School Governance: School Super Admin can choose Continue Subscription and Claim Pilot Credit or Discontinue Subscription and Request Refund; refund requests require the original Razorpay payment ID.
 - Added Company CRM Pilot Benefits tab for pending refund/credit approvals, MOU/payment visibility, server-side calculation review, secure admin-code approval, mandatory deduction reasons, reject/hold/return actions, credit ledger visibility, and Razorpay refund tracker.
@@ -193,7 +204,7 @@ Status: Prototype to partially implemented depending on module.
 
 Working:
 - Principal Dashboard.
-- Teacher Copilot.
+- AI Teaching Assistant / Teacher Copilot with activity-based teaching suggestions, premium AI Teaching Credits, admin allocation controls, and reusable teaching library.
 - Content Studio.
 - Assessment Generator.
 - Academic Digital Twin.
