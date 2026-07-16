@@ -237,32 +237,31 @@ function Hero() {
 
 function PublicVisitorProof() {
   const statsFn = useServerFn(getPublicSiteStats);
-  const { data } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ["public-site-stats"],
     queryFn: () => statsFn(),
     staleTime: 5 * 60 * 1000,
   });
 
-  const currentOpen = 1;
-  const totalVisitors = (data?.totalVisitors ?? 176) + currentOpen;
-  const totalVisits = (data?.totalVisits ?? 412) + currentOpen;
-  const weekVisitors = (data?.visitors7d ?? 38) + currentOpen;
+  const totalVisitors = data?.totalVisitors ?? null;
+  const totalVisits = data?.totalVisits ?? null;
+  const weekVisitors = data?.visitors7d ?? null;
 
   const items = [
     {
       label: "School leaders exploring",
-      value: totalVisitors.toLocaleString(),
-      detail: "estimated launch interest + every live visit",
+      value: totalVisitors?.toLocaleString() ?? "...",
+      detail: isLoading ? "loading live visitor count" : "estimated launch interest + recorded visitors",
     },
     {
       label: "Product page views",
-      value: totalVisits.toLocaleString(),
-      detail: "estimated launch reach + every page open",
+      value: totalVisits?.toLocaleString() ?? "...",
+      detail: isLoading ? "loading live page views" : "estimated launch reach + recorded page opens",
     },
     {
       label: "This week",
-      value: weekVisitors.toLocaleString(),
-      detail: "estimated weekly interest + every visit",
+      value: weekVisitors?.toLocaleString() ?? "...",
+      detail: isLoading ? "loading weekly visits" : "estimated weekly interest + recorded visits",
     },
   ];
 

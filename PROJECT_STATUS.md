@@ -47,6 +47,7 @@ Implemented or partially implemented areas include:
 ## Recent Work Completed
 
 Recent changes completed through 2026-07-16:
+- Fixed homepage public visitor proof counter instability: removed the artificial `currentOpen` addition and replaced fallback numeric counts with loading placeholders so the count no longer flashes from the baseline value such as 177 to the live database value after refresh.
 - Added AI Teaching Assistant premium workflow inside the Teacher Copilot page: teachers can ask "How can I teach this topic effectively?" for any chapter, topic, sub-topic, or learning objective and receive activity-based teaching methods, classroom demonstrations, practical examples, stories, role-play, group activities, projects, local environment examples, real-world applications, visual ideas, and interactive exercises.
 - Added multi-subject support for teaching suggestions across Science, Mathematics, Social Science, English, Hindi, languages, Computer Science, Environmental Studies, Commerce, Economics, Geography, History, Physics, Chemistry, Biology, and future subjects.
 - Added AI Teaching Credits as a separate school-controlled premium credit model with a monthly school credit pool, purchased-credit extension field, teacher allocation controls, and request costs: Simple Activity Suggestion = 1 credit, Detailed Activity Plan = 2 credits, Complete Teaching Toolkit = 5 credits, Project-Based Learning Plan = 5 credits, and Multi-Day Activity Module = 10 credits.
