@@ -22,7 +22,11 @@ import {
   declareSchoolSuperAdmin,
   getSchoolGovernance,
 } from "@/lib/academic-execution.functions";
-import { ShieldCheck, Users, Monitor, ArchiveRestore } from "lucide-react";
+import {
+  listMyPilotBenefits,
+  submitPilotBenefitRequest,
+} from "@/lib/pilot-benefits.functions";
+import { ShieldCheck, Users, Monitor, ArchiveRestore, ReceiptIndianRupee } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/school-governance")({
   head: () => ({ meta: [{ title: "School Governance - CurriculumOS" }] }),
@@ -75,6 +79,8 @@ function SchoolGovernancePage() {
       ) : (
         <div className="grid gap-5 xl:grid-cols-[420px_1fr]">
           <div className="space-y-5">
+            <PilotBenefitPanel />
+
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-base">
@@ -254,5 +260,126 @@ function SchoolGovernancePage() {
         </div>
       )}
     </AppShell>
+  );
+}
+
+function PilotBenefitPanel() {
+  const listFn = useServerFn(listMyPilotBenefits);
+  const submitFn = useServerFn(submitPilotBenefitRequest);
+  const q = useQuery({ queryKey: ["my-pilot-benefits"], queryFn: () => listFn(), retry: false });
+  const [form, setForm] = useState({
+    pilot_program_id: "",
+    request_type: "credit",
+    original_razorpay_payment_id: "",
+    school_notes: "",
+  });
+  const submit = useMutation({
+    mutationFn: () => submitFn({ data: form as any }),
+    onSuccess: () => {
+      toast.success("Pilot benefit request submitted for Company Super Admin approval");
+      setForm({ pilot_program_id: "", request_type: "credit", original_razorpay_payment_id: "", school_notes: "" });
+      q.refetch();
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  if (q.error) return null;
+  const programs = q.data?.programs ?? [];
+  const requests = q.data?.requests ?? [];
+  const credits = q.data?.credits ?? [];
+  const refunds = q.data?.refunds ?? [];
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-base">
+          <ReceiptIndianRupee className="h-4 w-4" /> Paid Pilot Refund / Subscription Credit
+        </CardTitle>
+        <CardDescription>
+          After the approved paid pilot period, request either continuation credit or refund review as per the MOU. Final approval remains with the Company Super Admin.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {q.isLoading ? (
+          <p className="text-sm text-muted-foreground">Loading pilot benefit records...</p>
+        ) : programs.length === 0 ? (
+          <p className="text-sm text-muted-foreground">No approved paid pilot program is linked to this school account yet.</p>
+        ) : (
+          <>
+            <div className="grid gap-3 md:grid-cols-2">
+              <div className="space-y-1.5">
+                <Label>Approved pilot</Label>
+                <select
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  value={form.pilot_program_id}
+                  onChange={(e) => setForm({ ...form, pilot_program_id: e.target.value })}
+                >
+                  <option value="">Select pilot program</option>
+                  {programs.map((program: any) => (
+                    <option key={program.id} value={program.id}>
+                      {program.approved_plan_id || "Paid pilot"} · {program.pilot_start_date} to {program.pilot_end_date}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="space-y-1.5">
+                <Label>Requested benefit</Label>
+                <select
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  value={form.request_type}
+                  onChange={(e) => setForm({ ...form, request_type: e.target.value })}
+                >
+                  <option value="credit">Continue subscription and claim pilot credit</option>
+                  <option value="refund">Discontinue subscription and request refund</option>
+                </select>
+              </div>
+            </div>
+            {form.request_type === "refund" ? (
+              <div className="space-y-1.5">
+                <Label>Original Razorpay payment ID</Label>
+                <Input value={form.original_razorpay_payment_id} onChange={(e) => setForm({ ...form, original_razorpay_payment_id: e.target.value })} placeholder="pay_..." />
+              </div>
+            ) : null}
+            <div className="space-y-1.5">
+              <Label>School note</Label>
+              <Textarea rows={3} value={form.school_notes} onChange={(e) => setForm({ ...form, school_notes: e.target.value })} placeholder="Optional note for Company Super Admin review" />
+            </div>
+            <Button
+              disabled={submit.isPending || !form.pilot_program_id || (form.request_type === "refund" && !form.original_razorpay_payment_id)}
+              onClick={() => submit.mutate()}
+            >
+              Submit pilot benefit request
+            </Button>
+          </>
+        )}
+
+        <div className="grid gap-3 md:grid-cols-3">
+          <div className="rounded-md border p-3 text-sm">
+            <div className="font-medium">Requests</div>
+            <div className="mt-2 space-y-1 text-muted-foreground">
+              {requests.length === 0 ? "No request submitted yet." : requests.slice(0, 3).map((request: any) => (
+                <div key={request.id}>{request.request_type} · {request.status} · Rs {Math.round(Number(request.eligible_amount_minor ?? 0) / 100).toLocaleString("en-IN")}</div>
+              ))}
+            </div>
+          </div>
+          <div className="rounded-md border p-3 text-sm">
+            <div className="font-medium">Credits</div>
+            <div className="mt-2 space-y-1 text-muted-foreground">
+              {credits.length === 0 ? "No credit ledger entry yet." : credits.slice(0, 3).map((credit: any) => (
+                <div key={credit.id}>{credit.status} · remaining Rs {Math.round(Number(credit.remaining_amount_minor ?? 0) / 100).toLocaleString("en-IN")}</div>
+              ))}
+            </div>
+          </div>
+          <div className="rounded-md border p-3 text-sm">
+            <div className="font-medium">Refunds</div>
+            <div className="mt-2 space-y-1 text-muted-foreground">
+              {refunds.length === 0 ? "No refund transaction yet." : refunds.slice(0, 3).map((refund: any) => (
+                <div key={refund.id}>{refund.refund_status} · Rs {Math.round(Number(refund.approved_refund_amount_minor ?? 0) / 100).toLocaleString("en-IN")}</div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 }

@@ -1,6 +1,6 @@
 # Project Status
 
-Date: 2026-07-15
+Date: 2026-07-16
 
 Project: CurriculumOS / Syllabus Synk
 
@@ -41,10 +41,17 @@ Implemented or partially implemented areas include:
 - Notifications and cron foundations for reminders, curriculum risk, disruption notices, unread counts, and mark-read/delete actions.
 - Platform health, audit logs, activity records, AI model policy/settings, and review-confirmation logs.
 - Pricing and billing screens for USD/INR monthly and annual plans, Razorpay-first India checkout, future-ready Stripe international checkout/portal, optional UPI panel, add-ons, AI credit top-ups, extra seats, extra campuses, and separately quoted services.
+- Paid Pilot Subscription Benefit workflow for approved pilot schools, Company Super Admin refund/credit approval, Razorpay refund initiation, and school credit-ledger tracking.
 
 ## Recent Work Completed
 
-Recent changes completed through 2026-07-15:
+Recent changes completed through 2026-07-16:
+- Added Paid Pilot Subscription Benefit workflow: Company Super Admin can mark schools as Approved Pilot School with MOU reference/link, pilot dates, approved plan, monthly base subscription amount, GST, gateway/bank/other charges, total paid, GST treatment, eligibility status, and internal notes.
+- Added school-side pilot benefit request controls in School Governance: School Super Admin can choose Continue Subscription and Claim Pilot Credit or Discontinue Subscription and Request Refund; refund requests require the original Razorpay payment ID.
+- Added Company CRM Pilot Benefits tab for pending refund/credit approvals, MOU/payment visibility, server-side calculation review, secure admin-code approval, mandatory deduction reasons, reject/hold/return actions, credit ledger visibility, and Razorpay refund tracker.
+- Added Supabase pilot workflow tables: `pilot_programs`, `pilot_benefit_requests`, `school_credit_ledger`, `refund_transactions`, and `credit_adjustments`, with tenant-aware RLS, service-role controls, permanent records, indexes, and audit-friendly metadata.
+- Added server-side refund/credit calculations with configurable GST treatment, non-refundable gateway/bank/other deductions, Company Super Admin adjustment support, idempotent request keys, audit logs, school notifications, company notifications, Razorpay refund initiation, and future-invoice credit ledger support.
+- Updated Ask Synk AI knowledge so it explains paid pilot subscription benefits accurately and avoids calling the two-month pilot a free trial.
 - Reversed the Google Workspace / Google Drive storage direction and restored AWS S3 as the primary storage provider for school files; removed the Google-specific provider registry migration, Company CRM storage-provider panel, provider-allocation dashboard, and Google storage messaging.
 - Updated Ask Synk AI storage-pricing knowledge and added deterministic priority handling so storage price questions bypass AI-provider drift and always state exact additional storage add-on prices: 25 GB Rs. 250/month, 50 GB Rs. 500/month, 100 GB Rs. 900/month, 250 GB Rs. 2,000/month, 500 GB Rs. 3,500/month, and 1 TB+ custom enterprise pricing via support.
 - Added Razorpay-first payment strategy for Indian operations while keeping provider-independent hooks for future Stripe/international gateways.

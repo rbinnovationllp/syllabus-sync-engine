@@ -1,6 +1,6 @@
 # Production Readiness Review
 
-Date: 2026-07-01
+Date: 2026-07-16
 
 This document records mandatory validation checkpoints for CurriculumOS before the project is considered production-ready. Each item must be verified in code, database policy, UI workflow, and operational testing.
 
@@ -35,10 +35,12 @@ Current implementation:
 - Webhook signature verification and subscription status upsert exist in `src/lib/razorpay.webhook.server.ts`.
 - Webhook route exists at `/api/public/razorpay/webhook`.
 - Verified Razorpay storage add-on payment events can automatically activate additional storage for Indian operations, write CRM allocation events, notify School Super Admins, and create support/audit records on failure. Stripe hooks remain future-ready for international markets when activated.
+- Paid pilot refund approval can initiate Razorpay refunds from Company CRM after Company Super Admin secret-code confirmation, original Razorpay payment ID verification, server-side refund calculation, audit logging, and refund transaction recording.
 - Subscription gating uses `has_active_subscription`.
 
 Mandatory gaps:
 - Razorpay payment failure events are partially handled for subscription access and storage allocation exceptions, but the full billing lifecycle still needs production testing.
+- Paid pilot refund workflow must be tested in Razorpay test mode and staging with real test payment IDs before live use.
 - Invoice records and invoice viewing are not implemented.
 - Payment status, renewals, cancellations, pauses, resumes, and failures need full test coverage.
 - Webhook replay/idempotency handling should be explicit.

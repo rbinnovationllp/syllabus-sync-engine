@@ -9,18 +9,24 @@ import {
   listAskSynkaiKnowledgeBase,
   refreshAskSynkaiKnowledgeBase,
 } from "@/lib/ask-synkai-knowledge.functions";
+import {
+  createPilotProgram,
+  listCompanyPilotWorkflows,
+  reviewPilotBenefitRequest,
+} from "@/lib/pilot-benefits.functions";
 import { getVisitorConversionReport } from "@/lib/site-analytics.functions";
 import { getAcquisitionReport } from "@/lib/acquisition.functions";
 import { acquisitionSourceLabel } from "@/lib/acquisition";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Brain, Briefcase, Building2, CheckCircle2, Eye, Headphones, IndianRupee, Loader2, Plus, RefreshCw, ShieldCheck, UsersRound } from "lucide-react";
+import { Brain, Briefcase, Building2, CheckCircle2, Eye, Headphones, IndianRupee, Loader2, Plus, ReceiptIndianRupee, RefreshCw, ShieldCheck, UsersRound } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/company-crm")({
@@ -80,9 +86,10 @@ function CompanyCrmPage() {
         <AcquisitionReportPanel report={acquisition.data} isLoading={acquisition.isLoading} />
 
         <Tabs defaultValue="subscriptions" className="space-y-4">
-          <TabsList className="grid w-full max-w-6xl grid-cols-6">
+          <TabsList className="grid w-full max-w-7xl grid-cols-7">
             <TabsTrigger value="subscriptions">Subscriptions</TabsTrigger>
             <TabsTrigger value="storage">Storage</TabsTrigger>
+            <TabsTrigger value="pilot">Pilot Benefits</TabsTrigger>
             <TabsTrigger value="support">Support</TabsTrigger>
             <TabsTrigger value="knowledge">Ask SynkAI</TabsTrigger>
             <TabsTrigger value="accounts">Accounts</TabsTrigger>
@@ -90,6 +97,7 @@ function CompanyCrmPage() {
           </TabsList>
           <TabsContent value="subscriptions"><SubscriptionPanel data={d} /></TabsContent>
           <TabsContent value="storage"><StorageAutomationPanel data={d} /></TabsContent>
+          <TabsContent value="pilot"><PilotBenefitsPanel /></TabsContent>
           <TabsContent value="support"><SupportPanel data={d} /></TabsContent>
           <TabsContent value="knowledge"><AskSynkaiKnowledgePanel /></TabsContent>
           <TabsContent value="accounts"><AccountsPanel accounts={d.accounts} /></TabsContent>
@@ -450,6 +458,237 @@ function StorageAutomationPanel({ data }: any) {
           </Table>
         </CardContent>
       </Card>
+    </div>
+  );
+}
+
+function PilotBenefitsPanel() {
+  const listFn = useServerFn(listCompanyPilotWorkflows);
+  const createFn = useServerFn(createPilotProgram);
+  const reviewFn = useServerFn(reviewPilotBenefitRequest);
+  const qc = useQueryClient();
+  const q = useQuery({ queryKey: ["company-pilot-benefits"], queryFn: () => listFn() });
+  const [programForm, setProgramForm] = useState({
+    school_id: "",
+    school_name: "",
+    pilot_start_date: "",
+    pilot_end_date: "",
+    approved_plan_id: "",
+    monthly_base_amount: "",
+    gst_amount: "",
+    gateway_charges: "",
+    bank_charges: "",
+    other_deductions: "",
+    total_paid: "",
+    gst_treatment: "non_refundable",
+    refund_credit_eligibility_status: "eligible",
+    mou_reference: "",
+    mou_document_url: "",
+    internal_notes: "",
+  });
+  const [reviewForm, setReviewForm] = useState({
+    request_id: "",
+    admin_secret_code: "",
+    company_adjusted_deductions: "0",
+    company_adjustment_reason: "",
+    rejection_reason: "",
+    internal_notes: "",
+  });
+  const refresh = () => q.refetch();
+  const create = useMutation({
+    mutationFn: () => createFn({
+      data: {
+        ...programForm,
+        monthly_base_amount: Number(programForm.monthly_base_amount || 0),
+        gst_amount: Number(programForm.gst_amount || 0),
+        gateway_charges: Number(programForm.gateway_charges || 0),
+        bank_charges: Number(programForm.bank_charges || 0),
+        other_deductions: Number(programForm.other_deductions || 0),
+        total_paid: Number(programForm.total_paid || 0),
+      } as any,
+    }),
+    onSuccess: () => {
+      toast.success("Approved pilot school recorded");
+      setProgramForm({
+        school_id: "",
+        school_name: "",
+        pilot_start_date: "",
+        pilot_end_date: "",
+        approved_plan_id: "",
+        monthly_base_amount: "",
+        gst_amount: "",
+        gateway_charges: "",
+        bank_charges: "",
+        other_deductions: "",
+        total_paid: "",
+        gst_treatment: "non_refundable",
+        refund_credit_eligibility_status: "eligible",
+        mou_reference: "",
+        mou_document_url: "",
+        internal_notes: "",
+      });
+      refresh();
+      qc.invalidateQueries({ queryKey: ["company-crm-ops"] });
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+  const review = useMutation({
+    mutationFn: (action: "approve" | "reject" | "clarification_required" | "on_hold") => reviewFn({
+      data: {
+        ...reviewForm,
+        action,
+        company_adjusted_deductions: Number(reviewForm.company_adjusted_deductions || 0),
+      } as any,
+    }),
+    onSuccess: (_row, action) => {
+      toast.success(action === "approve" ? "Pilot benefit approved" : "Pilot benefit request updated");
+      setReviewForm({ request_id: "", admin_secret_code: "", company_adjusted_deductions: "0", company_adjustment_reason: "", rejection_reason: "", internal_notes: "" });
+      refresh();
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  const data = q.data;
+  const pending = (data?.requests ?? []).filter((row: any) => ["pending_company_approval", "on_hold", "clarification_required", "failed"].includes(row.status));
+  return (
+    <div className="space-y-4">
+      <div className="grid gap-4 md:grid-cols-4">
+        <Metric icon={Building2} label="Approved pilots" value={data?.metrics.approvedPilots ?? 0} />
+        <Metric icon={Headphones} label="Requests needing review" value={data?.metrics.pendingRequests ?? 0} />
+        <Metric icon={ReceiptIndianRupee} label="Active credit" value={`Rs ${Math.round(Number(data?.metrics.activeCreditsMinor ?? 0) / 100).toLocaleString("en-IN")}`} />
+        <Metric icon={IndianRupee} label="Refunds initiated" value={`Rs ${Math.round(Number(data?.metrics.refundsInitiatedMinor ?? 0) / 100).toLocaleString("en-IN")}`} />
+      </div>
+
+      <div className="grid gap-4 xl:grid-cols-[420px_1fr]">
+        <Card>
+          <CardHeader>
+            <CardTitle>Approve Paid Pilot School</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Record a paid two-month pilot with MOU reference, plan, payment amounts, and refund/credit eligibility.
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="space-y-1.5"><Label>School organization ID</Label><Input value={programForm.school_id} onChange={(e) => setProgramForm({ ...programForm, school_id: e.target.value })} /></div>
+            <div className="space-y-1.5"><Label>School name</Label><Input value={programForm.school_name} onChange={(e) => setProgramForm({ ...programForm, school_name: e.target.value })} /></div>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-1.5"><Label>Start date</Label><Input type="date" value={programForm.pilot_start_date} onChange={(e) => setProgramForm({ ...programForm, pilot_start_date: e.target.value })} /></div>
+              <div className="space-y-1.5"><Label>End date</Label><Input type="date" value={programForm.pilot_end_date} onChange={(e) => setProgramForm({ ...programForm, pilot_end_date: e.target.value })} /></div>
+            </div>
+            <div className="space-y-1.5"><Label>Approved plan ID</Label><Input value={programForm.approved_plan_id} onChange={(e) => setProgramForm({ ...programForm, approved_plan_id: e.target.value })} /></div>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-1.5"><Label>Monthly base Rs</Label><Input type="number" value={programForm.monthly_base_amount} onChange={(e) => setProgramForm({ ...programForm, monthly_base_amount: e.target.value })} /></div>
+              <div className="space-y-1.5"><Label>Total paid Rs</Label><Input type="number" value={programForm.total_paid} onChange={(e) => setProgramForm({ ...programForm, total_paid: e.target.value })} /></div>
+              <div className="space-y-1.5"><Label>GST Rs</Label><Input type="number" value={programForm.gst_amount} onChange={(e) => setProgramForm({ ...programForm, gst_amount: e.target.value })} /></div>
+              <div className="space-y-1.5"><Label>Gateway charges Rs</Label><Input type="number" value={programForm.gateway_charges} onChange={(e) => setProgramForm({ ...programForm, gateway_charges: e.target.value })} /></div>
+              <div className="space-y-1.5"><Label>Bank charges Rs</Label><Input type="number" value={programForm.bank_charges} onChange={(e) => setProgramForm({ ...programForm, bank_charges: e.target.value })} /></div>
+              <div className="space-y-1.5"><Label>Other deductions Rs</Label><Input type="number" value={programForm.other_deductions} onChange={(e) => setProgramForm({ ...programForm, other_deductions: e.target.value })} /></div>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <Select value={programForm.gst_treatment} onValueChange={(gst_treatment) => setProgramForm({ ...programForm, gst_treatment })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="non_refundable">GST non-refundable</SelectItem>
+                  <SelectItem value="refundable">GST refundable</SelectItem>
+                  <SelectItem value="manual_review">GST manual review</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={programForm.refund_credit_eligibility_status} onValueChange={(refund_credit_eligibility_status) => setProgramForm({ ...programForm, refund_credit_eligibility_status })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="eligible">Eligible</SelectItem>
+                  <SelectItem value="manual_review">Manual review</SelectItem>
+                  <SelectItem value="not_eligible">Not eligible</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <Input placeholder="MOU reference" value={programForm.mou_reference} onChange={(e) => setProgramForm({ ...programForm, mou_reference: e.target.value })} />
+            <Input placeholder="MOU document link" value={programForm.mou_document_url} onChange={(e) => setProgramForm({ ...programForm, mou_document_url: e.target.value })} />
+            <Textarea placeholder="Internal notes" value={programForm.internal_notes} onChange={(e) => setProgramForm({ ...programForm, internal_notes: e.target.value })} />
+            <Button className="w-full" disabled={create.isPending || !programForm.school_id || !programForm.pilot_start_date || !programForm.pilot_end_date} onClick={() => create.mutate()}>
+              {create.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Plus className="mr-2 h-4 w-4" />} Mark as Approved Pilot School
+            </Button>
+          </CardContent>
+        </Card>
+
+        <div className="space-y-4">
+          <Card>
+            <CardHeader><CardTitle>Pilot Refund and Credit Approvals</CardTitle></CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-4">
+                <Input placeholder="Selected request ID" value={reviewForm.request_id} onChange={(e) => setReviewForm({ ...reviewForm, request_id: e.target.value })} />
+                <Input placeholder="Company secret code" type="password" value={reviewForm.admin_secret_code} onChange={(e) => setReviewForm({ ...reviewForm, admin_secret_code: e.target.value })} />
+                <Input placeholder="Extra deduction Rs" type="number" value={reviewForm.company_adjusted_deductions} onChange={(e) => setReviewForm({ ...reviewForm, company_adjusted_deductions: e.target.value })} />
+                <Input placeholder="Mandatory adjustment reason" value={reviewForm.company_adjustment_reason} onChange={(e) => setReviewForm({ ...reviewForm, company_adjustment_reason: e.target.value })} />
+              </div>
+              <div className="grid gap-2 md:grid-cols-2">
+                <Textarea placeholder="Reject / clarification reason" value={reviewForm.rejection_reason} onChange={(e) => setReviewForm({ ...reviewForm, rejection_reason: e.target.value })} />
+                <Textarea placeholder="Internal approval notes" value={reviewForm.internal_notes} onChange={(e) => setReviewForm({ ...reviewForm, internal_notes: e.target.value })} />
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Button disabled={review.isPending || !reviewForm.request_id || !reviewForm.admin_secret_code} onClick={() => review.mutate("approve")}>Approve</Button>
+                <Button variant="outline" disabled={review.isPending || !reviewForm.request_id || !reviewForm.admin_secret_code} onClick={() => review.mutate("clarification_required")}>Return for clarification</Button>
+                <Button variant="outline" disabled={review.isPending || !reviewForm.request_id || !reviewForm.admin_secret_code} onClick={() => review.mutate("on_hold")}>Hold</Button>
+                <Button variant="destructive" disabled={review.isPending || !reviewForm.request_id || !reviewForm.admin_secret_code} onClick={() => review.mutate("reject")}>Reject</Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader><CardTitle>Pending and Recent Requests</CardTitle></CardHeader>
+            <CardContent className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow><TableHead>School</TableHead><TableHead>Type</TableHead><TableHead>Status</TableHead><TableHead>Eligible</TableHead><TableHead>MOU</TableHead><TableHead>Request ID</TableHead></TableRow>
+                </TableHeader>
+                <TableBody>
+                  {q.isLoading ? (
+                    <TableRow><TableCell colSpan={6} className="text-muted-foreground">Loading pilot requests...</TableCell></TableRow>
+                  ) : pending.length === 0 ? (
+                    <TableRow><TableCell colSpan={6} className="text-muted-foreground">No pilot benefit requests require review.</TableCell></TableRow>
+                  ) : pending.map((row: any) => (
+                    <TableRow key={row.id} className="cursor-pointer" onClick={() => setReviewForm({ ...reviewForm, request_id: row.id })}>
+                      <TableCell className="font-medium">{row.organizations?.name || row.school_id}</TableCell>
+                      <TableCell><Badge variant="outline">{row.request_type}</Badge></TableCell>
+                      <TableCell><Badge variant={row.status === "failed" ? "destructive" : "secondary"}>{row.status}</Badge></TableCell>
+                      <TableCell>Rs {Math.round(Number(row.eligible_amount_minor ?? 0) / 100).toLocaleString("en-IN")}</TableCell>
+                      <TableCell>{row.pilot_programs?.mou_reference || "-"}</TableCell>
+                      <TableCell className="font-mono text-xs">{row.id}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader><CardTitle>Credit Ledger and Refund Tracker</CardTitle></CardHeader>
+            <CardContent className="grid gap-4 xl:grid-cols-2">
+              <div className="space-y-2">
+                {(data?.credits ?? []).slice(0, 8).map((credit: any) => (
+                  <div key={credit.id} className="rounded-lg border p-3 text-sm">
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="font-medium">{credit.organizations?.name || credit.school_id}</span>
+                      <Badge>{credit.status}</Badge>
+                    </div>
+                    <p className="text-muted-foreground">Remaining Rs {Math.round(Number(credit.remaining_amount_minor ?? 0) / 100).toLocaleString("en-IN")} of Rs {Math.round(Number(credit.credit_amount_minor ?? 0) / 100).toLocaleString("en-IN")}</p>
+                  </div>
+                ))}
+              </div>
+              <div className="space-y-2">
+                {(data?.refunds ?? []).slice(0, 8).map((refund: any) => (
+                  <div key={refund.id} className="rounded-lg border p-3 text-sm">
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="font-medium">{refund.organizations?.name || refund.school_id}</span>
+                      <Badge variant={refund.refund_status === "failed" ? "destructive" : "secondary"}>{refund.refund_status}</Badge>
+                    </div>
+                    <p className="text-muted-foreground">Refund Rs {Math.round(Number(refund.approved_refund_amount_minor ?? 0) / 100).toLocaleString("en-IN")} · {refund.gateway_refund_id || refund.original_payment_id || "-"}</p>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 }
