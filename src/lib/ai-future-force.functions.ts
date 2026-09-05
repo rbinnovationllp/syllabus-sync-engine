@@ -318,6 +318,11 @@ export const activateAiFutureForce = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => activateSchema.parse(input))
   .handler(async ({ data, context }) => {
+    // Historical activations remain accessible for audit and delivery, but this
+    // legacy add-on is no longer sold. New AI education sales use the separate
+    // AI Education Premium product and its class-specific entitlements.
+    throw new Error("AI Future Force is archived for new activations. Use AI Education Premium for new AI education subscriptions.");
+    /* c8 ignore next */
     const { supabase, userId, claims } = context;
     const me = await loadMyOrg(supabase, userId);
     if (!["admin", "super_admin"].includes(me.role)) {

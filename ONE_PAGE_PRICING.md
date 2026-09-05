@@ -48,9 +48,23 @@ For private publisher books, schools may enter the book name, publisher, class, 
 
 The Curriculum Mapping Module maps chapter lists to recognized/open curriculum-style references where available, returns confidence/status for each chapter, estimates teaching and revision periods, and asks for summary, learning objectives, topics covered, or key concepts only when a chapter cannot reasonably be mapped.
 
-## AI Future Force / AI Future Workforce Add-On
+## AI Education Premium (Independent Product)
 
-AI Future Force is an optional future-ready AI education curriculum planner for Classes 1 to 12. It helps schools introduce AI education without disturbing the regular academic timetable.
+AI Education Premium is a separately subscribable AI Education Curriculum & Teacher Guidance Platform. It does not require a Regular Syllabus Planning plan. Schools select each individual class they want to enable; every class has its own entitlement and price.
+
+| Class | Monthly | Annual |
+| --- | ---: | ---: |
+| 1-2 | Rs. 5,000 per class | Rs. 50,000 per class |
+| 3-5 | Rs. 6,000 per class | Rs. 60,000 per class |
+| 6-8 | Rs. 8,000 per class | Rs. 80,000 per class |
+| 9-10 | Rs. 10,000 per class | Rs. 1,00,000 per class |
+| 11-12 | Rs. 15,000 per class | Rs. 1,50,000 per class |
+
+The platform guides teachers on what to teach, when to teach it, how to teach it, classroom activity, practice, understanding checks, and the next topic—age-appropriately, class by class. Current prices are summed per selected class; future bundle discounts may be configured but are not assumed.
+
+## Legacy AI Future Force / AI Future Workforce (Archived for new sales)
+
+Historical AI Future Force records are retained for delivery and audit. The former band-based offers below are no longer available for new purchases; new AI education subscriptions use AI Education Premium.
 
 | Add-On | Price | Notes |
 | --- | ---: | --- |

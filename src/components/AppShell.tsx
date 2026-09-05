@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Brain, LogOut, CreditCard, Shield, Users, Briefcase, Building2, ClipboardCheck, Landmark, BrainCircuit, LightbulbIcon, BookOpenCheck } from "lucide-react";
+import { Brain, LogOut, CreditCard, Shield, Users, Briefcase, Building2, ClipboardCheck, Landmark, BrainCircuit, LightbulbIcon, BookOpenCheck, GraduationCap } from "lucide-react";
 import { getMyAdminStatus } from "@/lib/admin.functions";
 import { NotificationBell } from "@/components/NotificationBell";
 
@@ -46,6 +46,11 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
             <Button asChild variant="ghost" size="sm">
               <Link to="/ai-future-force">
                 <BrainCircuit className="h-4 w-4 mr-1" /> AI Future Force
+              </Link>
+            </Button>
+            <Button asChild variant="ghost" size="sm">
+              <Link to={"/ai-education-premium" as any}>
+                <GraduationCap className="h-4 w-4 mr-1" /> AI Education
               </Link>
             </Button>
             <Button asChild variant="ghost" size="sm">

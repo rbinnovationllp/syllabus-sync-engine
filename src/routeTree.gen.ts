@@ -26,11 +26,13 @@ import { Route as AuthenticatedPartnerRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedCurriculumMappingRouteImport } from './routes/_authenticated/curriculum-mapping'
 import { Route as AuthenticatedCrmRouteImport } from './routes/_authenticated/crm'
 import { Route as AuthenticatedCompanyCrmRouteImport } from './routes/_authenticated/company-crm'
 import { Route as AuthenticatedAuditTrailRouteImport } from './routes/_authenticated/audit-trail'
 import { Route as AuthenticatedAssignmentsRouteImport } from './routes/_authenticated/assignments'
 import { Route as AuthenticatedAiFutureForceRouteImport } from './routes/_authenticated/ai-future-force'
+import { Route as AuthenticatedAiEducationPremiumRouteImport } from './routes/_authenticated/ai-education-premium'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedAcademicExecutionRouteImport } from './routes/_authenticated/academic-execution'
 import { Route as AuthenticatedV2TeacherIntelligenceRouteImport } from './routes/_authenticated/v2.teacher-intelligence'
@@ -143,6 +145,12 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedCurriculumMappingRoute =
+  AuthenticatedCurriculumMappingRouteImport.update({
+    id: '/curriculum-mapping',
+    path: '/curriculum-mapping',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedCrmRoute = AuthenticatedCrmRouteImport.update({
   id: '/crm',
   path: '/crm',
@@ -168,6 +176,12 @@ const AuthenticatedAiFutureForceRoute =
   AuthenticatedAiFutureForceRouteImport.update({
     id: '/ai-future-force',
     path: '/ai-future-force',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAiEducationPremiumRoute =
+  AuthenticatedAiEducationPremiumRouteImport.update({
+    id: '/ai-education-premium',
+    path: '/ai-education-premium',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
@@ -316,11 +330,13 @@ export interface FileRoutesByFullPath {
   '/terms': typeof TermsRoute
   '/academic-execution': typeof AuthenticatedAcademicExecutionRoute
   '/admin': typeof AuthenticatedAdminRoute
+  '/ai-education-premium': typeof AuthenticatedAiEducationPremiumRoute
   '/ai-future-force': typeof AuthenticatedAiFutureForceRoute
   '/assignments': typeof AuthenticatedAssignmentsRoute
   '/audit-trail': typeof AuthenticatedAuditTrailRoute
   '/company-crm': typeof AuthenticatedCompanyCrmRoute
   '/crm': typeof AuthenticatedCrmRouteWithChildren
+  '/curriculum-mapping': typeof AuthenticatedCurriculumMappingRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
@@ -362,11 +378,13 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/academic-execution': typeof AuthenticatedAcademicExecutionRoute
   '/admin': typeof AuthenticatedAdminRoute
+  '/ai-education-premium': typeof AuthenticatedAiEducationPremiumRoute
   '/ai-future-force': typeof AuthenticatedAiFutureForceRoute
   '/assignments': typeof AuthenticatedAssignmentsRoute
   '/audit-trail': typeof AuthenticatedAuditTrailRoute
   '/company-crm': typeof AuthenticatedCompanyCrmRoute
   '/crm': typeof AuthenticatedCrmRouteWithChildren
+  '/curriculum-mapping': typeof AuthenticatedCurriculumMappingRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
@@ -410,11 +428,13 @@ export interface FileRoutesById {
   '/terms': typeof TermsRoute
   '/_authenticated/academic-execution': typeof AuthenticatedAcademicExecutionRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
+  '/_authenticated/ai-education-premium': typeof AuthenticatedAiEducationPremiumRoute
   '/_authenticated/ai-future-force': typeof AuthenticatedAiFutureForceRoute
   '/_authenticated/assignments': typeof AuthenticatedAssignmentsRoute
   '/_authenticated/audit-trail': typeof AuthenticatedAuditTrailRoute
   '/_authenticated/company-crm': typeof AuthenticatedCompanyCrmRoute
   '/_authenticated/crm': typeof AuthenticatedCrmRouteWithChildren
+  '/_authenticated/curriculum-mapping': typeof AuthenticatedCurriculumMappingRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
@@ -458,11 +478,13 @@ export interface FileRouteTypes {
     | '/terms'
     | '/academic-execution'
     | '/admin'
+    | '/ai-education-premium'
     | '/ai-future-force'
     | '/assignments'
     | '/audit-trail'
     | '/company-crm'
     | '/crm'
+    | '/curriculum-mapping'
     | '/dashboard'
     | '/notifications'
     | '/onboarding'
@@ -504,11 +526,13 @@ export interface FileRouteTypes {
     | '/terms'
     | '/academic-execution'
     | '/admin'
+    | '/ai-education-premium'
     | '/ai-future-force'
     | '/assignments'
     | '/audit-trail'
     | '/company-crm'
     | '/crm'
+    | '/curriculum-mapping'
     | '/dashboard'
     | '/notifications'
     | '/onboarding'
@@ -551,11 +575,13 @@ export interface FileRouteTypes {
     | '/terms'
     | '/_authenticated/academic-execution'
     | '/_authenticated/admin'
+    | '/_authenticated/ai-education-premium'
     | '/_authenticated/ai-future-force'
     | '/_authenticated/assignments'
     | '/_authenticated/audit-trail'
     | '/_authenticated/company-crm'
     | '/_authenticated/crm'
+    | '/_authenticated/curriculum-mapping'
     | '/_authenticated/dashboard'
     | '/_authenticated/notifications'
     | '/_authenticated/onboarding'
@@ -724,6 +750,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/curriculum-mapping': {
+      id: '/_authenticated/curriculum-mapping'
+      path: '/curriculum-mapping'
+      fullPath: '/curriculum-mapping'
+      preLoaderRoute: typeof AuthenticatedCurriculumMappingRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/crm': {
       id: '/_authenticated/crm'
       path: '/crm'
@@ -757,6 +790,13 @@ declare module '@tanstack/react-router' {
       path: '/ai-future-force'
       fullPath: '/ai-future-force'
       preLoaderRoute: typeof AuthenticatedAiFutureForceRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/ai-education-premium': {
+      id: '/_authenticated/ai-education-premium'
+      path: '/ai-education-premium'
+      fullPath: '/ai-education-premium'
+      preLoaderRoute: typeof AuthenticatedAiEducationPremiumRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/admin': {
@@ -937,11 +977,13 @@ const AuthenticatedCrmRouteWithChildren =
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAcademicExecutionRoute: typeof AuthenticatedAcademicExecutionRoute
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
+  AuthenticatedAiEducationPremiumRoute: typeof AuthenticatedAiEducationPremiumRoute
   AuthenticatedAiFutureForceRoute: typeof AuthenticatedAiFutureForceRoute
   AuthenticatedAssignmentsRoute: typeof AuthenticatedAssignmentsRoute
   AuthenticatedAuditTrailRoute: typeof AuthenticatedAuditTrailRoute
   AuthenticatedCompanyCrmRoute: typeof AuthenticatedCompanyCrmRoute
   AuthenticatedCrmRoute: typeof AuthenticatedCrmRouteWithChildren
+  AuthenticatedCurriculumMappingRoute: typeof AuthenticatedCurriculumMappingRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
@@ -973,11 +1015,13 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAcademicExecutionRoute: AuthenticatedAcademicExecutionRoute,
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
+  AuthenticatedAiEducationPremiumRoute: AuthenticatedAiEducationPremiumRoute,
   AuthenticatedAiFutureForceRoute: AuthenticatedAiFutureForceRoute,
   AuthenticatedAssignmentsRoute: AuthenticatedAssignmentsRoute,
   AuthenticatedAuditTrailRoute: AuthenticatedAuditTrailRoute,
   AuthenticatedCompanyCrmRoute: AuthenticatedCompanyCrmRoute,
   AuthenticatedCrmRoute: AuthenticatedCrmRouteWithChildren,
+  AuthenticatedCurriculumMappingRoute: AuthenticatedCurriculumMappingRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,

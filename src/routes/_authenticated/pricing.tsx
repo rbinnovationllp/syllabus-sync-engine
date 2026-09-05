@@ -282,6 +282,16 @@ function PricingPage() {
           })}
         </div>
 
+        <Card className="border-primary/40 bg-primary/5">
+          <CardHeader>
+            <CardTitle>AI Education Premium</CardTitle>
+            <CardDescription>AI Education Curriculum &amp; Teacher Guidance Platform. This is an independent, class-wise subscription—not an add-on to Regular Syllabus Planning.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button asChild><Link to={"/ai-education-premium" as any}>Select AI education classes</Link></Button>
+          </CardContent>
+        </Card>
+
         {/* AI credit cost table */}
         <section>
           <div className="flex items-center gap-2 mb-3">
