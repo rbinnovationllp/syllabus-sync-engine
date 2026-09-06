@@ -100,6 +100,9 @@ function Nav() {
           </a>
         </nav>
         <div className="flex items-center gap-2">
+          <Button variant="ghost" asChild>
+            <Link to="/pricing">Plans</Link>
+          </Button>
           <Button variant="ghost" asChild className="hidden sm:inline-flex">
             <Link to="/auth" search={{ invite: undefined }}>
               Sign in
@@ -302,46 +305,60 @@ const FEATURES = [
   {
     icon: Calendar,
     title: "Capacity engine",
+    to: "/onboarding",
+    action: "Set up instructional capacity",
     body: "Automatically subtracts holidays, vacations, exams, events, training & buffers - never plans beyond reality.",
     color: "from-indigo-500 to-violet-500",
   },
   {
     icon: BookOpen,
     title: "Chapter-list planning",
+    to: "/curriculum-mapping",
+    action: "Open curriculum mapping",
     body: "Plans from official board structures, NCERT/state resources where available, and school-entered book details or chapter lists - no full textbook upload required.",
     color: "from-fuchsia-500 to-pink-500",
   },
   {
     icon: Users,
     title: "Multi-teacher balance",
+    to: "/assignments",
+    action: "Manage teacher assignments",
     body: "Prevents student overload by syncing tough chapters across subjects.",
     color: "from-amber-500 to-orange-500",
   },
   {
     icon: Sparkles,
     title: "One-click recalibration",
+    to: "/dashboard",
+    action: "Choose an academic year to recalibrate",
     body: "Weather closure? Sports overrun? Re-engineer the year while protecting revision time.",
     color: "from-emerald-500 to-teal-500",
   },
   {
     icon: Globe2,
     title: "Country-aware sessions",
+    to: "/onboarding",
+    action: "Set up your country and session",
     body: "Knows India runs Apr-Mar, USA Aug-Jun, UK Sep-Jul. Subjects & streams match local policy.",
     color: "from-sky-500 to-blue-500",
   },
   {
     icon: ShieldCheck,
     title: "Syllabus guarantee",
+    to: "/dashboard",
+    action: "Choose an academic year to view its plan",
     body: "30/45/60-day pre-exam completion rules built-in for primary, secondary & senior secondary.",
     color: "from-rose-500 to-red-500",
   },
   {
     icon: BrainCircuit,
     title: "AI Future Workforce",
-    body: "Optional AI education add-on with grade-wise learning paths, weekly AI class planning, monthly updates, teacher readiness, and future-career projects.",
+    to: "/ai-education-premium",
+    action: "View AI Education Premium",
+    body: "Explore AI Education Premium, a separate subscription with class-group packages and AI teaching guidance.",
     color: "from-violet-500 to-fuchsia-500",
   },
-];
+] as const;
 
 function Features() {
   return (
@@ -357,27 +374,40 @@ function Features() {
           From the first holiday entry to the final lesson plan - one intelligent system replaces
           six spreadsheets.
         </p>
+        <p className="mt-4 text-sm text-slate-600">
+          Feature access and usage limits depend on your subscription.{" "}
+          <Link to="/pricing" className="font-semibold text-indigo-600 underline underline-offset-4">
+            Compare plans and included features
+          </Link>{" "}
+          (sign-in required).
+        </p>
       </div>
       <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {FEATURES.map((f) => (
-          <Card
+          <Link
             key={f.title}
-            className="group relative overflow-hidden border-slate-200 transition hover:-translate-y-1 hover:shadow-xl"
+            to={f.to}
+            className="group block rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-4"
           >
-            <div
-              aria-hidden
-              className={`absolute -right-12 -top-12 h-32 w-32 rounded-full bg-gradient-to-br ${f.color} opacity-10 transition group-hover:opacity-20`}
-            />
-            <CardContent className="relative pt-7">
+            <Card className="relative h-full overflow-hidden border-slate-200 transition group-hover:-translate-y-1 group-hover:shadow-xl">
               <div
-                className={`inline-flex rounded-xl bg-gradient-to-br ${f.color} p-2.5 text-white shadow-md`}
-              >
-                <f.icon className="h-5 w-5" />
-              </div>
-              <h3 className="mt-4 font-semibold text-slate-900">{f.title}</h3>
-              <p className="mt-2 text-sm text-slate-600">{f.body}</p>
-            </CardContent>
-          </Card>
+                aria-hidden
+                className={`absolute -right-12 -top-12 h-32 w-32 rounded-full bg-gradient-to-br ${f.color} opacity-10 transition group-hover:opacity-20`}
+              />
+              <CardContent className="relative pt-7">
+                <div
+                  className={`inline-flex rounded-xl bg-gradient-to-br ${f.color} p-2.5 text-white shadow-md`}
+                >
+                  <f.icon className="h-5 w-5" />
+                </div>
+                <h3 className="mt-4 font-semibold text-slate-900">{f.title}</h3>
+                <p className="mt-2 text-sm text-slate-600">{f.body}</p>
+                <span className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-indigo-600">
+                  {f.action} <ArrowRight aria-hidden="true" className="h-4 w-4" />
+                </span>
+              </CardContent>
+            </Card>
+          </Link>
         ))}
       </div>
     </section>

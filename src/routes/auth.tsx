@@ -15,6 +15,10 @@ import { AcquisitionSourceFields } from "@/components/AcquisitionSourceFields";
 export const Route = createFileRoute("/auth")({
   validateSearch: (s: Record<string, unknown>) => ({
     invite: typeof s.invite === "string" ? s.invite : undefined,
+    redirect: typeof s.redirect === "string" && s.redirect.startsWith("/") &&
+      !s.redirect.startsWith("//") && !/[\\\s]/.test(s.redirect) &&
+      !s.redirect.split(/[?#]/)[0].match(/^\/auth\/?$/)
+      ? s.redirect : undefined,
   }),
   head: () => ({
     meta: [
@@ -32,7 +36,7 @@ function authRedirectUrl(path: string) {
 
 function AuthPage() {
   const navigate = useNavigate();
-  const { invite } = useSearch({ from: "/auth" });
+  const { invite, redirect: returnTo } = useSearch({ from: "/auth" });
   const [loading, setLoading] = useState(false);
   const [tab, setTab] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
@@ -68,7 +72,7 @@ function AuthPage() {
     supabase.auth.getUser().then(async ({ data }) => {
       if (!data.user) return;
       if (invite) await tryAcceptInvite();
-      navigate({ to: "/dashboard" });
+      navigate({ href: returnTo ?? "/dashboard" });
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -96,7 +100,7 @@ function AuthPage() {
     }
     await tryAcceptInvite();
     setLoading(false);
-    navigate({ to: "/dashboard" });
+    navigate({ href: returnTo ?? "/dashboard" });
   }
 
   async function handleEmailSignUp(e: React.FormEvent) {
@@ -106,7 +110,7 @@ function AuthPage() {
       email,
       password,
       options: {
-        emailRedirectTo: typeof window !== "undefined" ? window.location.origin : undefined,
+        emailRedirectTo: authRedirectUrl(`/auth?${new URLSearchParams({ ...(invite ? { invite } : {}), ...(returnTo ? { redirect: returnTo } : {}) })}`),
         data: { full_name: name, ...acquisition },
       },
     });
@@ -128,7 +132,7 @@ function AuthPage() {
     }
     await tryAcceptInvite();
     toast.success("Account created - you're signed in.");
-    navigate({ to: "/dashboard" });
+    navigate({ href: returnTo ?? "/dashboard" });
   }
 
   async function handleForgotPassword() {
@@ -144,7 +148,7 @@ function AuthPage() {
 
   async function handleGoogle() {
     setLoading(true);
-    const redirectTo = authRedirectUrl("/auth" + (invite ? `?invite=${encodeURIComponent(invite)}` : ""));
+    const redirectTo = authRedirectUrl(`/auth?${new URLSearchParams({ ...(invite ? { invite } : {}), ...(returnTo ? { redirect: returnTo } : {}) })}`);
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: { redirectTo },
