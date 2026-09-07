@@ -154,10 +154,36 @@ export const createAiEducationPremiumQuote = createServerFn({ method: "POST" })
           .update({ provider_order_id: order.id })
           .eq("id", subscription.id)
           .is("provider_order_id", null)
-          .select("id")
-          .single();
-        if (saved.error) throw new Error("PREMIUM_ORDER_SAVE_FAILED");
-        orderId = order.id;
+          .select("id, provider_order_id")
+          .maybeSingle();
+        if (saved.error) {
+          console.error("[AI Education Premium] Razorpay order persistence failed", {
+            reference: `PREM-ORDER-${String(subscription.id).slice(0, 8).toUpperCase()}`,
+            code: saved.error.code,
+            message: saved.error.message,
+            details: saved.error.details,
+            hint: saved.error.hint,
+          });
+          throw new Error("PREMIUM_ORDER_SAVE_FAILED");
+        }
+        if (saved.data?.provider_order_id) {
+          orderId = saved.data.provider_order_id;
+        } else {
+          const existing = await admin
+            .from("ai_education_premium_subscriptions")
+            .select("provider_order_id")
+            .eq("id", subscription.id)
+            .maybeSingle();
+          if (existing.error || !existing.data?.provider_order_id) {
+            console.error("[AI Education Premium] Razorpay order persistence did not return an order", {
+              reference: `PREM-ORDER-${String(subscription.id).slice(0, 8).toUpperCase()}`,
+              code: existing.error?.code,
+              message: existing.error?.message,
+            });
+            throw new Error("PREMIUM_ORDER_SAVE_FAILED");
+          }
+          orderId = existing.data.provider_order_id;
+        }
       } catch (error: any) {
         // Release the lock after any failed order attempt so a retry is never stuck indefinitely.
         await admin.rpc("premium_release_order_creation", { p_subscription: subscription.id });
