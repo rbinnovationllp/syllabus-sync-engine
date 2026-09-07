@@ -120,7 +120,7 @@ export const createRazorpaySubscription = createServerFn({ method: "POST" })
         method: "POST",
         body: JSON.stringify({
           plan_id: razorpayPlanId,
-          total_count: found.price.interval === "annual" ? 10 : 120,
+          total_count: found.price.interval === "annual" ? 1 : 120,
           quantity: 1,
           customer_notify: 1,
           notes,

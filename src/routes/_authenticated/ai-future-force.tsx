@@ -161,7 +161,7 @@ function AiFutureForcePage() {
                   <Badge variant="outline">{activation.expected_sessions ?? 0} planned sessions</Badge>
                   <Badge variant="outline">
                     Rs. {activation.one_time_price_inr.toLocaleString()}
-                    {activation.access_model === "enterprise_monthly" ? " / mo" : ""} + GST
+                    {activation.access_model === "enterprise_monthly" ? " / mo" : ""} · historical amount
                   </Badge>
                   {activation.foundation_mode && <Badge>Foundation module</Badge>}
                 </div>

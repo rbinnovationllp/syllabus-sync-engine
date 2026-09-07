@@ -1,4 +1,4 @@
-﻿import { Link, useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -32,7 +32,7 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
 
   async function handleSignOut() {
     await supabase.auth.signOut();
-    navigate({ to: "/auth", search: { invite: undefined }, replace: true });
+    navigate({ to: "/auth", search: { invite: undefined, redirect: undefined }, replace: true });
   }
 
   return (

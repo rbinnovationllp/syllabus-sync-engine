@@ -227,8 +227,9 @@ const files = [
   "20260906000200_ai_education_premium_teaching_plans.sql",
   "20260906000300_ai_education_premium_billing_security.sql",
   "20260906000400_gst_inclusive_catalog.sql",
+  "20260907000100_ai_education_premium_usd_catalog.sql",
 ];
-await test("All five Premium and inclusive-pricing migrations execute on PostgreSQL", async () => {
+await test("All six Premium and inclusive-pricing migrations execute on PostgreSQL", async () => {
   for (const f of files) await db.exec(await fs.readFile("supabase/migrations/" + f, "utf8"));
 });
 const admin = "00000000-0000-0000-0000-000000000001",
@@ -242,7 +243,8 @@ await db.exec(
 const sql = async (s, p = []) => (await db.query(s, p)).rows;
 const quote = async (code = "classes_1_5", interval = "monthly") =>
   (await sql("select premium_create_quote($1,$2,$3) as q", [org, code, interval]))[0].q;
-const rows = await sql("select * from ai_education_premium_package_catalog order by sort_order");
+const rows = await sql("select * from ai_education_premium_package_catalog where currency='inr' order by sort_order");
+const usdRows = await sql("select * from ai_education_premium_package_catalog where currency='usd' order by sort_order");
 await test("Nine exact Premium monthly/annual group prices, GST inclusive", () => {
   const expected = [
     [2000, 20000],

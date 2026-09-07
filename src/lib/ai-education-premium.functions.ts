@@ -343,12 +343,13 @@ export const saveAiEducationPremiumPackage = createServerFn({ method: "POST" })
         group_kind: z.enum(["group", "school"]),
         sort_order: z.number().int().min(0).max(1000),
         gst_rate: z.number().min(0).max(100),
-        gst_inclusive: z.literal(true),
+        gst_inclusive: z.boolean(),
         effective_from: z.string().datetime().nullable(),
         effective_to: z.string().datetime().nullable(),
         promotional_price: z.record(z.unknown()),
         discount_rules: z.record(z.unknown()),
       })
+      .refine((v) => v.currency !== "inr" || v.gst_inclusive, "Indian prices must be GST-inclusive")
       .refine(
         (v) => !v.effective_from || !v.effective_to || v.effective_to > v.effective_from,
         "End date must follow start date",
