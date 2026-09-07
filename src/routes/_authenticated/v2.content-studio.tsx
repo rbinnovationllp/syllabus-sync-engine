@@ -1,4 +1,4 @@
-﻿import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell } from "@/components/AppShell";
 import { V2Generator } from "@/components/V2Generator";
 import { Button } from "@/components/ui/button";
@@ -40,7 +40,7 @@ function ContentStudioPage() {
           "Interactive classroom template",
           "Remedial practice pack",
           "Teacher training micro-module",
-          "AI Future Force lab activity",
+          "AI education lab activity",
           "Answer key",
         ]}
         defaultPrompt="Create a chapter-list mapped teaching resource pack for the selected topic. Use official/open resources where available and school-provided chapter details for private publisher books. Include learning objectives, simple explanation, classroom activity, worksheet, quiz, answer key, real-life examples, differentiation support, and teacher review notes. Use existing Syllabus Synk AI credits; do not treat this as a separate subscription price increase."

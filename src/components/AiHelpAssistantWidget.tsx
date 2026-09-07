@@ -1,4 +1,4 @@
-﻿import { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { askAiHelpAssistant } from "@/lib/ai-help.functions";
@@ -10,8 +10,8 @@ type ChatMessage = { role: "user" | "assistant"; content: string };
 
 const starterPrompts = [
   "What is Syllabus Synk?",
-  "Show a one-month AI Future Force plan",
-  "Request an AI Future Force demo",
+  "Show a one-month AI Education Premium plan",
+  "Request an AI Education Premium demo",
   "How can schools add AI classes?",
 ];
 
@@ -21,7 +21,7 @@ export function AiHelpAssistantWidget() {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       role: "assistant",
-      content: "Hi, I am Ask Synk AI. Ask me about Syllabus Synk, AI Future Force for Classes 1-12, demo plans, pricing, implementation, dashboards, or curriculum planning.",
+      content: "Hi, I am Ask Synk AI. Ask me about Syllabus Synk, AI Education Premium for Classes 1-12, demo plans, pricing, implementation, dashboards, or curriculum planning.",
     },
   ]);
   const askFn = useServerFn(askAiHelpAssistant);

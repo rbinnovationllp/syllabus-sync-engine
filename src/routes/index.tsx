@@ -1,4 +1,4 @@
-﻿import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
@@ -59,7 +59,6 @@ function Landing() {
       <Hero />
       <Logos />
       <Features />
-      <AiFutureWorkforce />
       <HowItWorks />
       <Boards />
       <Testimonials />
@@ -82,9 +81,6 @@ function Nav() {
         <nav className="hidden items-center gap-7 text-sm text-slate-600 md:flex">
           <a href="#features" className="hover:text-slate-900">
             Features
-          </a>
-          <a href="#ai-future-workforce" className="hover:text-slate-900">
-            AI Future Workforce
           </a>
           <a href="#how" className="hover:text-slate-900">
             How it works
@@ -352,7 +348,7 @@ const FEATURES = [
   },
   {
     icon: BrainCircuit,
-    title: "AI Future Workforce",
+    title: "AI Education Premium",
     to: "/ai-education-premium",
     action: "View AI Education Premium",
     body: "Explore AI Education Premium, a separate subscription with class-group packages and AI teaching guidance.",
@@ -414,135 +410,6 @@ function Features() {
   );
 }
 
-function AiFutureWorkforce() {
-  const pathways = [
-    "Classes 1-5: AI awareness, patterns, smart devices, and responsible technology.",
-    "Classes 6-8: data labeling, machine learning basics, chatbots, image recognition, ethics, bias, and privacy.",
-    "Classes 9-12: Python for AI, generative AI, prompt engineering, AI agents, machine learning, and capstone projects.",
-  ];
-  const demoPlan = [
-    ["Week 1", "AI awareness and key concepts", "Teacher-led discussion, examples, safety norms"],
-    ["Week 2", "Guided demonstration", "Smart tool, data, chatbot, or image-recognition activity"],
-    ["Week 3", "Classroom practice", "Worksheet, mini-project, group activity, or lab task"],
-    ["Week 4", "Review and assessment", "Reflection, short quiz, presentation, and next-step plan"],
-  ];
-  const careers = [
-    "AI engineer",
-    "Data analyst",
-    "Machine learning specialist",
-    "Prompt engineer",
-    "Robotics and automation",
-    "AI ethics and governance",
-  ];
-
-  return (
-    <section id="ai-future-workforce" className="bg-slate-950 py-24 text-white">
-      <div className="container mx-auto px-4">
-        <div className="grid gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:items-start">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-widest text-amber-300">
-              Future-ready education ecosystem
-            </p>
-            <h2 className="mt-3 max-w-3xl text-3xl font-bold tracking-tight sm:text-4xl">
-              World-class AI Future Force Curriculum Planner for Classes 1-12.
-            </h2>
-            <p className="mt-5 max-w-3xl text-white/70">
-              Yes, Syllabus Synk includes a comprehensive web-based AI Future Force Curriculum Planner
-              designed to create age-appropriate AI education courses from Classes 1 to 12. It helps
-              schools introduce AI education through one or two periods per week without disturbing
-              regular academics, exams, or revision schedules.
-            </p>
-            <div className="mt-8 grid gap-3">
-              {pathways.map((item) => (
-                <div key={item} className="rounded-lg border border-white/10 bg-white/[0.04] p-4 text-sm text-white/78">
-                  {item}
-                </div>
-              ))}
-            </div>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Button
-                asChild
-                className="bg-gradient-to-r from-amber-400 to-fuchsia-500 font-semibold text-slate-950 hover:opacity-95"
-              >
-                <Link to="/auth" search={{ invite: undefined }}>
-                  Explore AI curriculum <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
-              </Button>
-              <Button
-                asChild
-                variant="outline"
-                className="border-white/25 bg-white/5 text-white hover:bg-white/10"
-              >
-                <a href="#contact">Talk to our team</a>
-              </Button>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <div className="rounded-xl border border-white/10 bg-white/[0.04] p-5">
-              <h3 className="font-semibold">One-month demo plan</h3>
-              <p className="mt-2 text-sm leading-6 text-white/70">
-                Schools can request a one-month sample plan for selected classes. The plan adapts to
-                once-a-week or twice-a-week availability and shows topics, activities, assessments,
-                and teacher delivery notes for the month.
-              </p>
-              <div className="mt-4 grid gap-2">
-                {demoPlan.map(([week, title, detail]) => (
-                  <div key={week} className="rounded-lg bg-white/10 p-3 text-sm">
-                    <div className="font-medium">{week}: {title}</div>
-                    <div className="mt-1 text-xs text-white/65">{detail}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="rounded-xl border border-white/10 bg-white/[0.04] p-5">
-              <div className="flex items-start gap-3">
-                <BrainCircuit className="mt-1 h-5 w-5 text-amber-300" />
-                <div>
-                  <h3 className="font-semibold">Curriculum commitment</h3>
-                  <p className="mt-2 text-sm leading-6 text-white/70">
-                    Our AI Future Workforce Team continuously monitors global developments in
-                    Artificial Intelligence and emerging technologies. The curriculum for senior
-                    students will be regularly updated to incorporate the latest innovations, industry
-                    practices, and future workforce requirements.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="rounded-xl border border-white/10 bg-white/[0.04] p-5">
-              <div className="flex items-start gap-3">
-                <Users className="mt-1 h-5 w-5 text-fuchsia-300" />
-                <div>
-                  <h3 className="font-semibold">Teacher professional development</h3>
-                  <p className="mt-2 text-sm leading-6 text-white/70">
-                    Artificial Intelligence is evolving rapidly across the world. Schools should
-                    encourage their Computer Science and Technology teachers to continuously enhance
-                    their knowledge and skills in AI so students receive relevant and future-ready
-                    education.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="rounded-xl border border-white/10 bg-white/[0.04] p-5">
-              <h3 className="font-semibold">Career awareness built in</h3>
-              <div className="mt-3 flex flex-wrap gap-2">
-                {careers.map((career) => (
-                  <span key={career} className="rounded-full bg-white/10 px-3 py-1.5 text-xs text-white/75">
-                    {career}
-                  </span>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
 function HowItWorks() {
   const steps = [
     {
@@ -577,8 +444,8 @@ function HowItWorks() {
     },
     {
       n: "06",
-      t: "Add AI Future Workforce",
-      d: "Optional AI curriculum with one or two weekly classes, grade-wise preview, teacher readiness, monthly updates, and future-ready projects.",
+      t: "Choose AI Education Premium",
+      d: "Select the AI Education Premium package that matches your school class coverage and billing preference.",
       icon: BrainCircuit,
     },
   ];
@@ -701,7 +568,7 @@ function Testimonials() {
       a: "Head of Middle School, IB",
     },
     {
-      q: "The AI Future Force roadmap helps us introduce AI without disturbing regular academics. It gives leadership a clear way to prepare students for future careers.",
+      q: "AI Education Premium helps us introduce structured AI education without disturbing regular academics.",
       a: "School Leader, K-12 innovation program",
     },
   ];
@@ -762,7 +629,7 @@ function Contact() {
       const demoDetails = form.request_ai_future_force_demo
         ? [
             "",
-            "AI Future Force one-month demo plan request:",
+            "AI Education Premium enquiry:",
             `School name: ${form.school_name || "-"}`,
             `Board and location: ${[form.board, form.country].filter(Boolean).join(", ") || "-"}`,
             `Classes required: ${form.demo_classes || "-"}`,
@@ -905,10 +772,10 @@ function Contact() {
                   />
                   <span>
                     <span className="block font-semibold text-slate-900">
-                      Request a One-Month AI Future Force Course Demo Plan
+                      Request AI Education Premium information
                     </span>
                     <span className="mt-1 block text-xs text-slate-600">
-                      Share your classes and available periods so our team can prepare a sample AI course plan.
+                      Share your class coverage and available periods so our team can recommend an AI Education Premium package.
                     </span>
                   </span>
                 </label>
@@ -1031,6 +898,4 @@ function Footer() {
     </footer>
   );
 }
-
-
 
