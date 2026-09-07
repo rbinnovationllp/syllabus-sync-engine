@@ -128,16 +128,18 @@ export const createAiEducationPremiumQuote = createServerFn({ method: "POST" })
     const { premiumRazorpay } = await import("@/lib/ai-education-premium-payment.server");
     let orderId = subscription.provider_order_id;
     if (!orderId) {
+      const preparationStartedAt = new Date().toISOString();
+      const staleLockBefore = new Date(Date.now() - 90_000).toISOString();
       const claim = await admin
         .from("ai_education_premium_subscriptions")
-        .update({ order_creation_started: new Date().toISOString() })
+        .update({ order_creation_started: preparationStartedAt })
         .eq("id", subscription.id)
-        .is("order_creation_started", null)
         .is("provider_order_id", null)
+        .or(`order_creation_started.is.null,order_creation_started.lt.${staleLockBefore}`)
         .select("id")
         .maybeSingle();
       if (claim.error || !claim.data)
-        throw new Error("Checkout is being prepared. Wait a moment, then try again.");
+        throw new Error("Another checkout request is in progress. Wait 90 seconds, then try again.");
       try {
         const order = await premiumRazorpay("/orders", {
           amount: subscription.final_amount_minor,
@@ -154,10 +156,25 @@ export const createAiEducationPremiumQuote = createServerFn({ method: "POST" })
           .single();
         if (saved.error) throw new Error("PREMIUM_ORDER_SAVE_FAILED");
         orderId = order.id;
-      } catch {
-        // An unreturned provider order cannot be used by this UI; retry creates a fresh quote after 15 minutes.
+      } catch (error: any) {
+        // Release the lock after any failed order attempt so a retry is never stuck indefinitely.
+        await admin
+          .from("ai_education_premium_subscriptions")
+          .update({ order_creation_started: null })
+          .eq("id", subscription.id)
+          .is("provider_order_id", null)
+          .eq("order_creation_started", preparationStartedAt);
+        const reference = `PREM-ORDER-${String(subscription.id).slice(0, 8).toUpperCase()}`;
+        // Provider diagnostics stay on the server; customers receive a currency-specific action message.
+        console.error("[AI Education Premium] Razorpay order creation failed", {
+          reference,
+          currency: subscription.currency,
+          code: error?.code,
+          status: error?.status,
+          message: error?.message,
+        });
         throw new Error(
-          "Checkout could not be prepared. Please try again later or contact support.",
+          `${subscription.currency === "usd" ? "USD" : "INR"} checkout is temporarily unavailable. Reference: ${reference}.`,
         );
       }
     }

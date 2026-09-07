@@ -55,7 +55,7 @@ begin
  if p_interval not in ('monthly','annual') then raise exception 'PREMIUM_INTERVAL_INVALID'; end if;
  select * into c from ai_education_premium_package_catalog where code=p_code and active
  and (effective_from is null or effective_from<=now()) and (effective_to is null or effective_to>now()) for share;
- if not found or lower(c.currency)<>'inr' then raise exception 'PREMIUM_PACKAGE_UNAVAILABLE'; end if;
+ if not found or lower(c.currency) not in ('inr','usd') then raise exception 'PREMIUM_PACKAGE_UNAVAILABLE'; end if;
  listed := case when p_interval='monthly' then c.monthly_price_inr else c.annual_price_inr end * 100;
  if listed<=0 then raise exception 'PREMIUM_PACKAGE_UNAVAILABLE'; end if;
  base := case when c.gst_inclusive then round(listed/(1+c.gst_rate/100)) else listed end;
@@ -71,7 +71,7 @@ begin
  if found then return to_jsonb(s); end if;
  if (select count(*) from ai_education_premium_subscriptions where org_id=p_org and created_at>now()-interval '1 minute')>=5 then raise exception 'PREMIUM_CHECKOUT_RATE_LIMIT'; end if;
  insert into ai_education_premium_subscriptions(org_id,billing_interval,currency,base_amount_minor,tax_amount_minor,final_amount_minor,status,provider,created_by,metadata)
- values(p_org,p_interval,'inr',base,total-base,total,'pending_payment','razorpay',auth.uid(),jsonb_build_object('package_code',c.code,'package_label',c.label,'selected_grades',c.grades,'gst_rate',c.gst_rate,'gst_inclusive',c.gst_inclusive,'billing_mode','prepaid','pricing_source','package_catalog')) returning * into s;
+ values(p_org,p_interval,lower(c.currency),base,total-base,total,'pending_payment','razorpay',auth.uid(),jsonb_build_object('package_code',c.code,'package_label',c.label,'selected_grades',c.grades,'gst_rate',c.gst_rate,'gst_inclusive',c.gst_inclusive,'billing_mode','prepaid','pricing_source','package_catalog')) returning * into s;
  return to_jsonb(s);
 end; $$;
 revoke all on function public.premium_create_quote(uuid,text,text) from public,anon;

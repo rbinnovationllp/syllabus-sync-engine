@@ -220,8 +220,10 @@ const files = [
   "20260906000400_gst_inclusive_catalog.sql",
   "20260907000100_ai_education_premium_usd_catalog.sql",
   "20260907000200_remove_discontinued_plus_plans.sql",
+  "20260907000400_enable_premium_usd_quotes.sql",
+  "20260907000500_clear_stale_premium_order_locks.sql",
 ];
-await test("All seven Premium and inclusive-pricing migrations execute on PostgreSQL", async () => {
+await test("All nine Premium and inclusive-pricing migrations execute on PostgreSQL", async () => {
   for (const f of files) await db.exec(await fs.readFile("supabase/migrations/" + f, "utf8"));
 });
 const admin = "00000000-0000-0000-0000-000000000001",
@@ -254,6 +256,23 @@ await test("Nine exact Premium monthly/annual group prices, GST inclusive", () =
     assert.deepEqual([r.monthly_price_inr, r.annual_price_inr], expected[i]);
     assert.equal(r.gst_inclusive, true);
   });
+});
+await test("USD Premium packages create prepaid quotes with USD totals", async () => {
+  const quoted = await quote("classes_1_12_usd", "annual");
+  assert.equal(quoted.currency, "usd");
+  assert.equal(quoted.base_amount_minor, 125000);
+  assert.equal(quoted.tax_amount_minor, 0);
+  assert.equal(quoted.final_amount_minor, 125000);
+});
+await test("Every INR and USD Premium package quotes for monthly and annual checkout", async () => {
+  for (const item of [...rows, ...usdRows]) {
+    for (const interval of ["monthly", "annual"]) {
+      await db.exec("update ai_education_premium_subscriptions set created_at=now()-interval '2 minutes' where org_id='10000000-0000-0000-0000-000000000001'");
+      const quoted = await quote(item.code, interval);
+      assert.equal(quoted.currency, item.currency);
+      assert.equal(quoted.final_amount_minor, (interval === "monthly" ? item.monthly_price_inr : item.annual_price_inr) * 100);
+    }
+  }
 });
 let first;
 await test("Inactive, future and unknown packages cannot be quoted", async () => {
