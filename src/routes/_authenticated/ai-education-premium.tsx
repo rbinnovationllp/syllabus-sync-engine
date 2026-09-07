@@ -13,6 +13,7 @@ import { formatMoney } from "@/lib/ai-education-premium";
 import {
   getAiEducationPremium,
   createAiEducationPremiumQuote,
+  resetAiEducationPremiumCheckout,
   confirmAiEducationPremiumPayment,
   cancelAiEducationPremium,
   getAiEducationPremiumReceipt,
@@ -31,6 +32,7 @@ const message = (e: unknown) => (e instanceof Error ? e.message : "Please try ag
 function PremiumPage() {
   const get = useServerFn(getAiEducationPremium),
     checkout = useServerFn(createAiEducationPremiumQuote),
+    resetCheckout = useServerFn(resetAiEducationPremiumCheckout),
     confirm = useServerFn(confirmAiEducationPremiumPayment),
     cancel = useServerFn(cancelAiEducationPremium),
     receiptFn = useServerFn(getAiEducationPremiumReceipt),
@@ -150,6 +152,14 @@ function PremiumPage() {
             canManage={!!data?.canManage}
             busy={busy}
             onCheckout={pay}
+            onResetCheckout={async (code, interval) => {
+              try {
+                await resetCheckout({ data: { packageCode: code, billingInterval: interval } });
+                toast.success("Checkout reset. Continue to secure payment to try again.");
+              } catch (e) {
+                toast.error(message(e));
+              }
+            }}
           />
         )}
         {!!data?.subscriptions.length && (

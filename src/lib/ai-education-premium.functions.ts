@@ -128,18 +128,20 @@ export const createAiEducationPremiumQuote = createServerFn({ method: "POST" })
     const { premiumRazorpay } = await import("@/lib/ai-education-premium-payment.server");
     let orderId = subscription.provider_order_id;
     if (!orderId) {
-      const preparationStartedAt = new Date().toISOString();
-      const staleLockBefore = new Date(Date.now() - 90_000).toISOString();
-      const claim = await admin
-        .from("ai_education_premium_subscriptions")
-        .update({ order_creation_started: preparationStartedAt })
-        .eq("id", subscription.id)
-        .is("provider_order_id", null)
-        .or(`order_creation_started.is.null,order_creation_started.lt.${staleLockBefore}`)
-        .select("id")
-        .maybeSingle();
-      if (claim.error || !claim.data)
-        throw new Error("Another checkout request is in progress. Wait 90 seconds, then try again.");
+      const { data: claimed, error: claimError } = await admin.rpc(
+        "premium_claim_order_creation",
+        { p_subscription: subscription.id },
+      );
+      if (claimError) {
+        console.error("[AI Education Premium] checkout lock claim failed", {
+          subscriptionId: subscription.id,
+          code: claimError.code,
+          message: claimError.message,
+        });
+        throw new Error("Checkout could not be prepared. Please use Reset checkout and try again.");
+      }
+      if (!claimed)
+        throw new Error("Another checkout request is in progress. Use Reset checkout if no payment window is open.");
       try {
         const order = await premiumRazorpay("/orders", {
           amount: subscription.final_amount_minor,
@@ -158,12 +160,7 @@ export const createAiEducationPremiumQuote = createServerFn({ method: "POST" })
         orderId = order.id;
       } catch (error: any) {
         // Release the lock after any failed order attempt so a retry is never stuck indefinitely.
-        await admin
-          .from("ai_education_premium_subscriptions")
-          .update({ order_creation_started: null })
-          .eq("id", subscription.id)
-          .is("provider_order_id", null)
-          .eq("order_creation_started", preparationStartedAt);
+        await admin.rpc("premium_release_order_creation", { p_subscription: subscription.id });
         const reference = `PREM-ORDER-${String(subscription.id).slice(0, 8).toUpperCase()}`;
         // Provider diagnostics stay on the server; customers receive a currency-specific action message.
         console.error("[AI Education Premium] Razorpay order creation failed", {
@@ -186,6 +183,23 @@ export const createAiEducationPremiumQuote = createServerFn({ method: "POST" })
       currency: subscription.currency.toUpperCase(),
       label: subscription.metadata.package_label,
     };
+  });
+
+export const resetAiEducationPremiumCheckout = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z.object({ packageCode, billingInterval: z.enum(["monthly", "annual"]) }).parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    const { orgId } = await school(context, true);
+    const admin = await adminClient();
+    const { error } = await admin.rpc("premium_reset_order_creation", {
+      p_org: orgId,
+      p_code: data.packageCode,
+      p_interval: data.billingInterval,
+    });
+    if (error) throw new Error("Checkout could not be reset. Please contact support.");
+    return { ok: true };
   });
 
 export const confirmAiEducationPremiumPayment = createServerFn({ method: "POST" })

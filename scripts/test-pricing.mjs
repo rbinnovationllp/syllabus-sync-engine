@@ -222,8 +222,9 @@ const files = [
   "20260907000200_remove_discontinued_plus_plans.sql",
   "20260907000400_enable_premium_usd_quotes.sql",
   "20260907000500_clear_stale_premium_order_locks.sql",
+  "20260907000600_atomic_premium_checkout_locks.sql",
 ];
-await test("All nine Premium and inclusive-pricing migrations execute on PostgreSQL", async () => {
+await test("All ten Premium and inclusive-pricing migrations execute on PostgreSQL", async () => {
   for (const f of files) await db.exec(await fs.readFile("supabase/migrations/" + f, "utf8"));
 });
 const admin = "00000000-0000-0000-0000-000000000001",

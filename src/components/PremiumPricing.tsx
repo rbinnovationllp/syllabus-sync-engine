@@ -10,11 +10,13 @@ export function PremiumPricing({
   packages,
   canManage,
   onCheckout,
+  onResetCheckout,
   busy = false,
 }: {
   packages: AiEducationPremiumPackage[];
   canManage: boolean;
   onCheckout: (code: string, interval: "monthly" | "annual") => void;
+  onResetCheckout?: (code: string, interval: "monthly" | "annual") => void;
   busy?: boolean;
 }) {
   const [selected, setSelected] = useState("");
@@ -150,6 +152,11 @@ export function PremiumPricing({
         >
           {busy ? "Opening secure checkout…" : "Continue to secure payment"}
         </Button>
+        {item && onResetCheckout && (
+          <Button variant="outline" disabled={busy} onClick={() => onResetCheckout(item.code, interval)}>
+            Reset checkout and try again
+          </Button>
+        )}
         {item?.currency.toLowerCase() === "usd" && <p className="text-sm text-muted-foreground">USD checkout is for international schools. Local taxes, if applicable, are shown by the payment provider.</p>}
       </div>
     </section>
