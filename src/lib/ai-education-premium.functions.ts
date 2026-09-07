@@ -166,8 +166,11 @@ export const createAiEducationPremiumQuote = createServerFn({ method: "POST" })
         console.error("[AI Education Premium] Razorpay order creation failed", {
           reference,
           currency: subscription.currency,
-          code: error?.code,
+          code: error?.providerCode ?? error?.code,
           status: error?.status,
+          field: error?.providerField,
+          reason: error?.providerReason,
+          description: error?.providerDescription,
           message: error?.message,
         });
         throw new Error(

@@ -1,5 +1,21 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 
+type PremiumProviderError = Error & {
+  status?: number;
+  providerCode?: string;
+  providerField?: string;
+  providerReason?: string;
+  providerDescription?: string;
+};
+
+function redactProviderDetail(value: unknown) {
+  if (typeof value !== "string") return undefined;
+  return value
+    .replace(/\b(?:rzp|plan|order|pay)_[A-Za-z0-9_]+\b/gi, "[redacted]")
+    .replace(/\b(?:key|secret)_[A-Za-z0-9_]+\b/gi, "[redacted]")
+    .slice(0, 240);
+}
+
 export async function premiumRazorpay(path: string, body?: unknown) {
   const key = process.env.RAZORPAY_KEY_ID;
   const secret = process.env.RAZORPAY_KEY_SECRET;
@@ -14,11 +30,25 @@ export async function premiumRazorpay(path: string, body?: unknown) {
     ...(body === undefined ? {} : { body: JSON.stringify(body) }),
   });
   if (!response.ok) {
-    console.error("[premium-payment]", {
-      category: "provider_unavailable",
+    const payload = await response.json().catch(() => null);
+    const provider = payload?.error ?? {};
+    const error = new Error("PREMIUM_PAYMENTS_UNAVAILABLE") as PremiumProviderError;
+    Object.assign(error, {
       status: response.status,
+      providerCode: redactProviderDetail(provider.code),
+      providerField: redactProviderDetail(provider.field),
+      providerReason: redactProviderDetail(provider.reason),
+      providerDescription: redactProviderDetail(provider.description),
     });
-    throw new Error("PREMIUM_PAYMENTS_UNAVAILABLE");
+    console.error("[premium-payment]", {
+      category: "provider_order_rejected",
+      status: error.status,
+      providerCode: error.providerCode,
+      providerField: error.providerField,
+      providerReason: error.providerReason,
+      providerDescription: error.providerDescription,
+    });
+    throw error;
   }
   return response.json();
 }
@@ -102,6 +132,5 @@ export async function handlePremiumPaymentEvent(
     });
     if (refundError) throw new Error("PREMIUM_PAYMENT_SYNC_PENDING");
   }
-  // A failed attempt never activates, revokes existing paid coverage, or overwrites a captured receipt.
   return true;
 }
