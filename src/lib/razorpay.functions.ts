@@ -79,6 +79,7 @@ export const createRazorpaySubscription = createServerFn({ method: "POST" })
         userId,
         priceId: data.priceId,
         tierId: tierForPriceId(data.priceId) ?? "",
+        pricingVersion:"2026-09-gst-inclusive",
         planName: found.item.name,
         itemKind: found.kind,
       };
@@ -112,11 +113,14 @@ export const createRazorpaySubscription = createServerFn({ method: "POST" })
         throw new Error(`Razorpay plan id missing for ${data.priceId}. Add it to RAZORPAY_PLAN_MAP_JSON.`);
       }
 
+      const providerPlan=await razorpay('/plans/'+encodeURIComponent(razorpayPlanId));
+      if(providerPlan.item?.amount!==found.price.amount || String(providerPlan.item?.currency).toLowerCase()!==found.price.currency
+        || providerPlan.period!==(found.price.interval==='annual'?'yearly':'monthly') || providerPlan.interval!==1) throw new Error("Payment pricing is being updated. Please contact support.");
       const subscription = await razorpay("/subscriptions", {
         method: "POST",
         body: JSON.stringify({
           plan_id: razorpayPlanId,
-          total_count: found.price.interval === "annual" ? 1 : 120,
+          total_count: found.price.interval === "annual" ? 10 : 120,
           quantity: 1,
           customer_notify: 1,
           notes,

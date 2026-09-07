@@ -1,3 +1,5 @@
+import { getMyBillingReceipts } from "@/lib/payments.functions";
+import { formatMoney } from "@/lib/ai-education-premium";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
@@ -15,6 +17,8 @@ export const Route = createFileRoute("/_authenticated/account/usage")({
 });
 
 function UsagePage() {
+  const receiptsFn=useServerFn(getMyBillingReceipts);
+  const receipts=useQuery({queryKey:["billing-receipts"],queryFn:()=>receiptsFn()});
   const fetchUsage = useServerFn(getMyUsage);
   const navigate = useNavigate();
   const { tier, plan, isActive, isLoading: subLoading } = useSubscription();
@@ -103,6 +107,10 @@ function UsagePage() {
           </Card>
         </div>
       )}
+      <Card className="mt-6"><CardHeader><CardTitle>Payment receipts</CardTitle><CardDescription>Indian totals are Inclusive of GST. Taxable value and GST are shown separately.</CardDescription></CardHeader><CardContent className="space-y-3">
+        {receipts.isError?<p>Receipts are temporarily unavailable.</p>:!receipts.data?.length?<p>No receipts recorded under the updated pricing yet.</p>:receipts.data.map((r:any)=><div key={r.id} className="rounded border p-3 text-sm space-y-1"><p className="break-all font-medium">{r.provider} · {r.provider_payment_id}</p><p>{new Date(r.created_at).toLocaleDateString('en-IN')}</p><p>Taxable value: {formatMoney(r.taxable_amount_minor/100,r.currency)}</p><p>GST: {formatMoney(r.gst_amount_minor/100,r.currency)}</p><p className="font-semibold">Total paid: {formatMoney(r.total_amount_minor/100,r.currency)} {r.currency==='inr'?'— Inclusive of GST':''}</p></div>)}
+        {!!receipts.data?.length&&<Button variant="outline" onClick={()=>window.print()}>Print receipts</Button>}
+      </CardContent></Card>
     </AppShell>
   );
 }

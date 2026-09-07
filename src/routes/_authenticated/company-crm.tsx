@@ -791,7 +791,7 @@ function CatalogPanel({ rows }: any) {
                 <TableCell>{p.plan_name}</TableCell>
                 <TableCell><Badge variant="secondary">{p.variant}</Badge></TableCell>
                 <TableCell>${p.monthly_usd}</TableCell>
-                <TableCell>Rs {p.monthly_inr}</TableCell>
+                <TableCell>Rs {p.monthly_inr} — Inclusive of GST</TableCell>
                 <TableCell>{p.monthly_credits?.toLocaleString?.() ?? p.monthly_credits}</TableCell>
                 <TableCell>{p.storage_gb} GB</TableCell>
               </TableRow>

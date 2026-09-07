@@ -1,0 +1,18 @@
+import fs from 'node:fs';
+const progress=(x)=>fs.appendFileSync('C:/Users/HP/Documents/Codex/2026-09-06/pl/work/typecheck-progress.txt',x+'\n');
+progress('start');
+import ts from 'typescript';
+import path from 'node:path';
+const root=process.cwd();
+const allowed=p=>path.resolve(p).toLowerCase().startsWith(root.toLowerCase()+path.sep)||path.resolve(p).toLowerCase()===root.toLowerCase();
+const safe={...ts.sys,fileExists:p=>allowed(p)&&ts.sys.fileExists(p),directoryExists:p=>allowed(p)&&ts.sys.directoryExists(p),getDirectories:p=>allowed(p)?ts.sys.getDirectories(p):[]};
+const config=ts.readConfigFile(path.join(root,'tsconfig.json'),safe.readFile);
+const parsed=ts.parseJsonConfigFileContent(config.config,safe,root);
+progress("config parsed "+parsed.fileNames.length);
+const host=ts.createCompilerHost(parsed.options);host.fileExists=safe.fileExists;host.directoryExists=safe.directoryExists;host.getDirectories=safe.getDirectories;
+const program=ts.createProgram(parsed.fileNames,parsed.options,host);
+progress("program created");
+const diagnostics=ts.getPreEmitDiagnostics(program);
+console.log(ts.formatDiagnosticsWithColorAndContext(diagnostics,{getCanonicalFileName:p=>p,getCurrentDirectory:()=>root,getNewLine:()=>"\n"}));
+console.log(`Checked ${parsed.fileNames.length} source files; ${diagnostics.length} diagnostics.`);
+process.exitCode=diagnostics.length?1:0;

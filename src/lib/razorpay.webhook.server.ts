@@ -1,3 +1,5 @@
+import { recordBillingReceipt } from "./billing-receipts.server";
+import { premiumRazorpay } from "./ai-education-premium-payment.server";
 ﻿import { createClient } from "@supabase/supabase-js";
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { creditsForAddOnPrice, storageGbForAddOnPrice } from "@/lib/plans";
@@ -30,6 +32,8 @@ export async function upsertRazorpaySubscriptionFromEvent(event: any) {
   if (!userId || !priceId) return;
 
   const supabase = getSupabaseAdmin() as any;
+  const paid=event?.payload?.payment?.entity;
+  if(event.event==='subscription.charged' && paid?.status==='captured' && notes.pricingVersion==='2026-09-gst-inclusive') await recordBillingReceipt(supabase,{provider:'razorpay',environment:process.env.RAZORPAY_ENV??'live',paymentId:paid.id,userId,priceId,currency:paid.currency,total:paid.amount});
   const status = subscription.status ?? "created";
   const storageGb = storageGbForAddOnPrice(priceId);
   if (storageGb) {
@@ -88,11 +92,15 @@ export async function updateRazorpayPaymentFromEvent(event: any) {
   const status = event?.event === "payment.failed" ? "pending" : "active";
   const failure = payment.error_description ?? payment.error_reason ?? payment.error_code ?? null;
   if (!subscriptionId) {
-    const priceId = payment.notes?.priceId ?? null;
-    const userId = payment.notes?.userId ?? null;
+    const order=payment.order_id ? await premiumRazorpay('/orders/'+encodeURIComponent(payment.order_id)) : null;
+    const notes=order?.notes ?? payment.notes ?? {};
+    const priceId = notes.priceId ?? null;
+    const userId = notes.userId ?? null;
+    if(event.event==='payment.captured' && order && (order.amount!==payment.amount || order.currency!==payment.currency)) throw new Error('Payment order mismatch');
+    if(event.event==='payment.captured' && userId && notes.pricingVersion==='2026-09-gst-inclusive') await recordBillingReceipt(supabase,{provider:'razorpay',environment:process.env.RAZORPAY_ENV??'live',paymentId:payment.id,userId,priceId,currency:payment.currency,total:payment.amount});
     const credits = creditsForAddOnPrice(priceId);
     if (event?.event === "payment.captured" && userId && credits) {
-      await supabase.from("ai_credit_grants").upsert(
+      const grant = await supabase.from("ai_credit_grants").upsert(
         {
           user_id: userId,
           stripe_session_id: `razorpay:${payment.id}`,
@@ -101,8 +109,9 @@ export async function updateRazorpayPaymentFromEvent(event: any) {
           credits_remaining: credits,
           environment: process.env.RAZORPAY_ENV ?? "live",
         },
-        { onConflict: "stripe_session_id" },
+        { onConflict: "stripe_session_id", ignoreDuplicates: true },
       );
+      if(grant.error) throw new Error("Credit grant could not be recorded");
     }
     return;
   }

@@ -36,7 +36,7 @@ export const getCompanyCrmOperations = createServerFn({ method: "GET" })
       supabaseAdmin.from("subscriptions").select("id, user_id, status, price_id, current_period_end, environment, created_at").order("created_at", { ascending: false }).limit(500),
       supabaseAdmin.from("organization_subscription_profiles").select("*, organizations(name)").order("created_at", { ascending: false }).limit(500),
       supabaseAdmin.from("company_crm_support_tickets").select("*, crm_accounts(name), organizations(name)").order("created_at", { ascending: false }).limit(200),
-      supabaseAdmin.from("subscription_plan_catalog").select("*").order("monthly_inr", { ascending: true }),
+      supabaseAdmin.from("subscription_plan_catalog").select("*").eq("active",true).order("monthly_inr", { ascending: true }),
       supabaseAdmin.from("site_page_views").select("visitor_id, path, created_at").gte("created_at", since7d).limit(10000),
       supabaseAdmin.from("site_page_views").select("visitor_id, path, page_title, referrer, created_at").order("created_at", { ascending: false }).limit(25),
       supabaseAdmin.from("organization_storage_allocation_events").select("*, organizations(name)").order("created_at", { ascending: false }).limit(200),

@@ -1,77 +1,371 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { AI_EDUCATION_PREMIUM_DEFAULT_PACKAGES } from "@/lib/ai-education-premium";
+import { entitlementActive, packageAvailable, packageFromRow } from "@/lib/ai-education-premium";
 import { getPrimaryOrgId } from "@/lib/plan-entitlements";
-import { createHash } from "node:crypto";
 
-const packageCode = z.string().regex(/^classes_(1_2|3_5|6_8|9_10|11_12|1_5|1_8|1_10|1_12)$/);
+const grade = z.enum(["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"]);
+const packageCode = z.string().regex(/^[a-z0-9_]{3,80}$/);
+const adminRoles = ["admin", "super_admin", "owner"];
+async function school(context: any, adminOnly = false) {
+  const orgId = await getPrimaryOrgId(context.supabase, context.userId);
+  const member = await context.supabase
+    .from("org_members")
+    .select("role")
+    .eq("org_id", orgId)
+    .eq("user_id", context.userId)
+    .maybeSingle();
+  if (member.error || !member.data || (adminOnly && !adminRoles.includes(member.data.role)))
+    throw new Error("School administrator access is required.");
+  return { orgId, canManage: adminRoles.includes(member.data.role) };
+}
+async function adminClient() {
+  return (await import("@/integrations/supabase/client.server")).supabaseAdmin as any;
+}
+const safeQuoteError = (message: string) =>
+  message.includes("OVERLAPPING")
+    ? "These classes already have a different paid package. Renew that package or choose uncovered classes."
+    : message.includes("ALREADY_SCHEDULED")
+      ? "Your next subscription term is already paid."
+      : message.includes("RATE_LIMIT")
+        ? "Please wait a minute before starting another checkout."
+        : "This package is currently unavailable. Refresh the pricing page and try again.";
 
 export const getAiEducationPremium = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const orgId = await getPrimaryOrgId(context.supabase, context.userId);
-    const [catalogResult, entitlementResult, assignmentResult] = await Promise.all([
-      (context.supabase as any).from("ai_education_premium_package_catalog").select("code,label,grades,monthly_price_inr,annual_price_inr,active,featured").order("sort_order", { ascending: true }),
-      (context.supabase as any).from("ai_education_premium_entitlements").select("grade,status,ends_at,ai_education_premium_subscriptions(status,renews_at,billing_interval)").eq("org_id", orgId).eq("status", "active"),
-      (context.supabase as any).from("ai_education_premium_teacher_assignments").select("grade").eq("org_id", orgId).eq("user_id", context.userId).eq("active", true),
+    const { orgId, canManage } = await school(context);
+    const db: any = context.supabase;
+    const results = await Promise.all([
+      db.from("ai_education_premium_package_catalog").select("*").order("sort_order"),
+      db
+        .from("ai_education_premium_entitlements")
+        .select(
+          "grade,status,starts_at,ends_at,ai_education_premium_subscriptions(status,starts_at,renews_at)",
+        )
+        .eq("org_id", orgId),
+      db
+        .from("ai_education_premium_teacher_assignments")
+        .select("grade")
+        .eq("org_id", orgId)
+        .eq("user_id", context.userId)
+        .eq("active", true),
+      db
+        .from("ai_education_premium_subscriptions")
+        .select(
+          "id,billing_interval,currency,status,starts_at,renews_at,base_amount_minor,tax_amount_minor,final_amount_minor,cancel_at_period_end,metadata,created_at",
+        )
+        .eq("org_id", orgId)
+        .order("created_at", { ascending: false })
+        .limit(50),
     ]);
-    const packages = catalogResult.data?.length ? catalogResult.data.map((row: any) => ({ code:row.code,label:row.label,grades:row.grades,monthlyInr:row.monthly_price_inr,annualInr:row.annual_price_inr,active:row.active,featured:row.featured })) : AI_EDUCATION_PREMIUM_DEFAULT_PACKAGES;
-    const now = new Date();
-    const subscribedGrades = (entitlementResult.data ?? []).filter((row: any) => {
-      const sub = row.ai_education_premium_subscriptions;
-      return (!row.ends_at || new Date(row.ends_at) > now) && ["active", "past_due"].includes(sub?.status);
-    }).map((row: any) => row.grade);
-    const assignedGrades = (assignmentResult.data ?? []).map((row: any) => row.grade);
-    return { packages, subscribedGrades, assignedGrades, canManage: subscribedGrades.length > 0 };
+    if (results.some((r) => r.error))
+      throw new Error("AI Education Premium is temporarily unavailable. Please try again later.");
+    const [catalog, entitlements, assignments, subscriptions] = results.map((r) => r.data ?? []);
+    const assigned = new Set(assignments.map((r: any) => r.grade));
+    const subscribedGrades = [
+      ...new Set<string>(
+        entitlements
+          .filter((r: any) => entitlementActive(r) && (canManage || assigned.has(r.grade)))
+          .map((r: any) => r.grade),
+      ),
+    ].sort((a, b) => Number(a) - Number(b));
+    const members = canManage
+      ? await db
+          .from("org_members")
+          .select("user_id,profiles(email,display_name)")
+          .eq("org_id", orgId)
+      : { data: [] };
+    return {
+      members: members.data ?? [],
+      packages: catalog.filter((p: any) => packageAvailable(p)).map(packageFromRow),
+      subscribedGrades,
+      canManage,
+      subscriptions: canManage ? subscriptions : [],
+    };
   });
 
-/** Creates a quote/request only. Provider checkout must activate it only after a verified webhook. */
 export const createAiEducationPremiumQuote = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => z.object({ packageCode, billingInterval: z.enum(["monthly", "annual"]) }).parse(input))
+  .inputValidator((input: unknown) =>
+    z.object({ packageCode, billingInterval: z.enum(["monthly", "annual"]) }).parse(input),
+  )
   .handler(async ({ data, context }) => {
-    const orgId = await getPrimaryOrgId(context.supabase, context.userId);
-    const { data: member } = await context.supabase.from("org_members").select("role").eq("org_id", orgId).eq("user_id", context.userId).maybeSingle();
-    if (!member || !["admin", "super_admin"].includes((member as any).role)) throw new Error("Only a School Admin can request AI Education Premium.");
-    const { data: configured } = await (context.supabase as any).from("ai_education_premium_package_catalog").select("code,label,grades,monthly_price_inr,annual_price_inr,active").eq("code", data.packageCode).eq("active", true).maybeSingle();
-    const item = configured ? { code:configured.code,label:configured.label,grades:configured.grades,monthlyInr:configured.monthly_price_inr,annualInr:configured.annual_price_inr,active:configured.active } : AI_EDUCATION_PREMIUM_DEFAULT_PACKAGES.find((x) => x.code === data.packageCode);
-    if (!item?.active) throw new Error("This AI Education Premium package is unavailable.");
-    const amount = data.billingInterval === "monthly" ? item.monthlyInr : item.annualInr;
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: subscription, error } = await (supabaseAdmin as any).from("ai_education_premium_subscriptions").insert({
-      org_id: orgId, billing_interval: data.billingInterval, currency: "inr", base_amount_minor: amount * 100,
-      final_amount_minor: amount * 100, status: "pending_payment", created_by: context.userId,
-      metadata: { package_code: item.code, package_label: item.label, selected_grades: item.grades, pricing_source: "package_catalog" },
-    } as any).select("id").single();
-    if (error) throw new Error(error.message);
-    const entitlementRows = item.grades.map((grade) => ({ subscription_id: subscription.id, org_id: orgId, grade, status: "pending" }));
-    // Entitlements are deliberately inactive until a verified provider webhook activates the subscription.
-    await (supabaseAdmin as any).from("ai_education_premium_entitlements").insert(entitlementRows as any);
-    return { subscriptionId: subscription.id, package: item, monthlyInr: item.monthlyInr, annualInr: item.annualInr, billingInterval: data.billingInterval };
+    const { orgId } = await school(context, true);
+    const { data: subscription, error } = await (context.supabase as any).rpc(
+      "premium_create_quote",
+      { p_org: orgId, p_code: data.packageCode, p_interval: data.billingInterval },
+    );
+    if (error) throw new Error(safeQuoteError(error.message));
+    const admin = await adminClient();
+    const { premiumRazorpay } = await import("@/lib/ai-education-premium-payment.server");
+    let orderId = subscription.provider_order_id;
+    if (!orderId) {
+      const claim = await admin
+        .from("ai_education_premium_subscriptions")
+        .update({ order_creation_started: new Date().toISOString() })
+        .eq("id", subscription.id)
+        .is("order_creation_started", null)
+        .is("provider_order_id", null)
+        .select("id")
+        .maybeSingle();
+      if (claim.error || !claim.data)
+        throw new Error("Checkout is being prepared. Wait a moment, then try again.");
+      try {
+        const order = await premiumRazorpay("/orders", {
+          amount: subscription.final_amount_minor,
+          currency: subscription.currency.toUpperCase(),
+          receipt: subscription.id,
+          notes: { product: "ai_education_premium", premiumSubscriptionId: subscription.id },
+        });
+        const saved = await admin
+          .from("ai_education_premium_subscriptions")
+          .update({ provider_order_id: order.id })
+          .eq("id", subscription.id)
+          .is("provider_order_id", null)
+          .select("id")
+          .single();
+        if (saved.error) throw new Error("PREMIUM_ORDER_SAVE_FAILED");
+        orderId = order.id;
+      } catch {
+        // An unreturned provider order cannot be used by this UI; retry creates a fresh quote after 15 minutes.
+        throw new Error(
+          "Checkout could not be prepared. Please try again later or contact support.",
+        );
+      }
+    }
+    return {
+      subscriptionId: subscription.id,
+      orderId,
+      keyId: process.env.RAZORPAY_KEY_ID!,
+      amount: subscription.final_amount_minor,
+      currency: subscription.currency.toUpperCase(),
+      label: subscription.metadata.package_label,
+    };
   });
 
-const teachingRequest = z.object({ grade:z.enum(["1","2","3","4","5","6","7","8","9","10","11","12"]), academicYear:z.string().min(3).max(40), term:z.string().max(80).optional(), weekNo:z.number().int().min(1).max(60).optional(), topic:z.string().min(2).max(300), learningObjective:z.string().max(600).optional(), previousLearning:z.string().max(1000).optional(), durationMinutes:z.number().int().min(20).max(180).default(40), language:z.string().max(80).default("English"), facilities:z.string().max(500).default("Not specified"), forceRegenerate:z.boolean().default(false) });
-
-export const generateAiEducationPremiumTeachingPlan = createServerFn({ method:"POST" })
+export const confirmAiEducationPremiumPayment = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input:unknown) => teachingRequest.parse(input))
-  .handler(async ({data,context}) => {
-    const orgId = await getPrimaryOrgId(context.supabase, context.userId);
-    const { data: member } = await context.supabase.from("org_members").select("role").eq("org_id",orgId).eq("user_id",context.userId).maybeSingle();
-    if (!member) throw new Error("No school workspace membership found.");
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server"); const admin:any = supabaseAdmin;
-    const { data: entitlement } = await admin.from("ai_education_premium_entitlements").select("id,ai_education_premium_subscriptions(status,renews_at)").eq("org_id",orgId).eq("grade",data.grade).eq("status","active").maybeSingle();
-    const subscription:any = entitlement?.ai_education_premium_subscriptions;
-    if (!entitlement || !["active","past_due"].includes(subscription?.status)) throw new Error("AI_EDUCATION_PREMIUM_CLASS_NOT_SUBSCRIBED");
-    if (!["admin","super_admin","owner"].includes((member as any).role)) {
-      const { data: assignment } = await admin.from("ai_education_premium_teacher_assignments").select("id").eq("org_id",orgId).eq("user_id",context.userId).eq("grade",data.grade).eq("active",true).maybeSingle();
-      if (!assignment) throw new Error("AI_EDUCATION_PREMIUM_TEACHER_NOT_ASSIGNED");
+  .inputValidator((input: unknown) =>
+    z
+      .object({
+        subscriptionId: z.string().uuid(),
+        paymentId: z.string().regex(/^pay_[A-Za-z0-9]+$/),
+        signature: z.string().regex(/^[a-f0-9]{64}$/),
+      })
+      .parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    const { orgId } = await school(context, true);
+    const admin = await adminClient();
+    const row = await admin
+      .from("ai_education_premium_subscriptions")
+      .select("*")
+      .eq("id", data.subscriptionId)
+      .eq("org_id", orgId)
+      .single();
+    if (row.error || !row.data?.provider_order_id)
+      throw new Error("Payment confirmation is pending. Refresh shortly.");
+    const { verifyPremiumCheckout, settlePremiumPayment } =
+      await import("@/lib/ai-education-premium-payment.server");
+    if (!verifyPremiumCheckout(row.data.provider_order_id, data.paymentId, data.signature))
+      throw new Error("Payment could not be verified.");
+    try {
+      await settlePremiumPayment(admin, row.data, data.paymentId);
+    } catch {
+      throw new Error("Payment confirmation is pending. Refresh shortly; do not pay again.");
     }
-    const normalized = JSON.stringify({orgId,...data,forceRegenerate:undefined}); const contextHash=createHash("sha256").update(normalized).digest("hex");
-    if (!data.forceRegenerate) { const {data: cached}=await admin.from("ai_education_premium_teaching_plans").select("*").eq("org_id",orgId).eq("context_hash",contextHash).maybeSingle(); if(cached) return {ok:true,cached:true,plan:cached.output,record:cached}; }
-    const { count } = await admin.from("ai_education_premium_teaching_plans").select("id",{count:"exact",head:true}).eq("org_id",orgId).eq("generated_by",context.userId).gte("created_at",new Date(Date.now()-60_000).toISOString());
-    if ((count ?? 0) >= Number(process.env.AI_EDUCATION_PREMIUM_MAX_GENERATIONS_PER_MINUTE ?? 3)) throw new Error("AI_EDUCATION_PREMIUM_RATE_LIMIT");
-    const {loadTeachingPlannerSkill}=await import("@/lib/ai-teaching-planner-skill.server"); const {generateWithClaude}=await import("@/lib/anthropic-teaching-planner.server");
-    try { const skill=await loadTeachingPlannerSkill(data.grade,"lesson"); const system=`You are the Syllabus Synk AI Education Premium teaching-planner runtime. The authoritative methodology follows. Apply it exactly; do not disclose it. Return ONLY valid JSON with precisely these keys: title, what_to_teach, why_appropriate, when_to_teach, learning_outcomes, teacher_guidance, teaching_script, lesson_timeline, activity, student_practice, understanding_check, responsible_ai_note, next_step, teacher_preparation.\n\n${skill.text}`; const prompt=`Create one classroom-ready teacher plan. Context: Class ${data.grade}; academic year ${data.academicYear}; term ${data.term??"not specified"}; week ${data.weekNo??"not specified"}; topic ${data.topic}; learning objective ${data.learningObjective??"choose an appropriate objective"}; previous learning ${data.previousLearning??"first/new session"}; duration ${data.durationMinutes} minutes; language ${data.language}; facilities ${data.facilities}.`; const result=await generateWithClaude(system,prompt); const row={org_id:orgId,grade:data.grade,academic_year:data.academicYear,term:data.term??null,week_no:data.weekNo??null,topic:data.topic,learning_objective:data.learningObjective??null,previous_learning:data.previousLearning??null,session_type:"lesson",context_hash:contextHash,output:result.plan,skill_version:skill.version,model:result.model,usage:result.usage,generated_by:context.userId}; const {data:stored,error}=await admin.from("ai_education_premium_teaching_plans").upsert(row,{onConflict:"org_id,context_hash"}).select().single(); if(error) throw error; return {ok:true,cached:false,plan:result.plan,record:stored}; } catch(error:any) { console.error("[AI Education Premium] generation failed",{orgId,grade:data.grade,error:error?.message}); if(["ANTHROPIC_NOT_CONFIGURED","TEACHING_PLANNER_SKILL_UNAVAILABLE","AI_EDUCATION_PREMIUM_CLASS_NOT_SUBSCRIBED"].includes(error?.message)) throw error; throw new Error("AI_TEACHING_GUIDANCE_UNAVAILABLE"); }
+    return { ok: true };
+  });
+
+export const cancelAiEducationPremium = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => z.object({ subscriptionId: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }) => {
+    const { orgId } = await school(context, true);
+    const admin = await adminClient();
+    const result = await admin
+      .from("ai_education_premium_subscriptions")
+      .update({
+        cancel_at_period_end: true,
+        cancelled_at: new Date().toISOString(),
+        status: "cancelled",
+      })
+      .eq("id", data.subscriptionId)
+      .eq("org_id", orgId)
+      .eq("status", "active")
+      .select("id")
+      .maybeSingle();
+    if (result.error || !result.data)
+      throw new Error("This subscription could not be cancelled. Refresh and try again.");
+    return { ok: true };
+  });
+
+export const getAiEducationPremiumReceipt = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => z.object({ subscriptionId: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }) => {
+    const { orgId } = await school(context, true);
+    const db: any = context.supabase;
+    const [payment, subscription] = await Promise.all([
+      db
+        .from("ai_education_premium_payments")
+        .select("provider_payment_id,amount_minor,currency,status,paid_at,invoice_id")
+        .eq("subscription_id", data.subscriptionId)
+        .eq("org_id", orgId)
+        .eq("status", "captured")
+        .maybeSingle(),
+      db
+        .from("ai_education_premium_subscriptions")
+        .select(
+          "metadata,base_amount_minor,tax_amount_minor,final_amount_minor,starts_at,renews_at",
+        )
+        .eq("id", data.subscriptionId)
+        .eq("org_id", orgId)
+        .single(),
+    ]);
+    if (payment.error || subscription.error || !payment.data)
+      throw new Error("The payment receipt is not available yet.");
+    return { payment: payment.data, subscription: subscription.data };
+  });
+
+const teachingRequest = z
+  .object({
+    grade,
+    academicYear: z.string().trim().min(3).max(40),
+    term: z.string().trim().max(80).optional(),
+    weekNo: z.number().int().min(1).max(60).optional(),
+    topic: z.string().trim().min(2).max(300),
+    learningObjective: z.string().trim().max(600).optional(),
+    previousLearning: z.string().trim().max(1000).optional(),
+    durationMinutes: z.number().int().min(20).max(180).default(40),
+    language: z.string().trim().min(1).max(80).default("English"),
+    facilities: z.string().trim().max(500).default("Not specified"),
+  })
+  .strict();
+export const generateAiEducationPremiumTeachingPlan = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => teachingRequest.parse(input))
+  .handler(async ({ data, context }) => {
+    const { orgId } = await school(context);
+    const admin = await adminClient();
+    const { generatePremiumPlan } = await import("@/lib/ai-education-premium-generation.server");
+    try {
+      return await generatePremiumPlan(admin, context.userId, orgId, data);
+    } catch (e) {
+      const message = e instanceof Error ? e.message : "";
+      throw new Error(
+        message === "PREMIUM_CLASS_NOT_SUBSCRIBED"
+          ? "This class is not available in your active subscription or teacher assignment."
+          : message === "PREMIUM_GENERATION_LIMIT"
+            ? "Your school has reached its teaching-plan generation limit. You can still reuse saved plans."
+            : message === "PREMIUM_GENERATION_IN_PROGRESS"
+              ? "This plan is already being prepared. Try again shortly."
+              : "Teaching guidance is temporarily unavailable. Please try again later.",
+      );
+    }
+  });
+
+export const listAiEducationPremiumSavedPlans = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => z.object({ grade }).parse(input))
+  .handler(async ({ data, context }) => {
+    const { orgId } = await school(context);
+    const db: any = context.supabase;
+    const result = await db
+      .from("ai_education_premium_teaching_plans")
+      .select("id,topic,academic_year,output,created_at")
+      .eq("org_id", orgId)
+      .eq("grade", data.grade)
+      .order("created_at", { ascending: false })
+      .limit(30);
+    if (result.error) throw new Error("Saved plans are temporarily unavailable.");
+    return result.data;
+  });
+
+export const assignAiEducationPremiumTeacher = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z.object({ userId: z.string().uuid(), grade, active: z.boolean() }).parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    const { orgId } = await school(context, true);
+    const result = await (context.supabase as any)
+      .from("ai_education_premium_teacher_assignments")
+      .upsert(
+        {
+          org_id: orgId,
+          user_id: data.userId,
+          grade: data.grade,
+          active: data.active,
+          assigned_by: context.userId,
+        },
+        { onConflict: "org_id,user_id,grade" },
+      );
+    if (result.error) throw new Error("Choose a teacher who belongs to this school.");
+    return { ok: true };
+  });
+
+export const getAiEducationPremiumAdminCatalog = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const role = await context.supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", context.userId)
+      .eq("role", "super_admin")
+      .maybeSingle();
+    if (role.error || !role.data) return null;
+    const result = await (context.supabase as any)
+      .from("ai_education_premium_package_catalog")
+      .select("*")
+      .order("sort_order");
+    if (result.error) throw new Error("Pricing configuration is unavailable.");
+    return result.data;
+  });
+export const saveAiEducationPremiumPackage = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z
+      .object({
+        code: packageCode,
+        label: z.string().trim().min(3).max(120),
+        grades: z
+          .array(grade)
+          .min(1)
+          .max(12)
+          .transform((v) => [...new Set(v)]),
+        monthly_price_inr: z.number().int().positive().max(1000000),
+        annual_price_inr: z.number().int().positive().max(1000000),
+        currency: z.string().regex(/^[a-z]{3}$/),
+        active: z.boolean(),
+        featured: z.boolean(),
+        group_kind: z.enum(["group", "school"]),
+        sort_order: z.number().int().min(0).max(1000),
+        gst_rate: z.number().min(0).max(100),
+        gst_inclusive: z.literal(true),
+        effective_from: z.string().datetime().nullable(),
+        effective_to: z.string().datetime().nullable(),
+        promotional_price: z.record(z.unknown()),
+        discount_rules: z.record(z.unknown()),
+      })
+      .refine(
+        (v) => !v.effective_from || !v.effective_to || v.effective_to > v.effective_from,
+        "End date must follow start date",
+      )
+      .parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    const role = await context.supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", context.userId)
+      .eq("role", "super_admin")
+      .maybeSingle();
+    if (role.error || !role.data) throw new Error("Super administrator access is required.");
+    const result = await (context.supabase as any)
+      .from("ai_education_premium_package_catalog")
+      .upsert({ ...data, updated_at: new Date().toISOString() });
+    if (result.error) throw new Error("Pricing changes could not be saved.");
+    return { ok: true };
   });

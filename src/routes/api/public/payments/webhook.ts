@@ -1,3 +1,4 @@
+import { recordBillingReceipt } from "@/lib/billing-receipts.server";
 import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
 import { type StripeEnv, verifyWebhook, createStripeClient } from "@/lib/stripe.server";
@@ -130,7 +131,9 @@ async function handleInvoicePaymentSucceeded(invoice: any, env: StripeEnv) {
   }
   if (!userId) return; // not a user-linked invoice
 
+  const metadata=invoice.parent?.subscription_details?.metadata ?? invoice.subscription_details?.metadata ?? {};
   const amount = invoice.amount_paid ?? 0;
+  if(metadata.pricingVersion==='2026-09-gst-inclusive') await recordBillingReceipt(getSupabase(),{provider:'stripe',environment:env,paymentId:invoice.id,userId,priceId:metadata.priceId,currency:invoice.currency,total:amount});
   const currency = invoice.currency ?? "usd";
   const charge = typeof invoice.charge === "string" ? invoice.charge : invoice.charge?.id ?? null;
   for (const line of invoice.lines?.data ?? []) {
@@ -218,10 +221,11 @@ async function handleSubscriptionDeleted(subscription: any, env: StripeEnv) {
 
 async function handleCheckoutCompleted(session: any, env: StripeEnv) {
   // One-time and recurring add-on purchases
-  if (session.mode !== "payment") return;
+  if (session.mode !== "payment" || session.payment_status !== "paid") return;
   const userId = session.metadata?.userId;
   if (!userId) return;
 
+  if(session.metadata?.pricingVersion==='2026-09-gst-inclusive') await recordBillingReceipt(getSupabase(),{provider:'stripe',environment:env,paymentId:session.id,userId,priceId:session.metadata.priceId,currency:session.currency,total:session.amount_total});
   // Look up line items to find which credit pack was bought
   const stripe = createStripeClient(env);
   const lineItems = await stripe.checkout.sessions.listLineItems(session.id, { limit: 10 });
@@ -233,7 +237,7 @@ async function handleCheckoutCompleted(session: any, env: StripeEnv) {
     const qty = li.quantity ?? 1;
     if (credits) {
       const total = credits * qty;
-      await getSupabase().from("ai_credit_grants").upsert(
+      const grant=await getSupabase().from("ai_credit_grants").upsert(
         {
           user_id: userId,
           stripe_session_id: session.id,
@@ -242,8 +246,9 @@ async function handleCheckoutCompleted(session: any, env: StripeEnv) {
           credits_remaining: total,
           environment: env,
         },
-        { onConflict: "stripe_session_id" },
+        { onConflict: "stripe_session_id", ignoreDuplicates: true },
       );
+      if(grant.error) throw new Error("Credit grant could not be recorded");
     }
 
     const storageGb = storageGbForAddOnPrice(priceId);

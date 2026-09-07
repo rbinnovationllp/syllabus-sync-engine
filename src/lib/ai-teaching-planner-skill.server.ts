@@ -1,5 +1,6 @@
 // Server-only loader for the proprietary Claude teaching-planner skill.
 // Never import this module from browser code.
+import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 
@@ -14,9 +15,9 @@ export async function loadTeachingPlannerSkill(grade: string, purpose: "lesson" 
       read("SKILL.md"), read(`references/${bandForGrade(grade)}`), read("references/output-template.md"), read("references/tool-and-responsible-ai-guidance.md"),
       purpose === "annual" ? read("references/syllabus-synk-integration.md") : Promise.resolve(""),
     ]);
-    return { text: files.filter(Boolean).join("\n\n--- SKILL REFERENCE ---\n\n"), version: "ai-teaching-planner-v1" };
+    return { text: files.filter(Boolean).join("\n\n--- SKILL REFERENCE ---\n\n"), version: createHash("sha256").update(files.join("\n")).digest("hex") };
   } catch (error) {
-    console.error("[AI Education Premium] Skill package unavailable", error);
+    console.error("[AI Education Premium] Skill package unavailable");
     throw new Error("TEACHING_PLANNER_SKILL_UNAVAILABLE");
   }
 }

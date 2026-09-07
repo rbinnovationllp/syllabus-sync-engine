@@ -16,6 +16,9 @@ export const Route = createFileRoute("/api/public/razorpay/webhook")({
           return new Response("Invalid signature", { status: 400 });
         }
         const event = JSON.parse(body);
+        const { handlePremiumPaymentEvent } = await import("@/lib/ai-education-premium-payment.server");
+        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        if (await handlePremiumPaymentEvent(event, supabaseAdmin)) return Response.json({ received: true });
         switch (event.event) {
           case "subscription.activated":
           case "subscription.authenticated":

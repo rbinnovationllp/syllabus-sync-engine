@@ -157,7 +157,8 @@ export async function accrueCommission(opts: {
   const status =
     partner.status === "suspended" ? "forfeited" : "accrued";
 
-  const commissionCents = Math.round(opts.grossAmountCents * DEFAULT_COMMISSION_RATE);
+  const taxableAmount = opts.currency.toLowerCase() === "inr" ? Math.round(opts.grossAmountCents / 1.18) : opts.grossAmountCents;
+  const commissionCents = Math.round(taxableAmount * DEFAULT_COMMISSION_RATE);
 
   const orgId = await ownerOrgId(opts.userId);
   if (!orgId) return;

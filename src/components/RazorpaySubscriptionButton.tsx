@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { createRazorpaySubscription } from "@/lib/razorpay.functions";
 import { toast } from "sonner";
@@ -10,7 +10,7 @@ declare global {
   }
 }
 
-function loadCheckoutScript(): Promise<void> {
+export function loadCheckoutScript(): Promise<void> {
   return new Promise((resolve, reject) => {
     if (window.Razorpay) return resolve();
     const existing = document.querySelector<HTMLScriptElement>('script[src="https://checkout.razorpay.com/v1/checkout.js"]');
@@ -79,3 +79,4 @@ export function RazorpaySubscriptionButton({
     </Button>
   );
 }
+

@@ -353,66 +353,7 @@ function PricingPage() {
           </div>
         </section>
 
-        <section>
-          <div className="mb-3 flex items-center gap-2">
-            <BrainCircuit className="h-5 w-5 text-primary" />
-            <div>
-              <h2 className="text-lg font-semibold">AI Future Force Course Module</h2>
-              <p className="text-xs text-muted-foreground">
-                Optional Plus-plan course activation for schools that want structured AI education from Classes 1-12. It is not auto-enabled with standard plans.
-              </p>
-            </div>
-          </div>
-          <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border bg-muted/30 p-4">
-            <div>
-              <div className="text-sm font-semibold">Do you want to evaluate AI Future Force?</div>
-              <p className="text-xs text-muted-foreground">
-                Review curriculum preview, weekly class options, pricing, and benefits before activation.
-              </p>
-            </div>
-            <Button variant={showAiFutureForce ? "default" : "outline"} onClick={() => setShowAiFutureForce((v) => !v)}>
-              {showAiFutureForce ? "Hide AI add-on details" : "Show optional AI add-on"}
-            </Button>
-          </div>
-          {showAiFutureForce && (
-          <>
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            {[
-              ["Primary School", "Classes 1-5", "Rs. 1,000 + GST", "One-time course design and activation charge. Requires an active Plus subscription."],
-              ["Middle School", "Classes 6-8", "Rs. 2,000 + GST", "One-time course design and activation charge. Requires an active Plus subscription."],
-              ["Higher Secondary", "Classes 9-12", "Rs. 5,000 + GST", "One-time course design and activation charge. Requires an active Plus subscription."],
-              ["Enterprise Schools", "Classes 1-12", "Rs. 10,000 / mo + GST", "Monthly enterprise AI education subscription with advanced reporting, administrative controls, and future AI education features."],
-            ].map(([title, grades, price, description]) => (
-              <Card key={title}>
-                <CardHeader>
-                  <CardTitle className="text-base">{title}</CardTitle>
-                  <CardDescription>{grades}</CardDescription>
-                  <div className="pt-2 text-xl font-bold">{price}</div>
-                </CardHeader>
-                <CardContent className="space-y-3 text-sm text-muted-foreground">
-                  <p>{description}</p>
-                  <Button asChild className="w-full" variant="outline">
-                    <Link to="/ai-future-force">Open AI Future Force</Link>
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-          <Alert className="mt-4">
-            <Sparkles className="h-4 w-4" />
-            <AlertTitle>Monthly AI curriculum updates</AlertTitle>
-            <AlertDescription>
-              AI changes rapidly worldwide. Syllabus Synk releases one month of AI Future Force
-              content at a time, with the next month available 2 days before the current month ends.
-              This keeps student projects, tools, case studies, and examples current. Schools with
-              inactive subscriptions do not receive future monthly releases. If a school joins near
-              the end of the academic session, it receives an AI Foundation Module first and the
-              remaining grade-level curriculum carries forward into the next academic session.
-            </AlertDescription>
-          </Alert>
-          </>
-          )}
-        </section>
+        <section className="rounded-lg border p-5 space-y-2"><h2 className="text-lg font-semibold">AI Education Premium</h2><p>Independent AI education programme, teacher guidance and activities from Pre-K/K1 through Grade 12. Classes 1–12 have approved group packages; Pre-K/K1 scope and pricing: Contact Us.</p><Button asChild><Link to="/ai-education-premium">View AI Education Premium</Link></Button></section>
 
         {/* Paid services */}
         <section>
@@ -451,10 +392,7 @@ function PricingPage() {
               </p>
               <p className="text-muted-foreground">
                 <strong>Annual rebate:</strong> Annual plans are billed at 10x the monthly price
-                (2 months free). In India, the academic session runs April-March; the rebate is
-                only available to subscribers who join on or before April. Subscribers starting
-                May or later pay full annual or remain monthly.
-              </p>
+                (2 months free), available throughout the year. All Indian prices are Inclusive of GST.</p>
             </div>
           </div>
         </section>

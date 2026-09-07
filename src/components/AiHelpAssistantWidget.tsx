@@ -34,10 +34,11 @@ export function AiHelpAssistantWidget() {
     onSuccess: (result) => {
       setMessages((prev) => [...prev, { role: "assistant", content: result.answer }]);
     },
-    onError: (e: any) => {
+    retry: false,
+    onError: () => {
       setMessages((prev) => [
         ...prev,
-        { role: "assistant", content: `I could not answer that right now. Please email support@syllabus-synk.in. ${e?.message ?? ""}` },
+        { role: "assistant", content: "Ask Synk AI is temporarily unavailable. Please try again later, or email support@syllabus-synk.in for help." },
       ]);
     },
   });
