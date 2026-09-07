@@ -1,4 +1,4 @@
-﻿import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, Brain, ClipboardCheck, FileText, GraduationCap, LineChart, MessageSquareText, School, Sparkles, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -7,7 +7,7 @@ export const Route = createFileRoute("/ai-leadership-suite")({
   head: () => ({
     meta: [
       { title: "AI Leadership Suite - CurriculumOS" },
-      { name: "description", content: "Explore the AI Leadership Suite included in Plus plans for school planning, teacher support, content generation, assessments, simulations, and parent communication." },
+      { name: "description", content: "Explore the AI Leadership Suite available through eligible school plans for school planning, teacher support, content generation, assessments, simulations, and parent communication." },
     ],
   }),
   component: AiLeadershipSuitePage,
@@ -71,7 +71,7 @@ function AiLeadershipSuitePage() {
       <section className="mx-auto grid max-w-screen-2xl gap-8 px-4 py-10 sm:px-6 lg:grid-cols-[0.95fr_1.05fr] lg:py-14">
         <div className="rounded-2xl border bg-gradient-to-br from-slate-950 via-indigo-950 to-teal-950 p-8 text-white shadow-sm">
           <div className="inline-flex items-center rounded-full bg-white/10 px-3 py-1 text-xs font-medium text-teal-100">
-            Included in Plus plans
+            Available through eligible school plans
           </div>
           <h1 className="mt-6 text-4xl font-bold tracking-tight sm:text-5xl">AI Leadership Suite</h1>
           <p className="mt-5 max-w-2xl text-base leading-7 text-slate-200">
@@ -113,7 +113,7 @@ function AiLeadershipSuitePage() {
               </p>
             </div>
             <Button asChild>
-              <Link to="/pricing"><Sparkles className="mr-2 h-4 w-4" />View Plus plans</Link>
+              <Link to="/pricing"><Sparkles className="mr-2 h-4 w-4" />View plans</Link>
             </Button>
           </div>
         </div>

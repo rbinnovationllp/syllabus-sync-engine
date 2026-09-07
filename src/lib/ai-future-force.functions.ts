@@ -128,38 +128,13 @@ async function loadMyOrg(supabase: any, userId: string) {
   return data as { org_id: string; role: string };
 }
 
-async function requirePlusPlan(supabase: any, userId: string) {
+async function requireFutureForceAccess(supabase: any, userId: string) {
   const { data: tester } = await supabase.rpc("is_active_tester", {
     user_uuid: userId,
     feature: "ai_future_force",
   });
   if (tester === true) return true;
-
-  const { data: sub } = await supabase
-    .from("subscriptions")
-    .select("price_id,status,current_period_end,grace_until")
-    .eq("user_id", userId)
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-
-  const tier = tierForPriceId(sub?.price_id);
-  const plan = planForTier(tier);
-  const statusOk =
-    !!sub &&
-    (
-      ["active", "authenticated", "charged", "trialing", "past_due"].includes(sub.status) ||
-      (sub.status === "pending" && sub.grace_until && new Date(sub.grace_until) > new Date())
-    );
-
-  const planAllowsAiFutureForce =
-    !!plan &&
-    (plan.id.includes("plus") || plan.id === "enterprise_global_access" || plan.id === "enterprise_plus_access");
-
-  if (!statusOk || !planAllowsAiFutureForce) {
-    throw new Error("AI Future Force is available only to schools with an active Plus subscription plan.");
-  }
-  return true;
+  throw new Error("AI Future Force enrolment is no longer available.");
 }
 
 function monthKey(date: Date) {
@@ -274,12 +249,12 @@ export const getAiFutureForce = createServerFn({ method: "GET" })
         .order("created_at", { ascending: false }),
     ]);
 
-    let plusEligible = false;
+    let futureForceEligible = false;
     try {
-      await requirePlusPlan(supabase, userId);
-      plusEligible = true;
+      await requireFutureForceAccess(supabase, userId);
+      futureForceEligible = true;
     } catch {
-      plusEligible = false;
+      futureForceEligible = false;
     }
 
     const now = new Date();
@@ -295,7 +270,7 @@ export const getAiFutureForce = createServerFn({ method: "GET" })
       org_id: me.org_id,
       role: me.role,
       school: schools.data,
-      plusEligible,
+      futureForceEligible,
       bands: BAND_META,
       activations: rows,
       adoptionMessage:
@@ -328,7 +303,7 @@ export const activateAiFutureForce = createServerFn({ method: "POST" })
     if (!["admin", "super_admin"].includes(me.role)) {
       throw new Error("Only the School Admin can activate AI Future Force.");
     }
-    await requirePlusPlan(supabase, userId);
+    await requireFutureForceAccess(supabase, userId);
     if (data.wants_ai_future_force !== true) {
       throw new Error("AI Future Force is optional. Please confirm that the school wants to activate this add-on.");
     }

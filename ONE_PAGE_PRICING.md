@@ -43,4 +43,4 @@ All above Indian prices are Inclusive of GST.
 
 ## Retired products
 
-Primary Plus, Middle School Plus, High School Plus, Enterprise Plus, and AI Future Force are not offered for new purchase, renewal, or upgrade. Existing paid subscriptions and historical transactions remain intact. Existing Plus customers retain their paid access pending an assisted transition policy; no subscription is automatically cancelled or moved.
+AI Future Force is not offered for new purchase, renewal, or upgrade.

@@ -55,7 +55,7 @@ Detailed product guide:
 - AI generation: annual calendar costs 50 credits, subject curriculum costs 25 credits, recalculation costs 20 credits, lesson plan costs 5 credits, and teacher training roadmap costs 10 credits.
 - Curriculum proposals: teachers can propose grade-subject curriculum changes, submit for review, receive AI evaluation, acknowledge finalized decisions, and view proposal history.
 - Version history and recycle bin: annual calendars and subject curricula can be versioned, restored, soft-deleted, and governed through retention workflows where implemented.
-- AI Leadership Suite: available in Plus/eligible plans; includes Principal Dashboard, Teacher Copilot, Content Studio, Assessment Generator, Academic Digital Twin, Teacher Intelligence, Student Intelligence, and Parent Communication Hub.
+- AI Leadership Suite: available in eligible school plans; includes Principal Dashboard, Teacher Copilot, Content Studio, Assessment Generator, Academic Digital Twin, Teacher Intelligence, Student Intelligence, and Parent Communication Hub.
 - Principal Dashboard: summarizes academic health, syllabus completion, classes behind, AI reliability, alerts, upcoming exams/events, readiness indicators, and teacher intervention needs.
 - AI Teaching Assistant / Teacher Copilot: premium teaching-assistance workspace for teachers. For any chapter, topic, sub-topic, or learning objective, teachers can ask "How can I teach this topic effectively?" and receive age-appropriate activity-based teaching methods, classroom demonstrations, practical examples, story-based explanations, role-play suggestions, group activities, project ideas, local environment examples, real-world applications, visual learning ideas, and interactive exercises. It supports Science, Mathematics, Social Science, English, Hindi, languages, Computer Science, Environmental Studies, Commerce, Economics, Geography, History, Physics, Chemistry, Biology, and future subjects.
 - AI Teaching Credits: this premium teaching-assistance feature uses a school-controlled credit model. Each school has a monthly AI Teaching Credit pool, with purchased credits able to extend the pool when commercial top-up packs are configured. Example costs are Simple Activity Suggestion = 1 credit, Detailed Activity Plan = 2 credits, Complete Teaching Toolkit = 5 credits, Project-Based Learning Plan = 5 credits, and Multi-Day Activity Module = 10 credits. School Super Admins can allocate monthly AI Teaching Credits to teachers, monitor consumption, and increase or reduce teacher allocations according to school policy. Teachers can see available credits, used credits, history, and estimated cost before generating.
@@ -94,7 +94,7 @@ Detailed product guide:
 Pricing (current catalog; Indian prices Inclusive of GST):
 ${PLANS.map(p=>p.name+': '+p.prices.filter(x=>x.currency==='inr').map(x=>x.display).join(' or ')).join('\n')}
 ${ADD_ONS.map(p=>p.name+': '+p.prices.map(x=>x.display).join(' / ')).join('\n')}
-Annual plans provide 12 months for ten monthly payments, throughout the year. Plus plans and old AI Future Force plans are closed to new sales. AI Education Premium is independent; consult its live pricing page for group prices. Pre-K/K1 coverage is Contact Us.
+Annual plans provide 12 months for ten monthly payments, throughout the year. AI Future Force plans are closed to new sales. AI Education Premium is independent; consult its live pricing page for group prices. Pre-K/K1 coverage is Contact Us.
 
 AI Leadership Suite includes:
 - Principal Dashboard.
@@ -240,7 +240,7 @@ function localAnswer(message: string, page?: string | null) {
     return "You can test quality with one free 30-day preview syllabus plan for one subject. Create your academic year, add at least one grade-subject row, then open the results page and click Generate for one subject. Full annual planning and unwatermarked exports require a subscription.";
   }
   if (q.includes("price") || q.includes("plan") || q.includes("subscription") || q.includes("payment")) {
-    return "Current plans and GST-inclusive Indian prices are listed on the Pricing page. Annual plans cost ten monthly payments for 12 months of access. AI Education Premium is available independently. Discontinued Plus plans cannot be newly purchased or renewed through checkout. Contact support@syllabus-synk.in for billing help.";
+    return "Current plans and GST-inclusive Indian prices are listed on the Pricing page. Annual plans cost ten monthly payments for 12 months of access. AI Education Premium is available independently. Discontinued plans cannot be newly purchased or renewed through checkout. Contact support@syllabus-synk.in for billing help.";
   }
   if (q.includes("storage") || q.includes("upload limit") || q.includes("archive") || q.includes("fair usage")) {
     return "School Storage uses AWS S3-backed protected storage for large school files, with Supabase storing application data and file metadata. The School Super Admin dashboard shows allocated, used, and available storage, largest files, category usage, file-type breakdown, user-wise usage, archive usage, and alerts at 80%, 90%, and 100%. Uploads are paused when the quota is full until files are removed, old academic sessions are archived, or additional storage is purchased. Paid storage add-ons are automatically activated after verified payment, and the School Super Admin receives a confirmation notification with previous and new storage limits. Additional storage prices are: 25 GB - Rs. 250/month, 50 GB - Rs. 500/month, 100 GB - Rs. 900/month, 250 GB - Rs. 2,000/month, and 500 GB - Rs. 3,500/month. For 1 TB or more, custom enterprise pricing is available through support@syllabus-synk.in.";
@@ -296,10 +296,10 @@ function localAnswer(message: string, page?: string | null) {
     return "To prepare the academic calendar, first add the academic year dates, weekly offs, holidays, exam windows, and school events. Then generate the annual calendar so Syllabus Synk can calculate real teaching capacity before syllabus planning.";
   }
   if (q.includes("teacher") || q.includes("copilot")) {
-    return "Teacher Copilot helps draft lesson strategies, classroom activities, homework, rubrics, and projects. It is part of the AI Leadership Suite available in Plus plans.";
+    return "Teacher Copilot helps draft lesson strategies, classroom activities, homework, rubrics, and projects. It is part of the AI Leadership Suite available in eligible school plans.";
   }
   if (q.includes("parent") || q.includes("message") || q.includes("notice")) {
-    return "Parent Communication Hub can draft parent notices, PTM messages, reminders, and progress updates for review before sending. It is part of the AI Leadership Suite in Plus plans.";
+    return "Parent Communication Hub can draft parent notices, PTM messages, reminders, and progress updates for review before sending. It is part of the AI Leadership Suite in eligible school plans.";
   }
   if (q.includes("export") || q.includes("pdf") || q.includes("docx") || q.includes("watermark")) {
     return "PDF and DOCX exports are available from curriculum result pages. Free preview exports may be watermarked. Subscribe to the correct plan to unlock full annual exports without demo watermark.";

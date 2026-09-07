@@ -1,10 +1,10 @@
-﻿-- CRM expansion: company operations + school CRM
+-- CRM expansion: company operations + school CRM
 
 create table if not exists public.subscription_plan_catalog (
   plan_code text primary key,
   plan_name text not null,
   school_level text not null,
-  variant text not null check (variant in ('single','base','plus','enterprise')),
+  variant text not null check (variant in ('single','base','enterprise')),
   monthly_usd numeric not null default 0,
   monthly_inr numeric not null default 0,
   monthly_credits int not null default 0,
@@ -21,13 +21,9 @@ insert into public.subscription_plan_catalog
 values
   ('RET-SINGLE', 'Retail Single Access', 'retail', 'single', 9, 499, 250, 1, 1, '{"v2_ai":false,"school_crm":false}'::jsonb),
   ('PRI-BASE', 'Primary Bundle', 'primary', 'base', 29, 2999, 2000, 5, 10, '{"v2_ai":false,"school_crm":true}'::jsonb),
-  ('PRI-PLUS', 'Primary Plus Bundle', 'primary', 'plus', 39, 4000, 3500, 8, 15, '{"v2_ai":true,"school_crm":true,"parent_hub":true}'::jsonb),
   ('MID-BASE', 'Middle School Bundle', 'middle', 'base', 49, 4999, 4000, 10, 25, '{"v2_ai":false,"school_crm":true}'::jsonb),
-  ('MID-PLUS', 'Middle School Plus Bundle', 'middle', 'plus', 59, 6000, 6500, 14, 30, '{"v2_ai":true,"school_crm":true,"parent_hub":true}'::jsonb),
   ('HIGH-BASE', 'High School Bundle', 'high', 'base', 69, 7000, 6500, 20, 50, '{"v2_ai":false,"school_crm":true}'::jsonb),
-  ('HIGH-PLUS', 'High School Plus Bundle', 'high', 'plus', 89, 9000, 10000, 25, 75, '{"v2_ai":true,"school_crm":true,"parent_hub":true,"assessment_ai":true}'::jsonb),
   ('ENT-BASE', 'Enterprise Bundle', 'enterprise', 'enterprise', 179, 18000, 25000, 60, 200, '{"v2_ai":true,"school_crm":true,"multi_campus":true}'::jsonb),
-  ('ENT-PLUS', 'Enterprise Plus Bundle', 'enterprise', 'plus', 249, 25000, 40000, 100, 350, '{"v2_ai":true,"school_crm":true,"multi_campus":true,"priority_support":true}'::jsonb)
 on conflict (plan_code) do update set
   plan_name = excluded.plan_name,
   school_level = excluded.school_level,

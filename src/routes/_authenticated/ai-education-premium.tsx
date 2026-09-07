@@ -39,7 +39,12 @@ function PremiumPage() {
     assign = useServerFn(assignAiEducationPremiumTeacher),
     adminFn = useServerFn(getAiEducationPremiumAdminCatalog),
     saveConfig = useServerFn(saveAiEducationPremiumPackage);
-  const query = useQuery({ queryKey: ["ai-education-premium"], queryFn: () => get() });
+  const [reloadAttempt, setReloadAttempt] = useState(0);
+  const query = useQuery({
+    queryKey: ["ai-education-premium", reloadAttempt],
+    queryFn: () => get(),
+    retry: false,
+  });
   const adminQuery = useQuery({ queryKey: ["premium-admin-catalog"], queryFn: () => adminFn() });
   const [busy, setBusy] = useState(false),
     [planBusy, setPlanBusy] = useState(false),
@@ -137,7 +142,7 @@ function PremiumPage() {
         ) : query.isError ? (
           <div role="alert">
             <p>{message(query.error)}</p>
-            <Button onClick={() => query.refetch()}>Try again</Button>
+            <Button onClick={() => setReloadAttempt((attempt) => attempt + 1)}>Try again</Button>
           </div>
         ) : (
           <PremiumPricing

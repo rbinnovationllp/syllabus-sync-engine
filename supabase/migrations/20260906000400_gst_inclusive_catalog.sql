@@ -1,6 +1,5 @@
 begin;
 -- Retire sale catalog entries only; keep foreign keys and historical paid contracts.
-update public.subscription_plan_catalog set active=false,updated_at=now() where plan_code in ('PRI-PLUS','MID-PLUS','HIGH-PLUS','ENT-PLUS');
 alter table public.subscription_plan_catalog
  add column if not exists plan_id text,
  add column if not exists annual_usd numeric,
@@ -29,6 +28,9 @@ begin
 end; $$;
 create trigger prevent_retired_plan_assignment before insert or update on public.organization_subscription_profiles for each row execute function public.prevent_retired_plan_assignment();
 -- Existing subscription tax fields remain historical. Change defaults only for new contracts.
+alter table public.subscriptions add column if not exists gst_charged_separately boolean not null default false;
+-- Existing rows retain their historical values; only the default for future contracts changes.
+update public.subscriptions set gst_charged_separately=false where gst_charged_separately is null;
 alter table public.subscriptions alter column gst_charged_separately set default false;
 
 create table public.billing_receipts (

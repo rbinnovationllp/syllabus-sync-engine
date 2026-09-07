@@ -81,19 +81,10 @@ await test("Five active plans, exact prices, stable IDs, seats and credits", () 
   assert.deepEqual(plans.gradesEntitled("bundle_high_access"), ["9", "10", "11", "12"]);
   assert.equal(plans.planForTier("enterprise_global_access").limits.maxCampuses, 1);
 });
-await test("Discontinued plans cannot be purchased; historical entitlement lookup survives", () => {
-  for (const tier of [
-    "bundle_primary_plus_access",
-    "bundle_middle_plus_access",
-    "bundle_high_plus_access",
-    "enterprise_plus_access",
-  ]) {
-    const id = tier.replace(/_access$/, "") + "_monthly_inr";
-    assert.equal(plans.purchasablePrice(id), null);
-    assert.equal(plans.tierForPriceId(id), tier);
-    assert.ok(plans.limitsForTier(tier));
-  }
+await test("Only approved plans are available", () => {
   assert.equal(plans.purchasablePrice("ai_future_force_primary_inr"), null);
+  assert.equal(plans.tierForPriceId("unknown_price"), null);
+  assert.equal(plans.planForTier("unknown_tier"), null);
 });
 await test("Top-ups, storage, seat and campus totals; no top-up recurrence", () => {
   for (const [id, value] of Object.entries({
@@ -219,7 +210,7 @@ create function is_org_admin(o uuid) returns boolean language sql security defin
 create table subscriptions(id uuid primary key default gen_random_uuid(),gst_charged_separately boolean default true);
 create table subscription_plan_catalog(plan_code text primary key,plan_name text,school_level text,variant text,monthly_usd numeric,monthly_inr numeric,monthly_credits integer,user_limit integer,storage_gb integer,feature_flags jsonb,active boolean default true,updated_at timestamptz);
 create table organization_subscription_profiles(id uuid primary key,org_id uuid,plan_code text references subscription_plan_catalog(plan_code),ends_at timestamptz);
-insert into subscription_plan_catalog(plan_code) values('RET-SINGLE'),('PRI-BASE'),('MID-BASE'),('HIGH-BASE'),('ENT-BASE'),('PRI-PLUS'),('MID-PLUS'),('HIGH-PLUS'),('ENT-PLUS');
+insert into subscription_plan_catalog(plan_code) values('RET-SINGLE'),('PRI-BASE'),('MID-BASE'),('HIGH-BASE'),('ENT-BASE');
 `);
 const files = [
   "20260905000100_ai_education_premium.sql",
@@ -228,8 +219,9 @@ const files = [
   "20260906000300_ai_education_premium_billing_security.sql",
   "20260906000400_gst_inclusive_catalog.sql",
   "20260907000100_ai_education_premium_usd_catalog.sql",
+  "20260907000200_remove_discontinued_plus_plans.sql",
 ];
-await test("All six Premium and inclusive-pricing migrations execute on PostgreSQL", async () => {
+await test("All seven Premium and inclusive-pricing migrations execute on PostgreSQL", async () => {
   for (const f of files) await db.exec(await fs.readFile("supabase/migrations/" + f, "utf8"));
 });
 const admin = "00000000-0000-0000-0000-000000000001",
@@ -400,7 +392,7 @@ await test("Base database prices/limits match frontend and retired entries stay 
   assert.equal(
     (
       await sql(
-        "select count(*)::int as n from subscription_plan_catalog where plan_code like '%PLUS' and active",
+        "select count(*)::int as n from subscription_plan_catalog where plan_code not in ('RET-SINGLE','PRI-BASE','MID-BASE','HIGH-BASE','ENT-BASE')",
       )
     )[0].n,
     0,

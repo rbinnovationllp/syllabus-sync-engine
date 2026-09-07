@@ -36,8 +36,22 @@ export const getAiEducationPremium = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const { orgId, canManage } = await school(context);
     const db: any = context.supabase;
-    const results = await Promise.all([
-      db.from("ai_education_premium_package_catalog").select("*").order("sort_order"),
+    const catalogResult = await db
+      .from("ai_education_premium_package_catalog")
+      .select("*")
+      .order("sort_order");
+    if (catalogResult.error) {
+      // Keep database diagnostics in server logs only; never send provider or schema details to a browser.
+      console.error("[AI Education Premium] catalogue query failed", {
+        code: catalogResult.error.code,
+        message: catalogResult.error.message,
+        details: catalogResult.error.details,
+      });
+      throw new Error(
+        "AI Education Premium is being configured. Please contact support if this message continues.",
+      );
+    }
+    const [entitlementResult, assignmentResult, subscriptionResult] = await Promise.all([
       db
         .from("ai_education_premium_entitlements")
         .select(
@@ -59,9 +73,22 @@ export const getAiEducationPremium = createServerFn({ method: "GET" })
         .order("created_at", { ascending: false })
         .limit(50),
     ]);
-    if (results.some((r) => r.error))
-      throw new Error("AI Education Premium is temporarily unavailable. Please try again later.");
-    const [catalog, entitlements, assignments, subscriptions] = results.map((r) => r.data ?? []);
+    for (const [name, result] of [
+      ["entitlements", entitlementResult],
+      ["teacher assignments", assignmentResult],
+      ["subscriptions", subscriptionResult],
+    ] as const) {
+      if (result.error)
+        console.error("[AI Education Premium] optional " + name + " query failed", {
+          code: result.error.code,
+          message: result.error.message,
+          details: result.error.details,
+        });
+    }
+    const catalog = catalogResult.data ?? [];
+    const entitlements = entitlementResult.data ?? [];
+    const assignments = assignmentResult.data ?? [];
+    const subscriptions = subscriptionResult.data ?? [];
     const assigned = new Set(assignments.map((r: any) => r.grade));
     const subscribedGrades = [
       ...new Set<string>(

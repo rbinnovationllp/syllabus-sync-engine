@@ -1,17 +1,13 @@
-import { LEGACY_PLANS } from "./legacy-plan-entitlements"; // Single source of truth for subscription tiers, grade entitlements, limits,
+// Single source of truth for subscription tiers, grade entitlements, limits,
 // AI credit costs, and add-on pricing. price_id is stable across sandbox and
 // live (resolved via Stripe lookup_key).
 
 export type TierId =
   | "retail_single_access"
   | "bundle_primary_access"
-  | "bundle_primary_plus_access"
   | "bundle_middle_access"
-  | "bundle_middle_plus_access"
   | "bundle_high_access"
-  | "bundle_high_plus_access"
-  | "enterprise_global_access"
-  | "enterprise_plus_access";
+  | "enterprise_global_access";
 
 export type Currency = "usd" | "inr";
 export type BillingInterval = "monthly" | "annual";
@@ -122,9 +118,6 @@ function prices(
     },
   ];
 }
-
-const V2_PLUS_FEATURE =
-  "AI Leadership Suite: principal dashboard, teacher copilot, content studio, assessments, academic simulations, teacher/student insights, and parent communication drafts.";
 
 export const PLANS: Plan[] = [
   {
@@ -556,15 +549,13 @@ const PRICE_TO_TIER: Record<string, TierId> = Object.fromEntries(
 export function tierForPriceId(priceId: string | null | undefined): TierId | null {
   if (!priceId) return null;
   return (
-    PRICE_TO_TIER[priceId] ??
-    LEGACY_PLANS.find((p) => priceId.startsWith(p.id.replace(/_access$/, "") + "_"))?.id ??
-    null
+    PRICE_TO_TIER[priceId] ?? null
   );
 }
 
 export function planForTier(tier: TierId | null): Plan | null {
   if (!tier) return null;
-  return [...PLANS, ...LEGACY_PLANS].find((p) => p.id === tier) ?? null;
+  return PLANS.find((p) => p.id === tier) ?? null;
 }
 
 export function gradesEntitled(tier: TierId | null): string[] {

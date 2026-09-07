@@ -250,7 +250,6 @@ Working:
 - One-month sample course-plan request path on the homepage.
 - Curriculum preview with objectives, outcomes, projects, activities, tools, and examples.
 - Monthly release model and foundation module for final-month enrollment.
-- Plus-plan eligibility checks and tester access support.
 - Teacher enablement and lifelong AI professional development messaging.
 - Curriculum-update commitment based on global AI developments and emerging technology trends.
 
@@ -340,7 +339,7 @@ Needs work:
 Status: Partially implemented.
 
 Working:
-- Plan catalog and pricing for retail, primary, middle, high, enterprise, and plus tiers.
+- Plan catalog and pricing for retail, primary, middle, high, and enterprise tiers.
 - USD/INR monthly and annual pricing.
 - AI credit limits and action costs.
 - Add-ons for AI credits, extra users, extra campus, and AI Future Force bands.

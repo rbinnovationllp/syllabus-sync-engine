@@ -1,5 +1,5 @@
 -- AI Future Force premium course module.
--- Plus-plan schools can activate the module and receive monthly content releases.
+-- Historical AI Future Force data schema.
 
 create table if not exists public.ai_future_force_activations (
   id uuid primary key default gen_random_uuid(),

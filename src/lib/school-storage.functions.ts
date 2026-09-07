@@ -1,4 +1,4 @@
-﻿import { createServerFn } from "@tanstack/react-start";
+import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import {
@@ -14,20 +14,12 @@ const PLAN_STORAGE_GB: Record<string, number> = {
   "retail_single_access": 1,
   "PRI-BASE": 50,
   "bundle_primary_access": 50,
-  "PRI-PLUS": 75,
-  "bundle_primary_plus_access": 75,
   "MID-BASE": 100,
   "bundle_middle_access": 100,
-  "MID-PLUS": 150,
-  "bundle_middle_plus_access": 150,
   "HIGH-BASE": 200,
   "bundle_high_access": 200,
-  "HIGH-PLUS": 300,
-  "bundle_high_plus_access": 300,
   "ENT-BASE": 400,
   "enterprise_global_access": 400,
-  "ENT-PLUS": 500,
-  "enterprise_plus_access": 500,
 };
 
 const MAX_SINGLE_UPLOAD_BYTES = 1024 * 1024 * 1024;

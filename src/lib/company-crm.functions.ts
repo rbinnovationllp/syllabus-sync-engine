@@ -1,4 +1,4 @@
-﻿import { createServerFn } from "@tanstack/react-start";
+import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 
@@ -11,13 +11,9 @@ async function assertSuperAdmin(context: { supabase: any; userId: string }) {
 
 function inferPlanCode(priceId?: string | null) {
   const id = (priceId ?? "").toLowerCase();
-  if (id.includes("primary_plus")) return "PRI-PLUS";
   if (id.includes("primary")) return "PRI-BASE";
-  if (id.includes("middle_plus")) return "MID-PLUS";
   if (id.includes("middle")) return "MID-BASE";
-  if (id.includes("high_plus")) return "HIGH-PLUS";
   if (id.includes("high")) return "HIGH-BASE";
-  if (id.includes("enterprise_plus")) return "ENT-PLUS";
   if (id.includes("enterprise")) return "ENT-BASE";
   if (id.includes("retail")) return "RET-SINGLE";
   return "UNKNOWN";
