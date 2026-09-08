@@ -13,6 +13,7 @@ import { formatMoney } from "@/lib/ai-education-premium";
 import {
   getAiEducationPremium,
   createAiEducationPremiumQuote,
+  startAiEducationPremiumTrial,
   resetAiEducationPremiumCheckout,
   confirmAiEducationPremiumPayment,
   cancelAiEducationPremium,
@@ -32,6 +33,7 @@ const message = (e: unknown) => (e instanceof Error ? e.message : "Please try ag
 function PremiumPage() {
   const get = useServerFn(getAiEducationPremium),
     checkout = useServerFn(createAiEducationPremiumQuote),
+    startTrial = useServerFn(startAiEducationPremiumTrial),
     resetCheckout = useServerFn(resetAiEducationPremiumCheckout),
     confirm = useServerFn(confirmAiEducationPremiumPayment),
     cancel = useServerFn(cancelAiEducationPremium),
@@ -115,6 +117,18 @@ function PremiumPage() {
       setBusy(false);
     }
   }
+  async function activateTrial(code: string, interval: "monthly" | "annual") {
+    setBusy(true);
+    try {
+      await startTrial({ data: { packageCode: code, billingInterval: interval } });
+      toast.success("Your 72-hour AI Education Premium trial has started.");
+      await query.refetch();
+    } catch (e) {
+      toast.error(message(e));
+    } finally {
+      setBusy(false);
+    }
+  }
   async function makePlan() {
     setPlanBusy(true);
     try {
@@ -152,6 +166,7 @@ function PremiumPage() {
             canManage={!!data?.canManage}
             busy={busy}
             onCheckout={pay}
+            onStartTrial={activateTrial}
             onResetCheckout={async (code, interval) => {
               try {
                 await resetCheckout({ data: { packageCode: code, billingInterval: interval } });
@@ -161,6 +176,14 @@ function PremiumPage() {
               }
             }}
           />
+        )}
+        {data?.trial && (
+          <section className="rounded-xl border border-primary/30 bg-primary/5 p-5 space-y-2">
+            <h2 className="text-xl font-semibold">Your AI Education Premium trial</h2>
+            <p>Package: {data.trial.package_code} · intended {data.trial.intended_billing_interval} billing</p>
+            <p>Started: {date(data.trial.starts_at)} · expires: {date(data.trial.ends_at)}</p>
+            <p className="text-sm text-muted-foreground">Trial access ends exactly 72 hours after activation. Saved plans remain available to view after expiry.</p>
+          </section>
         )}
         {!!data?.subscriptions.length && (
           <section className="space-y-3">

@@ -51,7 +51,7 @@ export const getAiEducationPremium = createServerFn({ method: "GET" })
         "AI Education Premium is being configured. Please contact support if this message continues.",
       );
     }
-    const [entitlementResult, assignmentResult, subscriptionResult] = await Promise.all([
+    const [entitlementResult, assignmentResult, subscriptionResult, trialResult] = await Promise.all([
       db
         .from("ai_education_premium_entitlements")
         .select(
@@ -72,11 +72,13 @@ export const getAiEducationPremium = createServerFn({ method: "GET" })
         .eq("org_id", orgId)
         .order("created_at", { ascending: false })
         .limit(50),
+      db.from("ai_education_premium_trials").select("id,package_code,selected_grades,intended_billing_interval,starts_at,ends_at,status").eq("org_id", orgId).maybeSingle(),
     ]);
     for (const [name, result] of [
       ["entitlements", entitlementResult],
       ["teacher assignments", assignmentResult],
       ["subscriptions", subscriptionResult],
+      ["trial", trialResult],
     ] as const) {
       if (result.error)
         console.error("[AI Education Premium] optional " + name + " query failed", {
@@ -89,13 +91,13 @@ export const getAiEducationPremium = createServerFn({ method: "GET" })
     const entitlements = entitlementResult.data ?? [];
     const assignments = assignmentResult.data ?? [];
     const subscriptions = subscriptionResult.data ?? [];
+    const trial = trialResult.data ?? null;
     const assigned = new Set(assignments.map((r: any) => r.grade));
     const subscribedGrades = [
-      ...new Set<string>(
-        entitlements
-          .filter((r: any) => entitlementActive(r) && (canManage || assigned.has(r.grade)))
-          .map((r: any) => r.grade),
-      ),
+      ...new Set<string>([
+        ...entitlements.filter((r: any) => entitlementActive(r) && (canManage || assigned.has(r.grade))).map((r: any) => r.grade),
+        ...(trial?.status === "active" && Date.parse(trial.ends_at) > Date.now() ? trial.selected_grades.filter((g: string) => canManage || assigned.has(g)) : []),
+      ]),
     ].sort((a, b) => Number(a) - Number(b));
     const members = canManage
       ? await db
@@ -109,9 +111,24 @@ export const getAiEducationPremium = createServerFn({ method: "GET" })
       subscribedGrades,
       canManage,
       subscriptions: canManage ? subscriptions : [],
+      trial: canManage ? trial : null,
     };
   });
 
+export const startAiEducationPremiumTrial = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => z.object({ packageCode, billingInterval: z.enum(["monthly", "annual"]) }).parse(input))
+  .handler(async ({ data, context }) => {
+    const { orgId } = await school(context, true);
+    const { data: trial, error } = await (context.supabase as any).rpc("premium_start_trial", {
+      p_org: orgId, p_code: data.packageCode, p_interval: data.billingInterval,
+    });
+    if (error) {
+      if (error.message.includes("ALREADY_USED")) throw new Error("Your school has already used its AI Education Premium trial.");
+      throw new Error("This trial could not be started. Please contact support.");
+    }
+    return trial;
+  });
 export const createAiEducationPremiumQuote = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) =>
@@ -457,3 +474,5 @@ export const saveAiEducationPremiumPackage = createServerFn({ method: "POST" })
     if (result.error) throw new Error("Pricing changes could not be saved.");
     return { ok: true };
   });
+
+

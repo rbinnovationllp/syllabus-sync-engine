@@ -17,6 +17,7 @@ export function PremiumPricing({
   canManage: boolean;
   onCheckout: (code: string, interval: "monthly" | "annual") => void;
   onResetCheckout?: (code: string, interval: "monthly" | "annual") => void;
+  onStartTrial?: (code: string, interval: "monthly" | "annual") => void;
   busy?: boolean;
 }) {
   const [selected, setSelected] = useState("");
