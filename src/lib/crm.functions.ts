@@ -1,8 +1,8 @@
-﻿import { createServerFn } from "@tanstack/react-start";
+import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 
-const SUPPORT_EMAIL = "support@syllabus-synk.in";
+const SUPPORT_EMAIL = "admin@syllabus-synk.in";
 const STAGES = ["new", "contacted", "qualified", "demo", "proposal", "won", "lost"] as const;
 const DEAL_STAGES = ["qualified", "demo", "proposal", "negotiation", "won", "lost"] as const;
 const ACTIVITY_TYPES = ["call", "meeting", "email", "task", "note"] as const;

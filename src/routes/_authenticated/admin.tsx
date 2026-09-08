@@ -1,4 +1,4 @@
-﻿import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
@@ -48,7 +48,7 @@ import { CurriculumReviewsTab } from "@/components/admin/CurriculumReviewsTab";
 import { AiUsageTab } from "@/components/admin/AiUsageTab";
 import { AiModelSettingsTab } from "@/components/admin/AiModelSettingsTab";
 
-const SUPPORT_EMAIL = "support@syllabus-synk.in";
+const SUPPORT_EMAIL = "admin@syllabus-synk.in";
 
 function buildLeadDemoReplyMailto(lead: any) {
   const subject = `Syllabus Synk demo for ${lead.school_name || lead.name || "your school"}`;

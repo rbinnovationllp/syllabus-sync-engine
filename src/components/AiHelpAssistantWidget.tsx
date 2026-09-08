@@ -38,7 +38,7 @@ export function AiHelpAssistantWidget() {
     onError: () => {
       setMessages((prev) => [
         ...prev,
-        { role: "assistant", content: "Ask Synk AI is temporarily unavailable. Please try again later, or email support@syllabus-synk.in for help." },
+        { role: "assistant", content: "Ask Synk AI is temporarily unavailable. Please try again later, or email admin@syllabus-synk.in for help." },
       ]);
     },
   });
@@ -121,7 +121,7 @@ export function AiHelpAssistantWidget() {
               </Button>
             </div>
             <div className="mt-2 text-[11px] text-muted-foreground">
-              For demos and account-specific issues: support@syllabus-synk.in
+              For demos and account-specific issues: admin@syllabus-synk.in
             </div>
           </div>
         </div>

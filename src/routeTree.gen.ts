@@ -31,7 +31,6 @@ import { Route as AuthenticatedCrmRouteImport } from './routes/_authenticated/cr
 import { Route as AuthenticatedCompanyCrmRouteImport } from './routes/_authenticated/company-crm'
 import { Route as AuthenticatedAuditTrailRouteImport } from './routes/_authenticated/audit-trail'
 import { Route as AuthenticatedAssignmentsRouteImport } from './routes/_authenticated/assignments'
-import { Route as AuthenticatedAiFutureForceRouteImport } from './routes/_authenticated/ai-future-force'
 import { Route as AuthenticatedAiEducationPremiumRouteImport } from './routes/_authenticated/ai-education-premium'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedAcademicExecutionRouteImport } from './routes/_authenticated/academic-execution'
@@ -170,12 +169,6 @@ const AuthenticatedAssignmentsRoute =
   AuthenticatedAssignmentsRouteImport.update({
     id: '/assignments',
     path: '/assignments',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedAiFutureForceRoute =
-  AuthenticatedAiFutureForceRouteImport.update({
-    id: '/ai-future-force',
-    path: '/ai-future-force',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedAiEducationPremiumRoute =
@@ -331,7 +324,6 @@ export interface FileRoutesByFullPath {
   '/academic-execution': typeof AuthenticatedAcademicExecutionRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/ai-education-premium': typeof AuthenticatedAiEducationPremiumRoute
-  '/ai-future-force': typeof AuthenticatedAiFutureForceRoute
   '/assignments': typeof AuthenticatedAssignmentsRoute
   '/audit-trail': typeof AuthenticatedAuditTrailRoute
   '/company-crm': typeof AuthenticatedCompanyCrmRoute
@@ -379,7 +371,6 @@ export interface FileRoutesByTo {
   '/academic-execution': typeof AuthenticatedAcademicExecutionRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/ai-education-premium': typeof AuthenticatedAiEducationPremiumRoute
-  '/ai-future-force': typeof AuthenticatedAiFutureForceRoute
   '/assignments': typeof AuthenticatedAssignmentsRoute
   '/audit-trail': typeof AuthenticatedAuditTrailRoute
   '/company-crm': typeof AuthenticatedCompanyCrmRoute
@@ -429,7 +420,6 @@ export interface FileRoutesById {
   '/_authenticated/academic-execution': typeof AuthenticatedAcademicExecutionRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/ai-education-premium': typeof AuthenticatedAiEducationPremiumRoute
-  '/_authenticated/ai-future-force': typeof AuthenticatedAiFutureForceRoute
   '/_authenticated/assignments': typeof AuthenticatedAssignmentsRoute
   '/_authenticated/audit-trail': typeof AuthenticatedAuditTrailRoute
   '/_authenticated/company-crm': typeof AuthenticatedCompanyCrmRoute
@@ -479,7 +469,6 @@ export interface FileRouteTypes {
     | '/academic-execution'
     | '/admin'
     | '/ai-education-premium'
-    | '/ai-future-force'
     | '/assignments'
     | '/audit-trail'
     | '/company-crm'
@@ -527,7 +516,6 @@ export interface FileRouteTypes {
     | '/academic-execution'
     | '/admin'
     | '/ai-education-premium'
-    | '/ai-future-force'
     | '/assignments'
     | '/audit-trail'
     | '/company-crm'
@@ -576,7 +564,6 @@ export interface FileRouteTypes {
     | '/_authenticated/academic-execution'
     | '/_authenticated/admin'
     | '/_authenticated/ai-education-premium'
-    | '/_authenticated/ai-future-force'
     | '/_authenticated/assignments'
     | '/_authenticated/audit-trail'
     | '/_authenticated/company-crm'
@@ -785,13 +772,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAssignmentsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/ai-future-force': {
-      id: '/_authenticated/ai-future-force'
-      path: '/ai-future-force'
-      fullPath: '/ai-future-force'
-      preLoaderRoute: typeof AuthenticatedAiFutureForceRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/ai-education-premium': {
       id: '/_authenticated/ai-education-premium'
       path: '/ai-education-premium'
@@ -978,7 +958,6 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAcademicExecutionRoute: typeof AuthenticatedAcademicExecutionRoute
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedAiEducationPremiumRoute: typeof AuthenticatedAiEducationPremiumRoute
-  AuthenticatedAiFutureForceRoute: typeof AuthenticatedAiFutureForceRoute
   AuthenticatedAssignmentsRoute: typeof AuthenticatedAssignmentsRoute
   AuthenticatedAuditTrailRoute: typeof AuthenticatedAuditTrailRoute
   AuthenticatedCompanyCrmRoute: typeof AuthenticatedCompanyCrmRoute
@@ -1016,7 +995,6 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAcademicExecutionRoute: AuthenticatedAcademicExecutionRoute,
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   AuthenticatedAiEducationPremiumRoute: AuthenticatedAiEducationPremiumRoute,
-  AuthenticatedAiFutureForceRoute: AuthenticatedAiFutureForceRoute,
   AuthenticatedAssignmentsRoute: AuthenticatedAssignmentsRoute,
   AuthenticatedAuditTrailRoute: AuthenticatedAuditTrailRoute,
   AuthenticatedCompanyCrmRoute: AuthenticatedCompanyCrmRoute,

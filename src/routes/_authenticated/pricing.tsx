@@ -1,4 +1,4 @@
-﻿import { useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { AppShell } from "@/components/AppShell";
@@ -194,7 +194,7 @@ function PricingPage() {
               </div>
               {isRazorpaySubscription ? (
                 <Button size="sm" variant="outline" asChild>
-                  <a href="mailto:support@syllabus-synk.in">Manage via support</a>
+                  <a href="mailto:admin@syllabus-synk.in">Manage via support</a>
                 </Button>
               ) : (
                 <Button size="sm" variant="outline" onClick={openPortal} disabled={portalLoading}>
@@ -254,7 +254,7 @@ function PricingPage() {
                     {isCurrent ? (
                       isRazorpaySubscription ? (
                         <Button className="w-full" variant="outline" asChild>
-                          <a href="mailto:support@syllabus-synk.in">Manage via support</a>
+                          <a href="mailto:admin@syllabus-synk.in">Manage via support</a>
                         </Button>
                       ) : (
                         <Button className="w-full" variant="outline" onClick={openPortal} disabled={portalLoading}>
@@ -265,7 +265,7 @@ function PricingPage() {
                       <Button
                         className="w-full"
                         variant={isUpgrade ? "default" : "outline"}
-                        onClick={isRazorpaySubscription ? () => window.location.href = "mailto:support@syllabus-synk.in" : openPortal}
+                        onClick={isRazorpaySubscription ? () => window.location.href = "mailto:admin@syllabus-synk.in" : openPortal}
                         disabled={portalLoading}
                       >
                         {isRazorpaySubscription ? "Change via support" : `${isUpgrade ? "Upgrade" : isDowngrade ? "Downgrade" : "Switch"} via portal`}

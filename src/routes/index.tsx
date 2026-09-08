@@ -701,10 +701,10 @@ function Contact() {
             <p className="mt-6 text-sm text-slate-600">
               Prefer email? Reach support at{" "}
               <a
-                href="mailto:support@syllabus-synk.in"
+                href="mailto:admin@syllabus-synk.in"
                 className="font-medium text-indigo-600 hover:underline"
               >
-                support@syllabus-synk.in
+                admin@syllabus-synk.in
               </a>
               .
             </p>
@@ -862,8 +862,8 @@ function Footer() {
           </p>
           <p>
             Support:{" "}
-            <a href="mailto:support@syllabus-synk.in" className="hover:text-slate-800">
-              support@syllabus-synk.in
+            <a href="mailto:admin@syllabus-synk.in" className="hover:text-slate-800">
+              admin@syllabus-synk.in
             </a>
           </p>
         </div>
@@ -872,8 +872,8 @@ function Footer() {
           <p>Rashi Bhartiya Innovation LLP</p>
           <p>
             Email:{" "}
-            <a href="mailto:support@syllabus-synk.in" className="hover:text-slate-800">
-              support@syllabus-synk.in
+            <a href="mailto:admin@syllabus-synk.in" className="hover:text-slate-800">
+              admin@syllabus-synk.in
             </a>
           </p>
         </div>

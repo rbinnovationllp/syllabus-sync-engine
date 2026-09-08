@@ -15,7 +15,21 @@ create table if not exists public.ai_education_premium_trials (
   check(ends_at = starts_at + interval '72 hours')
 );
 alter table public.ai_education_premium_trials enable row level security;
-create policy "Org members read Premium trials" on public.ai_education_premium_trials for select to authenticated using (public.is_org_member(org_id));
+do $$
+begin
+  if not exists (
+    select 1 from pg_policies
+    where schemaname = 'public'
+      and tablename = 'ai_education_premium_trials'
+      and policyname = 'Org members read Premium trials'
+  ) then
+    create policy "Org members read Premium trials"
+      on public.ai_education_premium_trials
+      for select to authenticated
+      using (public.is_org_member(org_id));
+  end if;
+end;
+$$;
 
 create or replace function public.premium_start_trial(p_org uuid, p_code text, p_interval text) returns public.ai_education_premium_trials
 language plpgsql security definer set search_path=public as $$

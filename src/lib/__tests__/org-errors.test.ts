@@ -1,4 +1,4 @@
-﻿// Run with: bun test src/lib/__tests__/org-errors.test.ts
+// Run with: bun test src/lib/__tests__/org-errors.test.ts
 import { describe, expect, it, mock } from "bun:test";
 import { friendlyOrgMemberError, logOrgMemberBootstrap } from "../org-errors";
 
@@ -8,7 +8,7 @@ describe("friendlyOrgMemberError", () => {
       'new row violates row-level security policy for table "org_members"',
     );
     expect(out).toContain("school workspace");
-    expect(out).toContain("support@syllabus-synk.in");
+    expect(out).toContain("admin@syllabus-synk.in");
     expect(out.toLowerCase()).not.toContain("row-level security");
   });
 

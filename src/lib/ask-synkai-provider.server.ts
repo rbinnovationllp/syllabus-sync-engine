@@ -14,9 +14,9 @@ export class AskSynkaiProviderError extends Error {
 
 export function publicAiFailure(error: unknown): string {
   const category = error instanceof AskSynkaiProviderError ? error.category : "unavailable";
-  if (category === "rate_limit") return "Ask Synk AI is busy right now. Please try again in a minute, or email support@syllabus-synk.in for help.";
-  if (category === "timeout") return "Ask Synk AI took too long to respond. Please try again shortly, or email support@syllabus-synk.in for help.";
-  return "Ask Synk AI is temporarily unavailable. Please try again later, or email support@syllabus-synk.in for help.";
+  if (category === "rate_limit") return "Ask Synk AI is busy right now. Please try again in a minute, or email admin@syllabus-synk.in for help.";
+  if (category === "timeout") return "Ask Synk AI took too long to respond. Please try again shortly, or email admin@syllabus-synk.in for help.";
+  return "Ask Synk AI is temporarily unavailable. Please try again later, or email admin@syllabus-synk.in for help.";
 }
 
 // Only fixed categories and numeric metadata are logged. Never log response bodies,

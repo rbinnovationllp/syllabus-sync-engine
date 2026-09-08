@@ -38,7 +38,7 @@ async function hashContent(content: string) {
 
 function validateSource(source: KnowledgeSource): KnowledgeSource {
   const hasContent = source.content.trim().length >= 80;
-  const mentionsSupport = source.content.includes("support@syllabus-synk.in") || source.category !== "support";
+  const mentionsSupport = source.content.includes("admin@syllabus-synk.in") || source.category !== "support";
   return {
     ...source,
     validation_status: hasContent && mentionsSupport ? source.validation_status : "needs_review",
@@ -96,7 +96,7 @@ School assurance statement:
   const supportEscalation = `
 Ask SynkAI support escalation policy:
 - Ask SynkAI should answer from approved platform knowledge only.
-- If a user asks something beyond the indexed knowledge base, Ask SynkAI should reply passively and honestly, then escalate the question to the Syllabus Synk support queue for review by the team at support@syllabus-synk.in.
+- If a user asks something beyond the indexed knowledge base, Ask SynkAI should reply passively and honestly, then escalate the question to the Syllabus Synk support queue for review by the team at admin@syllabus-synk.in.
 - The answer should not invent unknown features, policies, prices, permissions, legal claims, or implementation promises.
 - Escalated questions should become support tickets so the Company Super Admin team can review whether the knowledge base needs an update.
 `;
@@ -175,7 +175,7 @@ export async function escalateAskSynkaiUnknownQuestion(args: {
       `Question: ${args.question}`,
       args.page ? `Page: ${args.page}` : "",
       args.answer ? `Assistant response: ${args.answer}` : "",
-      "Please review this matter for support@syllabus-synk.in and update/approve Ask SynkAI knowledge if required.",
+      "Please review this matter for admin@syllabus-synk.in and update/approve Ask SynkAI knowledge if required.",
     ].filter(Boolean).join("\n\n"),
   });
 }

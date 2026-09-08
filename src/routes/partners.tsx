@@ -1,4 +1,4 @@
-﻿import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -400,8 +400,8 @@ function Footer() {
           <Link to="/pricing" className="hover:text-slate-800">
             Pricing
           </Link>
-          <a href="mailto:support@syllabus-synk.in" className="hover:text-slate-800">
-            support@syllabus-synk.in
+          <a href="mailto:admin@syllabus-synk.in" className="hover:text-slate-800">
+            admin@syllabus-synk.in
           </a>
         </div>
       </div>

@@ -1,9 +1,9 @@
-﻿import { createServerFn } from "@tanstack/react-start";
+import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 import { attributionLabelForSource } from "@/lib/acquisition";
 
-const SUPPORT_EMAIL = process.env.SUPPORT_EMAIL || "support@syllabus-synk.in";
+const SUPPORT_EMAIL = process.env.SUPPORT_EMAIL || "admin@syllabus-synk.in";
 const LEAD_NOTIFICATION_EMAIL = process.env.LEAD_NOTIFICATION_EMAIL || "rbinnovationllp@gmail.com";
 
 const leadSchema = z.object({

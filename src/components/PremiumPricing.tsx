@@ -46,7 +46,7 @@ export function PremiumPricing({
       </div>
       <a
         className="inline-block text-primary underline"
-        href="mailto:support@syllabus-synk.in?subject=Pre-K%20AI%20Education%20Premium"
+        href="mailto:admin@syllabus-synk.in?subject=Pre-K%20AI%20Education%20Premium"
       >
         Contact Us about Pre-K/K1 coverage
       </a>

@@ -86,7 +86,7 @@ Recent changes completed through 2026-07-17:
 - Added Razorpay-first payment strategy for Indian operations while keeping provider-independent hooks for future Stripe/international gateways.
 - Added automatic additional-storage allocation: verified Razorpay payment events now activate purchased storage packs for India, record CRM allocation events, notify School Super Admins, write audit logs, and create urgent Company CRM support tickets plus company notifications if allocation fails; Stripe hooks remain future-ready for international markets.
 - Added Ask SynkAI Knowledge Base Auto-Update architecture: indexed knowledge sources, validation status, critical-update approval, sync-run history, Company Super Admin refresh/review/approve controls, and approved-index loading for assistant answers.
-- Added Ask SynkAI unknown-question escalation: when the assistant lacks approved knowledge, it gives a passive non-guessing response and creates a Company CRM support-review ticket for support@syllabus-synk.in follow-up.
+- Added Ask SynkAI unknown-question escalation: when the assistant lacks approved knowledge, it gives a passive non-guessing response and creates a Company CRM support-review ticket for admin@syllabus-synk.in follow-up.
 - Added School Data Privacy, Security & Confidentiality Framework covering school data ownership, tenant isolation, role-based access, company admin support access, encryption expectations, audit logging, backups, secure exports, and confidentiality commitments.
 - Added school-facing privacy/security assurance content to Terms and School Governance.
 - Added School Super Admin Storage Management controls: allocated/used/available storage metrics, largest files, file-type breakdown, category breakdown, user-wise usage, fair usage policy display, enterprise storage options, and academic-session archive controls.
@@ -143,7 +143,7 @@ Maintenance rule:
 - If pricing, plan limits, support policy, payment behavior, or AI Future Workforce curriculum details change, update both the relevant source file and this document.
 - If a production blocker is completed or newly discovered, update both this file and `PRODUCTION_READINESS_REVIEW.md`.
 - The assistant should clearly distinguish implemented features from prototypes, blocked areas, and planned work.
-- If Ask SynkAI cannot answer from approved knowledge, it should avoid guessing and create a support-review ticket for the team at support@syllabus-synk.in.
+- If Ask SynkAI cannot answer from approved knowledge, it should avoid guessing and create a support-review ticket for the team at admin@syllabus-synk.in.
 
 ## Module Status
 
@@ -170,7 +170,7 @@ Working:
 - Knowledge now covers major product modules and AI Future Workforce.
 - AI-provider answers load approved indexed knowledge first, with `PROJECT_STATUS.md` as fallback living context.
 - Company CRM includes Ask SynkAI knowledge refresh, indexed-source review, critical approval, and sync-run monitoring.
-- Unknown or out-of-knowledge questions create support-review tickets for support@syllabus-synk.in follow-up.
+- Unknown or out-of-knowledge questions create support-review tickets for admin@syllabus-synk.in follow-up.
 - Renamed to Ask Synk AI.
 - Guides visitors to the one-month AI Future Force demo-plan request option.
 - Explains internal dashboards without operating authenticated monitoring or reporting from public chat.
