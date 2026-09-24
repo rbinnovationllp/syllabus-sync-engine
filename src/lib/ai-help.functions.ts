@@ -1,5 +1,5 @@
 import { PLANS, ADD_ONS } from "@/lib/plans";
-﻿import { createServerFn } from "@tanstack/react-start";
+import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import {
   escalateAskSynkaiUnknownQuestion,
@@ -9,10 +9,16 @@ import {
 const helpInput = z.object({
   message: z.string().trim().min(1).max(2000),
   page: z.string().trim().max(300).optional().nullable(),
-  history: z.array(z.object({
-    role: z.enum(["user", "assistant"]),
-    content: z.string().max(2000),
-  })).max(8).optional().default([]),
+  history: z
+    .array(
+      z.object({
+        role: z.enum(["user", "assistant"]),
+        content: z.string().max(2000),
+      }),
+    )
+    .max(8)
+    .optional()
+    .default([]),
 });
 
 const KNOWLEDGE_BASE = `
@@ -92,8 +98,16 @@ Detailed product guide:
 - Support email: use admin@syllabus-synk.in for account access, billing, payment confirmation, failed checkout, plan assignment, or school-specific data issues.
 
 Pricing (current catalog; Indian prices Inclusive of GST):
-${PLANS.map(p=>p.name+': '+p.prices.filter(x=>x.currency==='inr').map(x=>x.display).join(' or ')).join('\n')}
-${ADD_ONS.map(p=>p.name+': '+p.prices.map(x=>x.display).join(' / ')).join('\n')}
+${PLANS.map(
+  (p) =>
+    p.name +
+    ": " +
+    p.prices
+      .filter((x) => x.currency === "inr")
+      .map((x) => x.display)
+      .join(" or "),
+).join("\n")}
+${ADD_ONS.map((p) => p.name + ": " + p.prices.map((x) => x.display).join(" / ")).join("\n")}
 Annual plans provide 12 months for ten monthly payments, throughout the year. AI Education Premium is a separate subscription; consult its live pricing page for group prices. Pre-K/K1 coverage is Contact Us.
 
 AI Leadership Suite includes:
@@ -161,6 +175,16 @@ Support policy:
 function localAnswer(message: string, page?: string | null) {
   const q = message.toLowerCase();
   if (
+    q.includes("advantage") ||
+    q.includes("benefit") ||
+    q.includes("why syllabus synk") ||
+    q.includes("why should") ||
+    q.includes("why use") ||
+    q.includes("what does syllabus synk")
+  ) {
+    return "Syllabus-Synk's core purpose is to help schools build an AI-ready generation from the primary-school level onward. Its age-appropriate AI Education Premium pathway progresses from awareness and computational thinking to practical AI skills in higher classes, and can run alongside regular academics without requiring an expensive robotics laboratory. The connected planning and monitoring tools then help principals, coordinators and teachers protect teaching time, see syllabus delays early, and take corrective action. The practical result is accessible AI education, teacher enablement, more predictable syllabus completion, and less administrative repetition. Features depend on the school's subscribed plan.";
+  }
+  if (
     q.includes("web based") ||
     q.includes("web-based") ||
     q.includes("cloud based") ||
@@ -211,8 +235,13 @@ function localAnswer(message: string, page?: string | null) {
   ) {
     return "Syllabus Synk follows a Curriculum Mapping approach. It does not require schools to upload full textbooks for syllabus planning and does not claim that all publisher book content is available online. School admins can enter board, class, subject, book name, publisher, chapter names, topic names, and learning objectives. The system maps each chapter against recognized/open curriculum-style references such as NCERT, state-board structures, CBSE learning outcomes, ICSE curriculum, and public educational frameworks where available. It returns mapped, partial-match, or needs-information status with confidence score, comparable standard chapter, teaching-period estimate, revision-period estimate, and examination-planning signal. For unique private-publisher chapters, the system asks only for summary, learning objectives, topics covered, or key concepts, not full copyrighted content. Approved mappings are used by syllabus generation.";
   }
-  if (q.includes("one-month") || q.includes("one month") || q.includes("monthly ai course") || q.includes("demo plan")) {
-    return "Schools can request a one-month AI Education Premium demo plan from the homepage demo form. Select \"Request a One-Month AI Education Premium Course Demo Plan\" and share the school name, board/location, classes, preferred frequency once or twice a week, available periods during the month, and contact person details. A simple sample structure is: once weekly - concept, demonstration, classroom activity, recap/assessment; twice weekly - concept plus hands-on demo, tool/data activity, mini-project work, presentation, and assessment.";
+  if (
+    q.includes("one-month") ||
+    q.includes("one month") ||
+    q.includes("monthly ai course") ||
+    q.includes("demo plan")
+  ) {
+    return 'Schools can request a one-month AI Education Premium demo plan from the homepage demo form. Select "Request a One-Month AI Education Premium Course Demo Plan" and share the school name, board/location, classes, preferred frequency once or twice a week, available periods during the month, and contact person details. A simple sample structure is: once weekly - concept, demonstration, classroom activity, recap/assessment; twice weekly - concept plus hands-on demo, tool/data activity, mini-project work, presentation, and assessment.';
   }
   if (
     q.includes("future workforce") ||
@@ -233,19 +262,39 @@ function localAnswer(message: string, page?: string | null) {
   ) {
     return "Teacher preparation is central to AI Education Premium. Schools should motivate Computer Science and Technology teachers to continuously upgrade their knowledge of AI, emerging technologies, responsible AI use, classroom tools, and real-world applications. Syllabus Synk communicates this as lifelong professional development so teachers can guide students with current, relevant, and future-ready AI education.";
   }
-  if (q.includes("pilot") || q.includes("refund") || q.includes("credit note") || q.includes("subscription credit")) {
+  if (
+    q.includes("pilot") ||
+    q.includes("refund") ||
+    q.includes("credit note") ||
+    q.includes("subscription credit")
+  ) {
     return "Syllabus Synk supports a paid pilot subscription benefit workflow. Company Super Admin can mark a school as an approved paid pilot school with MOU, pilot dates, approved plan, base subscription amount, GST, gateway/bank/other deductions, and total paid. After the two-month pilot, the School Super Admin can request either continuation with Pilot Participation Credit or discontinuation with Pilot Refund review from School Governance. Requests go to Company CRM for Company Super Admin approval. Refunds are calculated server-side and, once approved, initiated through Razorpay using the original Razorpay payment ID. Credits are posted to a school credit ledger and applied to future invoices until exhausted. This is not described as a free trial.";
   }
   if (q.includes("free") || q.includes("trial") || q.includes("preview")) {
     return "You can test quality with one free 30-day preview syllabus plan for one subject. Create your academic year, add at least one grade-subject row, then open the results page and click Generate for one subject. Full annual planning and unwatermarked exports require a subscription.";
   }
-  if (q.includes("price") || q.includes("plan") || q.includes("subscription") || q.includes("payment")) {
+  if (
+    q.includes("price") ||
+    q.includes("plan") ||
+    q.includes("subscription") ||
+    q.includes("payment")
+  ) {
     return "Current plans and GST-inclusive Indian prices are listed on the Pricing page. Annual plans cost ten monthly payments for 12 months of access. AI Education Premium is available independently. Discontinued plans cannot be newly purchased or renewed through checkout. Contact admin@syllabus-synk.in for billing help.";
   }
-  if (q.includes("storage") || q.includes("upload limit") || q.includes("archive") || q.includes("fair usage")) {
+  if (
+    q.includes("storage") ||
+    q.includes("upload limit") ||
+    q.includes("archive") ||
+    q.includes("fair usage")
+  ) {
     return "School Storage uses AWS S3-backed protected storage for large school files, with Supabase storing application data and file metadata. The School Super Admin dashboard shows allocated, used, and available storage, largest files, category usage, file-type breakdown, user-wise usage, archive usage, and alerts at 80%, 90%, and 100%. Uploads are paused when the quota is full until files are removed, old academic sessions are archived, or additional storage is purchased. Paid storage add-ons are automatically activated after verified payment, and the School Super Admin receives a confirmation notification with previous and new storage limits. Additional storage prices are: 25 GB - Rs. 250/month, 50 GB - Rs. 500/month, 100 GB - Rs. 900/month, 250 GB - Rs. 2,000/month, and 500 GB - Rs. 3,500/month. For 1 TB or more, custom enterprise pricing is available through admin@syllabus-synk.in.";
   }
-  if (q.includes("teacher credit") || q.includes("workload") || q.includes("teacher load") || q.includes("distribution")) {
+  if (
+    q.includes("teacher credit") ||
+    q.includes("workload") ||
+    q.includes("teacher load") ||
+    q.includes("distribution")
+  ) {
     return "School Super Admins can review Teacher Credit Distribution Recommendations inside Academic Execution. The system scores teacher workload using assigned classes, subjects, weekly periods, duties, special projects, and recent teaching activity, then highlights balanced, moderate overload, high overload, or underutilized teachers. These recommendations are advisory; final decisions remain with school management.";
   }
   if (
@@ -273,7 +322,12 @@ function localAnswer(message: string, page?: string | null) {
   ) {
     return "Syllabus Synk is being strengthened toward a richer teaching-support ecosystem. The AI Teaching Assistant and AI Teaching Resource Studio can help teachers create chapter-list mapped teaching packs, activity-based lesson packs, worksheets, quizzes with answer keys, slide outlines, projects, demonstrations, real-life example banks, diagram-labeling tasks, timelines, concept maps, remedial practice, teacher micro-training modules, and AI Education Premium lab activities. The platform does not require full book uploads for normal planning; for private publisher books it uses school-provided chapter lists or permitted extracts. This is designed to come closer to advanced teaching platforms while protecting base subscription prices: normal use draws from included monthly AI credits, and heavy use can be handled through optional AI credit top-ups. Saved resources can be reused from the AI Teaching Innovation Library without consuming additional credits.";
   }
-  if (q.includes("daily teaching") || q.includes("today") && q.includes("topic") || q.includes("planned lesson") || q.includes("syllabus-aware")) {
+  if (
+    q.includes("daily teaching") ||
+    (q.includes("today") && q.includes("topic")) ||
+    q.includes("planned lesson") ||
+    q.includes("syllabus-aware")
+  ) {
     return "Syllabus-aware Teaching Assistance is available inside Academic Execution. When teachers open their daily teaching plan, Syllabus Synk can show today's planned topics from assigned class/subject and generated curriculum context. Against each planned topic, teachers can request Explain Full Topic, Explain Selected Portion, Generate Activity, Real-Life Examples, Teacher Notes, Student Question Help, Beyond Textbook Explanation, or Revision Summary. The assistant automatically uses class, subject, board, book, chapter, topic, learning objectives, and academic calendar context, so the teacher does not need to repeatedly enter details already planned in Syllabus Synk. Advanced help consumes AI Teaching Credits as controlled by the School Super Admin.";
   }
   if (q.includes("razorpay") || q.includes("pay")) {
@@ -292,7 +346,12 @@ function localAnswer(message: string, page?: string | null) {
   ) {
     return "Syllabus Synk treats school data as the property of the respective institution. The platform is designed around tenant isolation, role-based access, audit logging, encrypted transmission/storage practices, controlled exports, backups, and confidentiality commitments. Syllabus Synk acts as a technology custodian and should not sell, share, distribute, or commercially use school data without explicit authorization.";
   }
-  if (q.includes("calendar") || q.includes("holiday") || q.includes("exam") || q.includes("event")) {
+  if (
+    q.includes("calendar") ||
+    q.includes("holiday") ||
+    q.includes("exam") ||
+    q.includes("event")
+  ) {
     return "To prepare the academic calendar, first add the academic year dates, weekly offs, holidays, exam windows, and school events. Then generate the annual calendar so Syllabus Synk can calculate real teaching capacity before syllabus planning.";
   }
   if (q.includes("teacher") || q.includes("copilot")) {
@@ -313,10 +372,7 @@ function localAnswer(message: string, page?: string | null) {
 function priorityAnswer(message: string) {
   const q = message.toLowerCase();
   const asksStorage =
-    q.includes("storage") ||
-    q.includes("gb") ||
-    q.includes("quota") ||
-    q.includes("upload limit");
+    q.includes("storage") || q.includes("gb") || q.includes("quota") || q.includes("upload limit");
   const asksPrice =
     q.includes("price") ||
     q.includes("pricing") ||
@@ -360,7 +416,9 @@ async function aiAnswer(data: z.infer<typeof helpInput>) {
     `Current page: ${data.page || "unknown"}`,
     history ? `Recent chat:\n${history}` : "",
     `User question: ${data.message}`,
-  ].filter(Boolean).join("\n\n");
+  ]
+    .filter(Boolean)
+    .join("\n\n");
   const statusKnowledge = await approvedKnowledge();
 
   return answerWithClaude(
@@ -395,7 +453,12 @@ export const askAiHelpAssistant = createServerFn({ method: "POST" })
           question: data.message,
           page: data.page,
           answer,
-        }).catch(() => console.info('[ask-synkai]', JSON.stringify({ event: 'support_queue_failure', category: 'unavailable' })));
+        }).catch(() =>
+          console.info(
+            "[ask-synkai]",
+            JSON.stringify({ event: "support_queue_failure", category: "unavailable" }),
+          ),
+        );
       }
       return { answer, provider: "anthropic" };
     } catch (error: unknown) {

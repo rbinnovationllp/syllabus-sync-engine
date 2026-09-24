@@ -32,17 +32,20 @@ import { AcquisitionSourceFields } from "@/components/AcquisitionSourceFields";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "CurriculumOS - AI Curriculum Planning for K-12 Schools" },
+      { title: "Syllabus-Synk - AI Education & Academic Planning for Schools" },
       {
         name: "description",
         content:
-          "Plan an entire academic year in minutes. Capacity-aware scheduling, board-aligned chapter planning, multi-teacher balance, and exam-ready syllabus completion - for CBSE, ICSE, IB, Cambridge, Common Core and more.",
+          "Build an AI-ready generation from primary school onward, while planning and monitoring syllabus completion across your school.",
       },
-      { property: "og:title", content: "CurriculumOS - AI Curriculum Planning for K-12 Schools" },
+      {
+        property: "og:title",
+        content: "Syllabus-Synk - Preparing Children for an AI-Driven Future",
+      },
       {
         property: "og:description",
         content:
-          "From holiday calendar to lesson plan in minutes. Built for school leaders worldwide.",
+          "Age-appropriate AI education, teacher enablement, and academic execution monitoring in one software-first platform.",
       },
       { property: "og:type", content: "website" },
       { property: "og:url", content: "https://www.syllabus-synk.in/" },
@@ -59,6 +62,7 @@ function Landing() {
       <Hero />
       <Logos />
       <Features />
+      <SchoolAdvantages />
       <HowItWorks />
       <Boards />
       <Testimonials />
@@ -76,11 +80,14 @@ function Nav() {
           <div className="grid h-8 w-8 place-items-center rounded-lg bg-gradient-to-br from-indigo-600 via-fuchsia-500 to-amber-500 text-white shadow-md">
             <GraduationCap className="h-4 w-4" />
           </div>
-          <span className="font-bold tracking-tight">CurriculumOS</span>
+          <span className="font-bold tracking-tight">Syllabus-Synk</span>
         </Link>
         <nav className="hidden items-center gap-7 text-sm text-slate-600 md:flex">
           <a href="#features" className="hover:text-slate-900">
-            Features
+            AI education
+          </a>
+          <a href="#advantages" className="hover:text-slate-900">
+            School advantage
           </a>
           <a href="#how" className="hover:text-slate-900">
             How it works
@@ -138,20 +145,21 @@ function Hero() {
       <div className="container mx-auto px-4 pt-20 pb-28 text-center text-white">
         <div className="mx-auto inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs backdrop-blur">
           <Sparkles className="h-3.5 w-3.5 text-amber-300" />
-          <span className="text-white/80">AI Operating System for School Leadership</span>
+          <span className="text-white/80">Preparing children for an AI-driven future</span>
         </div>
 
         <h1 className="mx-auto mt-6 max-w-4xl text-4xl font-bold leading-[1.1] tracking-tight sm:text-6xl">
-          Plan a flawless{" "}
+          Build an{" "}
           <span className="bg-gradient-to-r from-amber-300 via-fuchsia-400 to-indigo-300 bg-clip-text text-transparent">
-            academic year
+            AI-ready generation
           </span>{" "}
-          in minutes - not months.
+          from the primary-school level onward.
         </h1>
 
         <p className="mx-auto mt-6 max-w-2xl text-base text-white/70 sm:text-lg">
-          CurriculumOS turns holidays, exams, events, and chapter lists into a capacity-aware curriculum
-          that guarantees syllabus completion across every class, teacher, and stream.
+          Syllabus-Synk makes age-appropriate AI classes accessible without expensive laboratories,
+          while giving school leaders the planning and monitoring tools to keep regular academics on
+          track.
         </p>
 
         <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
@@ -161,7 +169,7 @@ function Hero() {
             className="bg-gradient-to-r from-amber-400 to-fuchsia-500 text-slate-950 font-semibold shadow-lg shadow-fuchsia-500/30 hover:opacity-95"
           >
             <Link to="/auth" search={{ invite: undefined }}>
-              Start planning free <ArrowRight className="ml-2 h-4 w-4" />
+              Explore AI education <ArrowRight className="ml-2 h-4 w-4" />
             </Link>
           </Button>
           <Button
@@ -178,10 +186,10 @@ function Hero() {
 
         <div className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-white/60">
           {[
-            "Trusted by school leaders",
-            "CBSE * ICSE * IB * Cambridge",
-            "Secure & private",
-            "Free pilot for your school",
+            "Software-first: no mandatory lab investment",
+            "AI classes for Classes 1-12",
+            "Teacher enablement included",
+            "Academic visibility for school leaders",
           ].map((t) => (
             <span key={t} className="flex items-center gap-1.5">
               <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" /> {t}
@@ -195,21 +203,21 @@ function Hero() {
             <div className="grid gap-3 rounded-xl bg-slate-950/70 p-4 sm:grid-cols-3">
               {[
                 {
-                  label: "Teaching days available",
-                  value: "187",
-                  trend: "after holidays & exams",
+                  label: "AI learning pathway",
+                  value: "1-12",
+                  trend: "age-appropriate progression",
                   accent: "from-indigo-500 to-cyan-400",
                 },
                 {
-                  label: "Syllabus completion",
-                  value: "98%",
-                  trend: "30 days pre-board",
+                  label: "AI classes",
+                  value: "1-2/wk",
+                  trend: "alongside regular academics",
                   accent: "from-emerald-500 to-lime-400",
                 },
                 {
-                  label: "Teacher load balance",
-                  value: "Yes Even",
-                  trend: "across 14 classes",
+                  label: "Academic visibility",
+                  value: "Early",
+                  trend: "signals for action and recovery",
                   accent: "from-fuchsia-500 to-amber-400",
                 },
               ].map((c) => (
@@ -250,12 +258,16 @@ function PublicVisitorProof() {
     {
       label: "School leaders exploring",
       value: totalVisitors?.toLocaleString() ?? "...",
-      detail: isLoading ? "loading live visitor count" : "estimated launch interest + recorded visitors",
+      detail: isLoading
+        ? "loading live visitor count"
+        : "estimated launch interest + recorded visitors",
     },
     {
       label: "Product page views",
       value: totalVisits?.toLocaleString() ?? "...",
-      detail: isLoading ? "loading live page views" : "estimated launch reach + recorded page opens",
+      detail: isLoading
+        ? "loading live page views"
+        : "estimated launch reach + recorded page opens",
     },
     {
       label: "This week",
@@ -298,6 +310,14 @@ function Logos() {
 }
 
 const FEATURES = [
+  {
+    icon: BrainCircuit,
+    title: "AI education: our core mission",
+    to: "/ai-education-premium",
+    action: "Explore the AI learning pathway",
+    body: "Introduce age-appropriate AI awareness, computational thinking, practical skills, and future-career readiness from Classes 1-12—without requiring an expensive robotics lab.",
+    color: "from-violet-500 to-fuchsia-500",
+  },
   {
     icon: Calendar,
     title: "Capacity engine",
@@ -346,14 +366,6 @@ const FEATURES = [
     body: "30/45/60-day pre-exam completion rules built-in for primary, secondary & senior secondary.",
     color: "from-rose-500 to-red-500",
   },
-  {
-    icon: BrainCircuit,
-    title: "AI Education Premium",
-    to: "/ai-education-premium",
-    action: "View AI Education Premium",
-    body: "Explore AI Education Premium, a separate subscription with class-group packages and AI teaching guidance.",
-    color: "from-violet-500 to-fuchsia-500",
-  },
 ] as const;
 
 function Features() {
@@ -361,18 +373,21 @@ function Features() {
     <section id="features" className="container mx-auto px-4 py-24">
       <div className="mx-auto max-w-2xl text-center">
         <p className="text-xs font-semibold uppercase tracking-widest text-indigo-600">
-          Why CurriculumOS
+          Why Syllabus-Synk
         </p>
         <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">
-          Everything an academic leader needs
+          AI education first. Academic control built in.
         </h2>
         <p className="mt-4 text-slate-600">
-          From the first holiday entry to the final lesson plan - one intelligent system replaces
-          six spreadsheets.
+          Give every child a progressive AI learning pathway while school leaders protect regular
+          academic time, syllabus coverage, and teaching quality.
         </p>
         <p className="mt-4 text-sm text-slate-600">
           Feature access and usage limits depend on your subscription.{" "}
-          <Link to="/pricing" className="font-semibold text-indigo-600 underline underline-offset-4">
+          <Link
+            to="/pricing"
+            className="font-semibold text-indigo-600 underline underline-offset-4"
+          >
             Compare plans and included features
           </Link>{" "}
           (sign-in required).
@@ -405,6 +420,66 @@ function Features() {
             </Card>
           </Link>
         ))}
+      </div>
+    </section>
+  );
+}
+
+function SchoolAdvantages() {
+  const advantages = [
+    {
+      icon: Calendar,
+      title: "Plans that reflect the real school year",
+      body: "Build plans around actual teaching days, holidays, exams, events, training and revision buffers—before a delay becomes an end-of-year crisis.",
+    },
+    {
+      icon: LineChart,
+      title: "Early visibility for school leaders",
+      body: "See syllabus progress, delays, rescheduled lessons and workload signals in one place, so coordinators can act while there is still time to recover.",
+    },
+    {
+      icon: Users,
+      title: "More support for teachers, less repetition",
+      body: "Teachers can update daily progress from a browser or phone and generate syllabus-aware activities, explanations, worksheets and revision support when needed.",
+    },
+    {
+      icon: BrainCircuit,
+      title: "Future-ready learning without disrupting academics",
+      body: "Add a structured, age-appropriate AI education pathway alongside the regular timetable, with one or two classes per week and teacher enablement.",
+    },
+  ] as const;
+
+  return (
+    <section id="advantages" className="border-y border-indigo-100 bg-indigo-50/50 py-24">
+      <div className="container mx-auto px-4">
+        <div className="mx-auto max-w-3xl text-center">
+          <p className="text-xs font-semibold uppercase tracking-widest text-indigo-600">
+            The school advantage
+          </p>
+          <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">
+            AI learning made accessible. Academic control kept visible.
+          </h2>
+          <p className="mt-4 text-slate-600">
+            Unlike hardware-intensive programmes, Syllabus-Synk is software-first: schools can begin
+            structured AI education with teacher enablement and grow at their own pace, while
+            leaders retain a clear view of regular syllabus execution.
+          </p>
+        </div>
+        <div className="mt-12 grid gap-5 md:grid-cols-2">
+          {advantages.map((advantage) => (
+            <Card key={advantage.title} className="border-indigo-100 bg-white shadow-sm">
+              <CardContent className="flex gap-4 p-6">
+                <div className="shrink-0 rounded-xl bg-indigo-100 p-3 text-indigo-700">
+                  <advantage.icon className="h-5 w-5" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-slate-900">{advantage.title}</h3>
+                  <p className="mt-2 text-sm leading-6 text-slate-600">{advantage.body}</p>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </div>
     </section>
   );
@@ -638,7 +713,14 @@ function Contact() {
             `Contact person details: ${form.demo_contact_details || form.name || "-"}`,
           ].join("\n")
         : "";
-      const { request_ai_future_force_demo, demo_classes, demo_frequency, demo_available_periods, demo_contact_details, ...lead } = form;
+      const {
+        request_ai_future_force_demo,
+        demo_classes,
+        demo_frequency,
+        demo_available_periods,
+        demo_contact_details,
+        ...lead
+      } = form;
       return fn({ data: { ...lead, message: `${form.message || ""}${demoDetails}`.trim() } });
     },
     onSuccess: () => {
@@ -665,8 +747,10 @@ function Contact() {
     onError: (e: unknown) =>
       toast.error(e instanceof Error ? e.message : "Could not submit. Try again."),
   });
-  const set = (k: keyof typeof form) => (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
-    setForm({ ...form, [k]: e.target.value });
+  const set =
+    (k: keyof typeof form) =>
+    (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
+      setForm({ ...form, [k]: e.target.value });
 
   return (
     <section id="contact" className="relative isolate overflow-hidden py-24">
@@ -767,7 +851,9 @@ function Contact() {
                   <input
                     type="checkbox"
                     checked={form.request_ai_future_force_demo}
-                    onChange={(e) => setForm({ ...form, request_ai_future_force_demo: e.target.checked })}
+                    onChange={(e) =>
+                      setForm({ ...form, request_ai_future_force_demo: e.target.checked })
+                    }
                     className="mt-1 h-4 w-4 rounded border-slate-300"
                   />
                   <span>
@@ -775,7 +861,8 @@ function Contact() {
                       Request AI Education Premium information
                     </span>
                     <span className="mt-1 block text-xs text-slate-600">
-                      Share your class coverage and available periods so our team can recommend an AI Education Premium package.
+                      Share your class coverage and available periods so our team can recommend an
+                      AI Education Premium package.
                     </span>
                   </span>
                 </label>
@@ -898,4 +985,3 @@ function Footer() {
     </footer>
   );
 }
-
