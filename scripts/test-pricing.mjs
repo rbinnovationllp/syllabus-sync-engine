@@ -157,12 +157,23 @@ await test("Entitlement expiry and future terms fail closed", () => {
   assert.equal(premium.entitlementActive(row, Date.parse("2025-12-01")), false);
   assert.equal(premium.entitlementActive({ ...row, ends_at: null }), false);
 });
-await test("Skill contents and class resources are loaded, with content versioning", async () => {
-  for (const g of ["1", "3", "6", "9", "12"]) {
+await test("All grades load the correct lesson and annual curriculum band with distinct versions", async () => {
+  const expectedBands = {
+    "1": "Classes 1–2", "2": "Classes 1–2", "3": "Classes 3–5", "4": "Classes 3–5", "5": "Classes 3–5",
+    "6": "Classes 6–8", "7": "Classes 6–8", "8": "Classes 6–8", "9": "Classes 9–10", "10": "Classes 9–10",
+    "11": "Classes 11–12", "12": "Classes 11–12",
+  };
+  for (const [g, band] of Object.entries(expectedBands)) {
     const s = await skill.loadTeachingPlannerSkill(g, "lesson");
+    const annual = await skill.loadTeachingPlannerSkill(g, "annual");
     assert.ok(s.text.length > 10000);
     assert.match(s.text, /Output template/);
+    assert.match(s.text, new RegExp(band));
     assert.match(s.version, /^[a-f0-9]{64}$/);
+    assert.match(annual.text, /Syllabus Synk \(CurriculumOS\) Integration/);
+    assert.match(annual.text, new RegExp(band));
+    assert.match(annual.version, /^[a-f0-9]{64}$/);
+    assert.notEqual(annual.version, s.version, "annual plans include a separate integration authority");
   }
 });
 await test("Claude backend sends skill instructions, validates output, handles failures", async () => {
@@ -194,11 +205,13 @@ await test("Claude backend sends skill instructions, validates output, handles f
   }
 });
 
-if (!process.env.PGLITE_MODULE)
-  throw Error(
-    "Set PGLITE_MODULE to the installed @electric-sql/pglite entry point for database tests.",
-  );
-const { PGlite } = await import(pathToFileURL(process.env.PGLITE_MODULE).href);
+const pgliteModule = process.env.PGLITE_MODULE || path.resolve("node_modules/@electric-sql/pglite/dist/index.js");
+try {
+  await fs.access(pgliteModule);
+} catch {
+  throw Error("Install the declared @electric-sql/pglite development dependency, or set PGLITE_MODULE to its entry point for database tests.");
+}
+const { PGlite } = await import(pathToFileURL(pgliteModule).href);
 const db = new PGlite();
 await db.exec(`create role anon;create role authenticated;create role service_role bypassrls;create schema auth;
 create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;

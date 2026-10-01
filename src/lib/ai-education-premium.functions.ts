@@ -339,7 +339,7 @@ const teachingRequest = z
     academicYear: z.string().trim().min(3).max(40),
     term: z.string().trim().max(80).optional(),
     weekNo: z.number().int().min(1).max(60).optional(),
-    topic: z.string().trim().min(2).max(300),
+    topic: z.string().trim().min(2).max(300).optional(),
     learningObjective: z.string().trim().max(600).optional(),
     previousLearning: z.string().trim().max(1000).optional(),
     durationMinutes: z.number().int().min(20).max(180).default(40),
@@ -347,6 +347,30 @@ const teachingRequest = z
     facilities: z.string().trim().max(500).default("Not specified"),
   })
   .strict();
+const annualTeachingRequest = z.object({
+  grade,
+  academicYear: z.string().trim().min(3).max(40),
+  term: z.string().trim().max(80).optional(),
+  previousLearning: z.string().trim().max(1000).optional(),
+  calendarContext: z.string().trim().max(4000).default("Use the school's available teaching weeks, holidays, examinations and events where supplied."),
+  language: z.string().trim().min(1).max(80).default("English"),
+  facilities: z.string().trim().max(500).default("Not specified"),
+}).strict();
+
+export const generateAiEducationPremiumAnnualPlan = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => annualTeachingRequest.parse(input))
+  .handler(async ({ data, context }) => {
+    const { orgId } = await school(context);
+    const admin = await adminClient();
+    const { generatePremiumAnnualPlan } = await import("@/lib/ai-education-premium-generation.server");
+    try {
+      return await generatePremiumAnnualPlan(admin, context.userId, orgId, data);
+    } catch (e) {
+      const message = e instanceof Error ? e.message : "";
+      throw new Error(message === "PREMIUM_CLASS_NOT_SUBSCRIBED" ? "This class is not available in your active subscription or teacher assignment." : "Annual AI curriculum planning is temporarily unavailable. Please try again later.");
+    }
+  });
 export const generateAiEducationPremiumTeachingPlan = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => teachingRequest.parse(input))
@@ -361,6 +385,8 @@ export const generateAiEducationPremiumTeachingPlan = createServerFn({ method: "
       throw new Error(
         message === "PREMIUM_CLASS_NOT_SUBSCRIBED"
           ? "This class is not available in your active subscription or teacher assignment."
+          : message === "PREMIUM_ANNUAL_PLAN_REQUIRED"
+            ? "Enter a topic, or generate an annual AI plan and choose a week so the planner can select today's scheduled module."
           : message === "PREMIUM_GENERATION_LIMIT"
             ? "Your school has reached its teaching-plan generation limit. You can still reuse saved plans."
             : message === "PREMIUM_GENERATION_IN_PROGRESS"
@@ -378,7 +404,7 @@ export const listAiEducationPremiumSavedPlans = createServerFn({ method: "GET" }
     const db: any = context.supabase;
     const result = await db
       .from("ai_education_premium_teaching_plans")
-      .select("id,topic,academic_year,output,created_at")
+      .select("id,topic,academic_year,session_type,output,created_at")
       .eq("org_id", orgId)
       .eq("grade", data.grade)
       .order("created_at", { ascending: false })

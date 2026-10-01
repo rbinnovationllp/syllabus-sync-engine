@@ -11,7 +11,22 @@ export const teachingPlanSchema = z.object({
 });
 export type TeachingPlan = z.infer<typeof teachingPlanSchema>;
 
-export async function generateWithClaude(system: string, prompt: string): Promise<{ plan: TeachingPlan; usage: unknown; model: string }> {
+export const annualPlanSchema = z.object({
+  title: z.string().min(1).max(200),
+  grade_progression: z.string().min(1),
+  periods_per_week: z.literal(2),
+  modules: z.array(z.object({
+    week_start: z.number().int().min(1).max(60), week_end: z.number().int().min(1).max(60),
+    title: z.string().min(1), competencies: z.array(z.string()).min(1).max(12),
+    learning_objectives: z.array(z.string()).min(1).max(8), period_type: z.enum(["teaching", "practical", "project", "revision", "assessment", "buffer"]),
+    prerequisite_competencies: z.array(z.string()).default([]), responsible_ai_focus: z.string().min(1), bharat_context: z.string().min(1),
+  })).min(6).max(30),
+  assessment_strategy: z.string().min(1), progress_tracking: z.string().min(1),
+  teacher_notes: z.string().min(1),
+});
+export type AnnualPlan = z.infer<typeof annualPlanSchema>;
+
+export async function generateWithClaude<T extends z.ZodTypeAny = typeof teachingPlanSchema>(system: string, prompt: string, schema: T = teachingPlanSchema as T): Promise<{ plan: z.infer<T>; usage: unknown; model: string }> {
   const key = process.env.ANTHROPIC_API_KEY;
   if (!key) throw new Error("ANTHROPIC_NOT_CONFIGURED");
   const controller = new AbortController(); const timeout = setTimeout(() => controller.abort(), 60_000);
@@ -21,7 +36,7 @@ export async function generateWithClaude(system: string, prompt: string): Promis
     const payload:any = await response.json(); const text = payload.content?.find((part:any)=>part.type === "text")?.text;
     if (!text) throw new Error("ANTHROPIC_INVALID_RESPONSE");
     const json = JSON.parse(text.replace(/^```json\s*|\s*```$/g, ""));
-    return { plan:teachingPlanSchema.parse(json), usage:payload.usage ?? {}, model:payload.model ?? process.env.ANTHROPIC_MODEL ?? "claude" };
+    return { plan:schema.parse(json), usage:payload.usage ?? {}, model:payload.model ?? process.env.ANTHROPIC_MODEL ?? "claude" };
   } catch (error:any) {
     if (error?.name === "AbortError") throw new Error("ANTHROPIC_TIMEOUT");
     if (error instanceof z.ZodError || error instanceof SyntaxError) throw new Error("ANTHROPIC_INVALID_RESPONSE");

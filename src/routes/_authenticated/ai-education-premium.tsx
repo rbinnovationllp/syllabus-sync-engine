@@ -18,6 +18,7 @@ import {
   confirmAiEducationPremiumPayment,
   cancelAiEducationPremium,
   getAiEducationPremiumReceipt,
+  generateAiEducationPremiumAnnualPlan,
   generateAiEducationPremiumTeachingPlan,
   listAiEducationPremiumSavedPlans,
   assignAiEducationPremiumTeacher,
@@ -38,6 +39,7 @@ function PremiumPage() {
     confirm = useServerFn(confirmAiEducationPremiumPayment),
     cancel = useServerFn(cancelAiEducationPremium),
     receiptFn = useServerFn(getAiEducationPremiumReceipt),
+    generateAnnual = useServerFn(generateAiEducationPremiumAnnualPlan),
     generate = useServerFn(generateAiEducationPremiumTeachingPlan),
     savedFn = useServerFn(listAiEducationPremiumSavedPlans),
     assign = useServerFn(assignAiEducationPremiumTeacher),
@@ -141,6 +143,19 @@ function PremiumPage() {
     } finally {
       setPlanBusy(false);
     }
+  }
+  async function makeAnnualPlan() {
+    setPlanBusy(true);
+    try {
+      const r = await generateAnnual({ data: {
+        grade: form.grade as any, academicYear: form.academicYear, term: form.term,
+        previousLearning: form.previousLearning, language: form.language, facilities: form.facilities,
+        calendarContext: "Use approximately two AI periods each week. Account for school holidays, examinations and events where available; retain revision, assessment, project and buffer time.",
+      } });
+      setPlan(r.plan);
+      toast.success(r.cached ? "Opened your saved annual AI plan." : "Annual AI plan saved.");
+      void saved.refetch();
+    } catch (e) { toast.error(message(e)); } finally { setPlanBusy(false); }
   }
   async function showReceipt(id: string) {
     try {
@@ -280,8 +295,8 @@ function PremiumPage() {
             <h2 className="text-xl font-semibold">Teacher planner</h2>
             <p className="text-sm text-muted-foreground">
               Choose your class and session for age-appropriate teaching guidance, activities,
-              practice and understanding checks. Saved plans can be reopened without another
-              generation.
+              practice and understanding checks. Generate an annual plan first to make “what should I
+              teach today?” follow the school sequence; otherwise enter a permitted topic for assisted planning.
             </p>
             <div className="grid gap-4 sm:grid-cols-2">
               <label className="space-y-1">
@@ -357,12 +372,14 @@ function PremiumPage() {
                 />
               </div>
             </div>
-            <Button
-              disabled={!form.grade || form.topic.trim().length < 2 || planBusy}
-              onClick={makePlan}
-            >
-              {planBusy ? "Preparing guidance…" : "Prepare teaching plan"}
-            </Button>
+            <div className="flex flex-wrap gap-2">
+              <Button disabled={!form.grade || planBusy} onClick={makeAnnualPlan}>
+                {planBusy ? "Preparing guidance…" : "Generate annual AI plan"}
+              </Button>
+              <Button variant="outline" disabled={!form.grade || (!form.topic?.trim() && !form.weekNo) || planBusy} onClick={makePlan}>
+                {planBusy ? "Preparing guidance…" : form.topic?.trim() ? "Prepare teaching plan" : "What should I teach today?"}
+              </Button>
+            </div>
             {!!saved.data?.length && (
               <div className="space-y-2">
                 <h3 className="font-semibold">Saved plans for this class</h3>
@@ -373,7 +390,7 @@ function PremiumPage() {
                     className="mr-2 h-auto whitespace-normal text-left"
                     onClick={() => setPlan(p.output)}
                   >
-                    {p.topic} · {p.academic_year}
+                    {p.session_type === "annual" ? "Annual plan" : p.topic} · {p.academic_year}
                   </Button>
                 ))}
               </div>
@@ -383,10 +400,10 @@ function PremiumPage() {
         {plan && (
           <section className="rounded-xl border p-5 space-y-4">
             <h2 className="text-2xl font-semibold">{plan.title}</h2>
-            <p>{plan.what_to_teach}</p>
-            <p>
+            {plan.what_to_teach && <p>{plan.what_to_teach}</p>}
+            {plan.when_to_teach && <p>
               <strong>When:</strong> {plan.when_to_teach}
-            </p>
+            </p>}
             {plan.full_lesson ? (
               Object.entries(plan.full_lesson).map(([key, value]) => (
                 <details key={key} open={key === "A"} className="rounded border p-3">
@@ -417,6 +434,11 @@ function PremiumPage() {
                   <p className="mt-3 whitespace-pre-wrap break-words text-sm">{String(value)}</p>
                 </details>
               ))
+            ) : plan.modules ? (
+              <div className="space-y-3">
+                <p>{plan.grade_progression}</p>
+                {plan.modules.map((module: any, index: number) => <div key={index} className="rounded border p-3 text-sm"><strong>Weeks {module.week_start}–{module.week_end}: {module.title}</strong><p>{module.competencies.join(" · ")}</p><p className="text-muted-foreground">{module.period_type} · {module.responsible_ai_focus}</p></div>)}
+              </div>
             ) : (
               <>
                 <p>{plan.teacher_guidance}</p>
