@@ -1,5 +1,6 @@
 ﻿import { DeleteObjectCommand, GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { HeadObjectCommand } from "@aws-sdk/client-s3";
 
 function requiredEnv(name: string) {
   const value = process.env[name];
@@ -30,7 +31,7 @@ export function safeStorageFileName(fileName: string) {
 }
 
 export function schoolStorageKey(orgId: string, objectId: string, fileName: string) {
-  return `schools/${orgId}/files/${objectId}-${safeStorageFileName(fileName)}`;
+  return `schools/${orgId}/uploads/${objectId}`;
 }
 
 export async function createSchoolUploadUrl(input: {
@@ -65,4 +66,8 @@ export async function deleteSchoolStorageObject(key: string) {
       Key: key,
     }),
   );
+}
+
+export async function headSchoolStorageObject(key: string) {
+  return s3Client().send(new HeadObjectCommand({ Bucket: schoolStorageBucket(), Key: key }));
 }

@@ -5,6 +5,7 @@ import {
   createSchoolDownloadUrl,
   createSchoolUploadUrl,
   deleteSchoolStorageObject,
+  headSchoolStorageObject,
   schoolStorageBucket,
   schoolStorageKey,
 } from "@/lib/aws-storage.server";
@@ -22,13 +23,27 @@ const PLAN_STORAGE_GB: Record<string, number> = {
   "enterprise_global_access": 400,
 };
 
-const MAX_SINGLE_UPLOAD_BYTES = 1024 * 1024 * 1024;
+const MAX_SINGLE_UPLOAD_BYTES = 100 * 1024 * 1024;
+const ALLOWED_FILE_TYPES = new Set([
+  "application/pdf", "text/plain", "text/csv", "image/jpeg", "image/png", "image/webp",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+]);
 const STORAGE_PACKS_GB = [25, 50, 100, 250, 500, 1024, 2048, 5120];
 const FAIR_USAGE_POLICY =
   "Each subscription plan includes a defined storage allocation. Additional storage may be purchased separately. The company reserves the right to archive inactive academic records and enforce fair usage policies to maintain platform performance.";
 
 function gbToBytes(gb: number) {
   return gb * 1024 * 1024 * 1024;
+}
+
+function assertAllowedSchoolFile(fileName: string, contentType: string) {
+  const extension = fileName.toLowerCase().split(".").pop() ?? "";
+  const allowedExtensions = new Set(["pdf", "txt", "csv", "jpg", "jpeg", "png", "webp", "docx", "xlsx", "pptx"]);
+  if (!ALLOWED_FILE_TYPES.has(contentType.toLowerCase()) || !allowedExtensions.has(extension)) {
+    throw new Error("This file type is not permitted. Upload PDF, Office documents, CSV, text, JPEG, PNG, or WebP files only.");
+  }
 }
 
 async function adminClient() {
@@ -403,36 +418,22 @@ export const createSchoolFileUpload = createServerFn({ method: "POST" })
     const planCode = await getOrgPlanCode(org.org_id);
     const quotaGb = (PLAN_STORAGE_GB[planCode] ?? 1) + await getOrgExtraStorageGb(org.org_id);
     const quotaBytes = gbToBytes(quotaGb);
-    const usedBytes = await getStorageUsage(org.org_id);
-
-    if (usedBytes + data.sizeBytes > quotaBytes) {
-      await notifyStorageThreshold({
-        orgId: org.org_id,
-        usedBytes,
-        quotaBytes,
-        percentUsed: 100,
-      });
-      throw new Error(`Storage quota exceeded. Your current plan allows ${quotaGb} GB. Purchase additional storage or archive inactive academic records before uploading more files.`);
-    }
+    assertAllowedSchoolFile(data.fileName, data.contentType);
 
     const admin = await adminClient();
     const objectId = crypto.randomUUID();
     const objectKey = schoolStorageKey(org.org_id, objectId, data.fileName);
 
-    const { error } = await admin.from("school_storage_objects").insert({
-      id: objectId,
-      org_id: org.org_id,
-      uploaded_by: userId,
-      bucket: schoolStorageBucket(),
-      object_key: objectKey,
-      file_name: data.fileName,
-      content_type: data.contentType,
-      size_bytes: data.sizeBytes,
-      category: data.category,
-      status: "pending",
+    const { error } = await admin.rpc("reserve_school_storage_upload", {
+      p_id: objectId, p_org: org.org_id, p_user: userId, p_bucket: schoolStorageBucket(),
+      p_key: objectKey, p_file_name: data.fileName, p_content_type: data.contentType,
+      p_size_bytes: data.sizeBytes, p_category: data.category, p_quota_bytes: quotaBytes,
+      p_academic_year_id: null,
     });
-
-    if (error) throw new Error(error.message);
+    if (error) {
+      if (String(error.message).includes("STORAGE_QUOTA_EXCEEDED")) throw new Error(`Storage quota exceeded. Your current plan allows ${quotaGb} GB.`);
+      throw new Error(error.message);
+    }
 
     return {
       id: objectId,
@@ -453,6 +454,21 @@ export const completeSchoolFileUpload = createServerFn({ method: "POST" })
     const org = await getCurrentOrg(context);
     const admin = await adminClient();
 
+    const { data: pending, error: pendingError } = await admin
+      .from("school_storage_objects")
+      .select("object_key, size_bytes, content_type")
+      .eq("id", data.id)
+      .eq("org_id", org.org_id)
+      .eq("status", "pending")
+      .maybeSingle();
+    if (pendingError) throw new Error(pendingError.message);
+    if (!pending) throw new Error("Pending upload was not found.");
+    let remote: any;
+    try { remote = await headSchoolStorageObject(pending.object_key); }
+    catch { throw new Error("The uploaded file could not be verified. Please upload again."); }
+    if (Number(remote.ContentLength) !== Number(pending.size_bytes) || String(remote.ContentType ?? "").toLowerCase() !== String(pending.content_type).toLowerCase()) {
+      throw new Error("The uploaded file did not match the approved size or type.");
+    }
     const { error } = await admin
       .from("school_storage_objects")
       .update({ status: "active", completed_at: new Date().toISOString() })
