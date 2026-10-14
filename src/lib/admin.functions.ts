@@ -67,6 +67,20 @@ async function sendLeadNotificationEmail(data: z.infer<typeof leadSchema>) {
   }
 }
 
+// PUBLIC: validates a submitted referral code without exposing any partner directory data.
+export const validateCompanyPartner = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) => z.object({ code: z.string().trim().min(1).max(120) }).parse(d))
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: partner, error } = await supabaseAdmin
+      .from("referral_partners")
+      .select("display_name, status")
+      .ilike("code", data.code)
+      .maybeSingle();
+    if (error) return { valid: false as const, pending: true as const };
+    if (!partner || partner.status !== "active") return { valid: false as const, pending: false as const };
+    return { valid: true as const, displayName: partner.display_name };
+  });
 // PUBLIC: capture website inquiry
 export const createLead = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => leadSchema.parse(d))

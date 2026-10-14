@@ -233,6 +233,12 @@ function LeadsTab() {
 
   if (q.isLoading) return <div className="py-10 text-center text-muted-foreground">Loading leadsâ€¦</div>;
   const leads = q.data ?? [];
+  const [partnerFilter, setPartnerFilter] = useState("");
+  const [partnerIdFilter, setPartnerIdFilter] = useState("");
+  const filteredLeads = leads.filter((lead: any) =>
+    (!partnerFilter || (lead.partner_name ?? "").toLowerCase().includes(partnerFilter.toLowerCase())) &&
+    (!partnerIdFilter || (lead.partner_referral_code ?? "").toLowerCase().includes(partnerIdFilter.toLowerCase()))
+  );
   if (leads.length === 0) {
     return (
       <Card className="mt-4"><CardContent className="p-10 text-center text-muted-foreground">
@@ -243,7 +249,7 @@ function LeadsTab() {
 
   return (
     <Card className="mt-4">
-      <CardHeader><CardTitle>All leads</CardTitle></CardHeader>
+      <CardHeader><CardTitle>All leads</CardTitle><div className="mt-3 grid gap-3 sm:grid-cols-2"><Input value={partnerFilter} onChange={(e) => setPartnerFilter(e.target.value)} placeholder="Filter by Partner Name" /><Input value={partnerIdFilter} onChange={(e) => setPartnerIdFilter(e.target.value)} placeholder="Filter by Partner ID" /></div></CardHeader>
       <CardContent className="overflow-x-auto">
         <Table>
           <TableHeader>
@@ -252,12 +258,13 @@ function LeadsTab() {
               <TableHead>Name</TableHead>
               <TableHead>Email</TableHead>
               <TableHead>School / Country</TableHead>
-                            <TableHead>Stage</TableHead>
+                            <TableHead>Partner referral</TableHead>
+              <TableHead>Stage</TableHead>
               <TableHead>Reply</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {leads.map((l: any) => (
+            {filteredLeads.map((l: any) => (
               <TableRow key={l.id}>
                 <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
                   {new Date(l.created_at).toLocaleDateString()}

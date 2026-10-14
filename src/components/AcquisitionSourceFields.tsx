@@ -1,4 +1,7 @@
-﻿import { Input } from "@/components/ui/input";
+import { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
@@ -6,6 +9,7 @@ import {
   ACQUISITION_SOURCE_OPTIONS,
   type AcquisitionFormValue,
 } from "@/lib/acquisition";
+import { validateCompanyPartner } from "@/lib/admin.functions";
 
 export function AcquisitionSourceFields({
   value,
@@ -17,7 +21,17 @@ export function AcquisitionSourceFields({
   required?: boolean;
 }) {
   const details = ACQUISITION_DETAIL_OPTIONS[value.acquisition_source] ?? [];
-  const showPartner = value.acquisition_source === "authorized_partner";
+  const validateFn = useServerFn(validateCompanyPartner);
+  const [partnerResult, setPartnerResult] = useState<{ valid: boolean; displayName?: string; pending?: boolean } | null>(null);
+  const validate = useMutation({
+    mutationFn: () => validateFn({ data: { code: value.partner_referral_code?.trim() ?? "" } }),
+    onSuccess: (result) => {
+      setPartnerResult(result);
+      if (result.valid) patch({ partner_name: result.displayName });
+    },
+    onError: () => setPartnerResult({ valid: false, pending: true }),
+  });
+  const showPartner = value.acquisition_source === "authorized_partner" || value.acquisition_source === "company_partner";
   const showOther = value.acquisition_source === "other";
 
   function patch(next: Partial<AcquisitionFormValue>) {
@@ -70,24 +84,29 @@ export function AcquisitionSourceFields({
       {showPartner && (
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="space-y-1.5">
-            <Label>Partner name</Label>
+            <Label>Company Partner Name{showPartner && <span className="ml-0.5 text-destructive">*</span>}</Label>
             <Input
               value={value.partner_name ?? ""}
               onChange={(e) => patch({ partner_name: e.target.value })}
-              placeholder="Registered partner name"
+              placeholder="Full referring company partner name"
+              required={showPartner}
             />
           </div>
           <div className="space-y-1.5">
             <Label>
-              Partner ID / Referral Code
+              Company Partner ID Code
               {required && <span className="ml-0.5 text-destructive">*</span>}
             </Label>
             <Input
               value={value.partner_referral_code ?? ""}
-              onChange={(e) => patch({ partner_referral_code: e.target.value })}
-              placeholder="Preferred for commission tracking"
+              onChange={(e) => { setPartnerResult(null); patch({ partner_referral_code: e.target.value }); }}
+              onBlur={() => { if (value.partner_referral_code?.trim()) validate.mutate(); }}
+              placeholder="Partner ID assigned by Syllabus Synk / RBIL"
               required={required}
             />
+            {validate.isPending && <p className="text-xs text-muted-foreground">Checking Partner ID…</p>}
+            {partnerResult?.valid && <p className="text-xs text-emerald-600">Verified partner: {partnerResult.displayName}</p>}
+            {partnerResult && !partnerResult.valid && (partnerResult.pending ? <p className="text-xs text-amber-600">Partner verification is pending administrator review.</p> : <p className="text-xs text-destructive">Invalid Partner ID. Please verify the code with your referring partner.</p>)}
           </div>
         </div>
       )}

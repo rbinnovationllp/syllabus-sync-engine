@@ -1,6 +1,7 @@
-﻿export const ACQUISITION_SOURCE_OPTIONS = [
+export const ACQUISITION_SOURCE_OPTIONS = [
   { value: "company_representative", label: "Company Representative" },
   { value: "authorized_partner", label: "Authorized Partner / Referral Partner" },
+  { value: "company_partner", label: "Through a Company Partner" },
   { value: "social_media", label: "Social Media" },
   { value: "online_advertisement", label: "Online Advertisement" },
   { value: "search_engine", label: "Search Engine" },
@@ -46,7 +47,7 @@ export type AcquisitionFormValue = {
 };
 
 export function attributionLabelForSource(source: string | null | undefined) {
-  return source === "authorized_partner" ? "Authorized Partner Acquisition" : "Direct Company Acquisition";
+  return ["authorized_partner", "company_partner"].includes(source ?? "") ? "Partner Acquisition" : "Direct Company Acquisition";
 }
 
 export function acquisitionSourceLabel(source: string | null | undefined) {
