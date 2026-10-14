@@ -24,6 +24,9 @@ import {
   CheckCircle2,
   Star,
   BrainCircuit,
+  Menu,
+  X,
+  Quote,
 } from "lucide-react";
 import { createLead } from "@/lib/admin.functions";
 import { getPublicSiteStats } from "@/lib/site-analytics.functions";
@@ -60,6 +63,7 @@ function Landing() {
     <div className="min-h-screen bg-white text-slate-900 overflow-x-hidden">
       <Nav />
       <Hero />
+      <PremiumStrip />
       <Logos />
       <Features />
       <SchoolAdvantages />
@@ -67,12 +71,21 @@ function Landing() {
       <Boards />
       <Testimonials />
       <Contact />
+      <MobileDemoButton />
       <Footer />
     </div>
   );
 }
 
 function Nav() {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const links = [
+    ["AI education", "#features"],
+    ["School advantage", "#advantages"],
+    ["How it works", "#how"],
+    ["Curricula", "#boards"],
+  ] as const;
+
   return (
     <header className="sticky top-0 z-40 border-b border-slate-200/60 bg-white/80 backdrop-blur-md">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
@@ -82,214 +95,49 @@ function Nav() {
           </div>
           <span className="font-bold tracking-tight">Syllabus-Synk</span>
         </Link>
-        <nav className="hidden items-center gap-7 text-sm text-slate-600 md:flex">
-          <a href="#features" className="hover:text-slate-900">
-            AI education
-          </a>
-          <a href="#advantages" className="hover:text-slate-900">
-            School advantage
-          </a>
-          <a href="#how" className="hover:text-slate-900">
-            How it works
-          </a>
-          <a href="#boards" className="hover:text-slate-900">
-            Curricula
-          </a>
-          <Link to="/partners" className="hover:text-slate-900">
-            Partners
-          </Link>
-          <a href="#contact" className="hover:text-slate-900">
-            Contact
-          </a>
+        <nav className="hidden items-center gap-7 text-sm text-slate-600 lg:flex">
+          {links.map(([label, href]) => <a key={href} href={href} className="hover:text-slate-900">{label}</a>)}
+          <Link to="/partners" className="hover:text-slate-900">Partners</Link>
+          <a href="#contact" className="hover:text-slate-900">Contact</a>
         </nav>
         <div className="flex items-center gap-2">
-          <Button variant="ghost" asChild>
-            <Link to="/pricing">Plans</Link>
-          </Button>
-          <Button variant="ghost" asChild className="hidden sm:inline-flex">
-            <Link to="/auth" search={{ invite: undefined }}>
-              Sign in
-            </Link>
-          </Button>
-          <Button
-            asChild
-            className="bg-gradient-to-r from-indigo-600 to-fuchsia-600 text-white hover:opacity-95"
-          >
-            <Link to="/auth" search={{ invite: undefined }}>
-              Start free <ArrowRight className="ml-1 h-4 w-4" />
-            </Link>
+          <Button variant="ghost" asChild className="hidden sm:inline-flex"><Link to="/pricing">Plans</Link></Button>
+          <Button variant="ghost" asChild className="hidden lg:inline-flex"><Link to="/auth" search={{ invite: undefined }}>Sign in</Link></Button>
+          <Button asChild className="hidden bg-gradient-to-r from-indigo-600 to-fuchsia-600 text-white shadow-md shadow-indigo-200 hover:opacity-95 sm:inline-flex"><a href="#contact">Book a demo <ArrowRight className="ml-1 h-4 w-4" /></a></Button>
+          <Button variant="ghost" size="icon" className="lg:hidden" onClick={() => setMenuOpen((open) => !open)} aria-label={menuOpen ? "Close navigation" : "Open navigation"} aria-expanded={menuOpen}>
+            {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </Button>
         </div>
       </div>
+      {menuOpen && (
+        <nav className="border-t border-slate-100 bg-white px-4 py-4 lg:hidden">
+          <div className="container mx-auto grid gap-1 text-sm text-slate-700">
+            {links.map(([label, href]) => <a key={href} href={href} onClick={() => setMenuOpen(false)} className="rounded-lg px-3 py-2.5 hover:bg-slate-50">{label}</a>)}
+            <Link to="/partners" onClick={() => setMenuOpen(false)} className="rounded-lg px-3 py-2.5 hover:bg-slate-50">Partners</Link>
+            <Link to="/auth" search={{ invite: undefined }} onClick={() => setMenuOpen(false)} className="rounded-lg px-3 py-2.5 hover:bg-slate-50">Sign in</Link>
+            <a href="#contact" onClick={() => setMenuOpen(false)} className="mt-2 rounded-lg bg-indigo-600 px-3 py-3 text-center font-semibold text-white">Book a demo</a>
+          </div>
+        </nav>
+      )}
     </header>
   );
 }
-
 function Hero() {
-  return (
-    <section className="relative isolate overflow-hidden">
-      {/* Background gradients */}
-      <div
-        aria-hidden
-        className="absolute inset-0 -z-10 bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900"
-      />
-      <div
-        aria-hidden
-        className="absolute -top-32 left-1/2 -z-10 h-[480px] w-[920px] -translate-x-1/2 rounded-full bg-gradient-to-r from-fuchsia-500/30 via-indigo-500/30 to-amber-400/30 blur-3xl"
-      />
-      <div
-        aria-hidden
-        className="absolute inset-0 -z-10 opacity-[0.07] [background-image:linear-gradient(white_1px,transparent_1px),linear-gradient(90deg,white_1px,transparent_1px)] [background-size:48px_48px]"
-      />
-
-      <div className="container mx-auto px-4 pt-20 pb-28 text-center text-white">
-        <div className="mx-auto inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs backdrop-blur">
-          <Sparkles className="h-3.5 w-3.5 text-amber-300" />
-          <span className="text-white/80">Preparing children for an AI-driven future</span>
-        </div>
-
-        <h1 className="mx-auto mt-6 max-w-4xl text-4xl font-bold leading-[1.1] tracking-tight sm:text-6xl">
-          Build an{" "}
-          <span className="bg-gradient-to-r from-amber-300 via-fuchsia-400 to-indigo-300 bg-clip-text text-transparent">
-            AI-ready generation
-          </span>{" "}
-          from the primary-school level onward.
-        </h1>
-
-        <p className="mx-auto mt-6 max-w-2xl text-base text-white/70 sm:text-lg">
-          Syllabus-Synk makes age-appropriate AI classes accessible without expensive laboratories,
-          while giving school leaders the planning and monitoring tools to keep regular academics on
-          track.
-        </p>
-
-        <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
-          <Button
-            size="lg"
-            asChild
-            className="bg-gradient-to-r from-amber-400 to-fuchsia-500 text-slate-950 font-semibold shadow-lg shadow-fuchsia-500/30 hover:opacity-95"
-          >
-            <Link to="/auth" search={{ invite: undefined }}>
-              Explore AI education <ArrowRight className="ml-2 h-4 w-4" />
-            </Link>
-          </Button>
-          <Button
-            size="lg"
-            variant="outline"
-            asChild
-            className="border-white/30 bg-white/5 text-white hover:bg-white/10"
-          >
-            <a href="#contact">Book a demo</a>
-          </Button>
-        </div>
-
-        <PublicVisitorProof />
-
-        <div className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-white/60">
-          {[
-            "Software-first: no mandatory lab investment",
-            "AI classes for Classes 1-12",
-            "Teacher enablement included",
-            "Academic visibility for school leaders",
-          ].map((t) => (
-            <span key={t} className="flex items-center gap-1.5">
-              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" /> {t}
-            </span>
-          ))}
-        </div>
-
-        {/* Mock preview card */}
-        <div className="mx-auto mt-14 max-w-5xl">
-          <div className="rounded-2xl border border-white/15 bg-gradient-to-br from-white/10 to-white/[0.02] p-2 shadow-2xl backdrop-blur">
-            <div className="grid gap-3 rounded-xl bg-slate-950/70 p-4 sm:grid-cols-3">
-              {[
-                {
-                  label: "AI learning pathway",
-                  value: "1-12",
-                  trend: "age-appropriate progression",
-                  accent: "from-indigo-500 to-cyan-400",
-                },
-                {
-                  label: "AI classes",
-                  value: "1-2/wk",
-                  trend: "alongside regular academics",
-                  accent: "from-emerald-500 to-lime-400",
-                },
-                {
-                  label: "Academic visibility",
-                  value: "Early",
-                  trend: "signals for action and recovery",
-                  accent: "from-fuchsia-500 to-amber-400",
-                },
-              ].map((c) => (
-                <div
-                  key={c.label}
-                  className="rounded-lg border border-white/10 bg-white/[0.03] p-4 text-left"
-                >
-                  <p className="text-[11px] uppercase tracking-wide text-white/50">{c.label}</p>
-                  <p
-                    className={`mt-2 bg-gradient-to-r ${c.accent} bg-clip-text text-3xl font-bold text-transparent`}
-                  >
-                    {c.value}
-                  </p>
-                  <p className="mt-1 text-xs text-white/60">{c.trend}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
+  const benefits = [
+    { icon: BrainCircuit, label: "AI Classes", title: "Classes 1–12", detail: "Age-appropriate, practical learning with teacher enablement." },
+    { icon: Calendar, label: "Academic Planning", title: "Built for reality", detail: "Teaching capacity, progress signals, and recovery planning in one view." },
+  ];
+  return <section className="relative isolate overflow-hidden"><div aria-hidden className="absolute inset-0 -z-10 bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900" /><div aria-hidden className="absolute -top-32 left-1/2 -z-10 h-[480px] w-[920px] -translate-x-1/2 rounded-full bg-gradient-to-r from-fuchsia-500/30 via-indigo-500/30 to-amber-400/30 blur-3xl" /><div className="container mx-auto px-4 pt-16 pb-20 text-center text-white sm:pt-20 sm:pb-24"><div className="mx-auto inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs backdrop-blur"><Sparkles className="h-3.5 w-3.5 text-amber-300" /><span className="text-white/80">One platform for future-ready schools</span></div><h1 className="mx-auto mt-6 max-w-3xl text-4xl font-bold leading-[1.08] tracking-tight sm:text-6xl">AI-ready learning.<br />Academics on track. <span className="bg-gradient-to-r from-amber-300 via-fuchsia-400 to-indigo-300 bg-clip-text text-transparent">One school platform.</span></h1><p className="mx-auto mt-6 max-w-2xl text-base text-white/70 sm:text-lg">Give students a practical AI pathway and give leaders a clear plan for every teaching day.</p><div className="mt-9 flex flex-wrap items-center justify-center gap-3"><Button size="lg" asChild className="bg-gradient-to-r from-amber-400 to-fuchsia-500 font-semibold text-slate-950 shadow-lg shadow-fuchsia-500/30 hover:opacity-95"><a href="#contact">Book a demo <ArrowRight className="ml-2 h-4 w-4" /></a></Button><Button size="lg" variant="outline" asChild className="border-white/30 bg-white/5 text-white hover:bg-white/10"><Link to="/ai-education-premium">Explore AI education</Link></Button></div><PublicVisitorProof /><div className="mx-auto mt-10 grid max-w-4xl gap-3 rounded-2xl border border-white/15 bg-slate-950/60 p-3 text-left shadow-2xl backdrop-blur sm:grid-cols-2">{benefits.map((benefit) => <div key={benefit.label} className="rounded-xl border border-white/10 bg-white/[0.04] p-5"><div className="flex items-center gap-3"><div className="rounded-lg bg-indigo-300 p-2 text-slate-950"><benefit.icon className="h-5 w-5" /></div><p className="text-xs font-semibold uppercase tracking-widest text-white/55">{benefit.label}</p></div><p className="mt-4 text-2xl font-bold text-white">{benefit.title}</p><p className="mt-1 text-sm leading-6 text-white/65">{benefit.detail}</p></div>)}</div></div></section>;
 }
-
 function PublicVisitorProof() {
   const statsFn = useServerFn(getPublicSiteStats);
-  const { data, isLoading } = useQuery({
-    queryKey: ["public-site-stats"],
-    queryFn: () => statsFn(),
-    staleTime: 5 * 60 * 1000,
-  });
+  const { data, isLoading } = useQuery({ queryKey: ["public-site-stats"], queryFn: () => statsFn(), staleTime: 5 * 60 * 1000 });
+  if (isLoading || !data?.totalVisitors) return null;
+  return <p className="mt-6 text-xs text-white/50">Trusted by school leaders exploring AI education and academic planning.</p>;
+}
 
-  const totalVisitors = data?.totalVisitors ?? null;
-  const totalVisits = data?.totalVisits ?? null;
-  const weekVisitors = data?.visitors7d ?? null;
-
-  const items = [
-    {
-      label: "School leaders exploring",
-      value: totalVisitors?.toLocaleString() ?? "...",
-      detail: isLoading
-        ? "loading live visitor count"
-        : "estimated launch interest + recorded visitors",
-    },
-    {
-      label: "Product page views",
-      value: totalVisits?.toLocaleString() ?? "...",
-      detail: isLoading
-        ? "loading live page views"
-        : "estimated launch reach + recorded page opens",
-    },
-    {
-      label: "This week",
-      value: weekVisitors?.toLocaleString() ?? "...",
-      detail: isLoading ? "loading weekly visits" : "estimated weekly interest + recorded visits",
-    },
-  ];
-
-  return (
-    <div className="mx-auto mt-9 grid max-w-3xl gap-3 sm:grid-cols-3">
-      {items.map((item) => (
-        <div
-          key={item.label}
-          className="rounded-xl border border-white/15 bg-white/10 px-4 py-3 text-left shadow-lg shadow-black/10 backdrop-blur"
-        >
-          <p className="text-[11px] uppercase tracking-wide text-white/55">{item.label}</p>
-          <p className="mt-1 text-2xl font-bold text-white">{item.value}</p>
-          <p className="text-xs text-white/55">{item.detail}</p>
-        </div>
-      ))}
-    </div>
-  );
+function PremiumStrip() {
+  return <section className="border-b border-indigo-100 bg-indigo-50/70"><div className="container mx-auto flex flex-col items-start justify-between gap-4 px-4 py-5 sm:flex-row sm:items-center"><div><p className="text-xs font-semibold uppercase tracking-widest text-indigo-600">AI Education Premium</p><p className="mt-1 font-semibold text-slate-900">Structured AI classes, teacher enablement, and school-wide academic visibility.</p></div><Button asChild className="shrink-0 bg-indigo-600 text-white hover:bg-indigo-700"><Link to="/pricing">View plans <ArrowRight className="ml-2 h-4 w-4" /></Link></Button></div></section>;
 }
 function Logos() {
   const items = ["CBSE", "ICSE", "IB", "Cambridge", "Common Core", "British", "Australian"];
@@ -579,7 +427,7 @@ function Boards() {
             10+ boards. Local subjects. Country-aware sessions.
           </h2>
           <p className="mt-4 text-slate-600">
-            Indian schools start in April. American schools start in August. CurriculumOS already
+            Indian schools start in April. American schools start in August. Syllabus-Synk already
             knows - and ships the right subject catalog, streams, and completion rules out of the
             box.
           </p>
@@ -934,12 +782,16 @@ function Contact() {
   );
 }
 
+function MobileDemoButton() {
+  return <div className="fixed inset-x-0 bottom-0 z-40 border-t border-indigo-100 bg-white/95 p-3 shadow-2xl backdrop-blur sm:hidden"><a href="#contact" className="flex h-11 items-center justify-center rounded-lg bg-gradient-to-r from-indigo-600 to-fuchsia-600 text-sm font-semibold text-white">Book a demo <ArrowRight className="ml-2 h-4 w-4" /></a></div>;
+}
+
 function Footer() {
   return (
     <footer className="border-t border-slate-200 bg-white">
       <div className="container mx-auto grid gap-6 px-4 py-10 text-xs text-slate-500 sm:grid-cols-2 lg:grid-cols-3">
         <div className="space-y-2">
-          <div className="text-sm font-semibold text-slate-800">CurriculumOS</div>
+          <div className="text-sm font-semibold text-slate-800">Syllabus-Synk</div>
           <p>AI curriculum planning for K-12 schools worldwide.</p>
           <p>
             Website:{" "}
@@ -979,7 +831,7 @@ function Footer() {
               Sign in
             </Link>
           </div>
-          <p>(c) {new Date().getFullYear()} CurriculumOS. All rights reserved.</p>
+          <p>(c) {new Date().getFullYear()} Syllabus-Synk. All rights reserved.</p>
         </div>
       </div>
     </footer>
